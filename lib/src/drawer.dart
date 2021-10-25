@@ -180,16 +180,16 @@ class _NavDrawerState extends State<NavDrawer> {
                         navi.pushNamed('/settings');
                       },
                     ),
-                    13: NavListTile(
-                      icon: Icons.query_stats,
-                      title: "FAQs",
-                      onTap: () {
-                        changeSelection(13, drawerState);
-                        var navi = Navigator.of(context);
-                        navi.pop();
-                        navi.pushNamed('/query');
-                      },
-                    ),
+                    // 13: NavListTile(
+                    //   icon: Icons.query_stats,
+                    //   title: "FAQs",
+                    //   onTap: () {
+                    //     changeSelection(13, drawerState);
+                    //     var navi = Navigator.of(context);
+                    //     navi.pop();
+                    //     navi.pushNamed('/query');
+                    //   },
+                    // ),
                   };
 
                   List<Widget> navList, navDownList = <Widget>[];
@@ -473,7 +473,7 @@ class MNavigatorObserver extends NavigatorObserver {
     "/newcomplaint": 10,
     "/quicklinks": 11,
     "/settings": 12,
-    "/query": 13,
+    // "/query": 13,
   };
 
   static Map<String, String> routeToName = {
@@ -494,7 +494,7 @@ class MNavigatorObserver extends NavigatorObserver {
     "/achievements": "Achievements",
     "/achievements/add": "New Achievement",
     "/externalblog": "External Blog",
-    "/query": "Query",
+    // "/query": "Query",
     "n/a": "",
   };
 

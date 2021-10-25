@@ -107,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
           flutterWebviewPlugin.hide();
         } else if (url.startsWith(httpGymkhanaUrl)) {
           print("onUrlChanged: http gymkhana");
-          flutterWebviewPlugin.reloadUrl(url.replaceFirst("http", "https"));
+          // flutterWebviewPlugin.reloadUrl(url.replaceFirst("http", "https"));
         } else if (url.startsWith(ssoAuth)) {
           print("onUrlChanged: Going to sso login");
           // flutterWebviewPlugin.reloadUrl(sso);
@@ -122,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
           login(code, "https://www.insti.app/login-android.html");
         } else if (!url.startsWith("http://127.0.0.1")) {
           print("Going to unintented website");
-          flutterWebviewPlugin.reloadUrl(loginurl);
+          // flutterWebviewPlugin.reloadUrl(loginurl);
         }
       });
       onStateChangedSub = flutterWebviewPlugin.onStateChanged
