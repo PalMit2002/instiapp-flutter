@@ -1,56 +1,56 @@
-import 'package:InstiApp/src/api/model/user.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/api/model/body.dart';
+import '../model/body.dart';
+import '../model/event.dart';
+import '../model/user.dart';
 
 part 'ach_verify_request.g.dart';
 
 @JsonSerializable()
 class AchVerifyRequest {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? id;
 
-  @JsonKey(name: "time_of_creation")
+  @JsonKey(name: 'time_of_creation')
   String? timeOfCreation;
 
-  @JsonKey(name: "time_of_modification")
+  @JsonKey(name: 'time_of_modification')
   String? timeOfModification;
 
-  @JsonKey(name: "user")
+  @JsonKey(name: 'user')
   User? user;
 
-  @JsonKey(name: "hidden")
+  @JsonKey(name: 'hidden')
   bool? hidden;
 
-  @JsonKey(name: "dismissed")
+  @JsonKey(name: 'dismissed')
   bool? dismissed;
 
-  @JsonKey(name: "verified")
+  @JsonKey(name: 'verified')
   bool? verified;
 
-  @JsonKey(name: "verified_by")
+  @JsonKey(name: 'verified_by')
   User? verifiedBy;
 
-  @JsonKey(name: "title")
+  @JsonKey(name: 'title')
   String? title;
 
-  @JsonKey(name: "description")
+  @JsonKey(name: 'description')
   String? description;
 
-  @JsonKey(name: "admin_note")
+  @JsonKey(name: 'admin_note')
   String? adminNote;
 
-  @JsonKey(name: "body")
+  @JsonKey(name: 'body')
   String? bodyID;
 
-  @JsonKey(name: "body_detail")
+  @JsonKey(name: 'body_detail')
   Body? body;
 
-  @JsonKey(name: "event_detail")
+  @JsonKey(name: 'event_detail')
   Event? event;
 
-  @JsonKey(name: "offer")
+  @JsonKey(name: 'offer')
   String? offer;
 
   AchVerifyRequest({

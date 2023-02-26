@@ -1,22 +1,26 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:InstiApp/src/api/model/venue.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../api/model/venue.dart';
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../blocs/map_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+
 class NativeMapPage extends StatefulWidget {
+  const NativeMapPage({Key? key}) : super(key: key);
+
   @override
   _NativeMapPageState createState() => _NativeMapPageState();
 }
 
 class _NativeMapPageState extends State<NativeMapPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   PhotoViewControllerBase<PhotoViewControllerValue> controller =
       PhotoViewController();
 
@@ -30,7 +34,7 @@ class _NativeMapPageState extends State<NativeMapPage> {
   void initState() {
     super.initState();
     scaleSubscription = controller.outputStateStream
-        .bufferTime(Duration(milliseconds: 800))
+        .bufferTime(const Duration(milliseconds: 800))
         .listen((List<PhotoViewControllerValue> values) {
       if (values.isNotEmpty) {
         // print(values.last.scale);
@@ -54,9 +58,9 @@ class _NativeMapPageState extends State<NativeMapPage> {
 
   @override
   Widget build(BuildContext context) {
-    var bloc = BlocProvider.of(context)!.bloc;
-    var theme = Theme.of(context);
-    var mapBloc = bloc.mapBloc;
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    ThemeData theme = Theme.of(context);
+    MapBloc mapBloc = bloc.mapBloc;
 
     if (firstBuild) {
       mapBloc.updateLocations();
@@ -64,16 +68,16 @@ class _NativeMapPageState extends State<NativeMapPage> {
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       bottomNavigationBar: MyBottomAppBar(
-        child: new Row(
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -84,7 +88,14 @@ class _NativeMapPageState extends State<NativeMapPage> {
       ),
       body: SafeArea(
         child: PhotoView.customChild(
+          childSize: const Size(5430, 3575),
+          backgroundDecoration: BoxDecoration(color: bloc.brightness.toColor()),
+          minScale: PhotoViewComputedScale.contained,
+          controller: controller,
           child: Container(
+            decoration: const BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('assets/map/assets/map.webp'))),
             child: StreamBuilder(
               stream: mapBloc.locations,
               builder: (BuildContext context,
@@ -92,7 +103,7 @@ class _NativeMapPageState extends State<NativeMapPage> {
                 if (snapshot.hasData && snapshot.data != null) {
                   return Stack(
                     children: snapshot.data!
-                        .map((v) => _buildMarker(bloc, theme, v))
+                        .map((Venue v) => _buildMarker(bloc, theme, v))
                         .toList(),
                   );
                 } else {
@@ -100,14 +111,7 @@ class _NativeMapPageState extends State<NativeMapPage> {
                 }
               },
             ),
-            decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage("assets/map/assets/map.webp"))),
           ),
-          childSize: Size(5430, 3575),
-          backgroundDecoration: BoxDecoration(color: bloc.brightness.toColor()),
-          minScale: PhotoViewComputedScale.contained,
-          controller: controller,
         ),
       ),
     );
@@ -125,7 +129,7 @@ class _NativeMapPageState extends State<NativeMapPage> {
                 color: theme.canvasColor,
               ),
               child: Text(
-                v.venueName ?? "",
+                v.venueName ?? '',
                 style: theme.textTheme.headlineMedium,
               ),
             ),
@@ -139,7 +143,7 @@ class _NativeMapPageState extends State<NativeMapPage> {
                 onPressed: () {
                   // print(v.venueName);
                 },
-                icon: Icon(
+                icon: const Icon(
                   Icons.location_on_outlined,
                   size: 96,
                   color: Colors.orange,

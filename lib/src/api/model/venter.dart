@@ -1,39 +1,40 @@
-import 'package:InstiApp/src/api/model/user.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'user.dart';
 
 part 'venter.g.dart';
 
 @JsonSerializable()
 class Complaint {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? complaintID;
-  @JsonKey(name: "created_by")
+  @JsonKey(name: 'created_by')
   User? complaintCreatedBy;
-  @JsonKey(name: "description")
+  @JsonKey(name: 'description')
   String? description;
-  @JsonKey(name: "suggestions")
+  @JsonKey(name: 'suggestions')
   String? suggestions;
-  @JsonKey(name: "location_details")
+  @JsonKey(name: 'location_details')
   String? locationDetails;
-  @JsonKey(name: "report_date")
+  @JsonKey(name: 'report_date')
   String? complaintReportDate;
-  @JsonKey(name: "status")
+  @JsonKey(name: 'status')
   String? status;
-  @JsonKey(name: "latitude")
+  @JsonKey(name: 'latitude')
   double? latitude;
-  @JsonKey(name: "longitude")
+  @JsonKey(name: 'longitude')
   double? longitude;
-  @JsonKey(name: "location_description")
+  @JsonKey(name: 'location_description')
   String? locationDescription;
-  @JsonKey(name: "tags")
+  @JsonKey(name: 'tags')
   List<TagUri>? tags;
-  @JsonKey(name: "comments")
+  @JsonKey(name: 'comments')
   List<Comment>? comments;
-  @JsonKey(name: "users_up_voted")
+  @JsonKey(name: 'users_up_voted')
   List<User>? usersUpVoted;
-  @JsonKey(name: "images")
+  @JsonKey(name: 'images')
   List<String>? images;
-  @JsonKey(name: "is_subscribed")
+  @JsonKey(name: 'is_subscribed')
   bool? isSubscribed;
   int? voteCount;
 
@@ -61,9 +62,9 @@ class Complaint {
 
 @JsonSerializable()
 class TagUri {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? id;
-  @JsonKey(name: "tag_uri")
+  @JsonKey(name: 'tag_uri')
   String? tagUri;
 
   TagUri({this.id, this.tagUri});
@@ -74,15 +75,15 @@ class TagUri {
 
 @JsonSerializable()
 class Comment {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? id;
-  @JsonKey(name: "time")
+  @JsonKey(name: 'time')
   String? time;
-  @JsonKey(name: "text")
+  @JsonKey(name: 'text')
   String? text;
-  @JsonKey(name: "commented_by")
+  @JsonKey(name: 'commented_by')
   User? commentedBy;
-  @JsonKey(name: "complaint")
+  @JsonKey(name: 'complaint')
   String? complaintID;
 
   Comment(

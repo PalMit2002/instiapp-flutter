@@ -2,14 +2,16 @@
 // import 'dart:developer';
 // import 'dart:ffi';
 
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_html/shims/dart_ui_real.dart';
 // import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/title_with_backbutton.dart';
 
 class QRPage extends StatefulWidget {
   const QRPage({Key? key}) : super(key: key);
@@ -19,7 +21,7 @@ class QRPage extends StatefulWidget {
 }
 
 class _QRPageState extends State<QRPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   String? qrString;
   bool first = true;
@@ -31,9 +33,9 @@ class _QRPageState extends State<QRPage> {
     super.initState();
   }
 
-  void getQRString(bloc) async {
-    String qr = await bloc.getQRString();
-    if (qr == "Error") {
+  Future<void> getQRString(InstiAppBloc bloc) async {
+    String? qr = await bloc.getQRString();
+    if (qr == 'Error' || qr == null) {
       setState(() {
         error = true;
         loading = false;
@@ -48,8 +50,8 @@ class _QRPageState extends State<QRPage> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
 
     if (first && bloc.currSession != null) {
       getQRString(bloc);
@@ -59,16 +61,16 @@ class _QRPageState extends State<QRPage> {
     return Scaffold(
       key: _scaffoldKey,
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -77,13 +79,14 @@ class _QRPageState extends State<QRPage> {
           ],
         ),
       ),
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       body: SafeArea(
         child: bloc.currSession == null
             ? Container(
                 alignment: Alignment.center,
-                padding: EdgeInsets.all(50),
+                padding: const EdgeInsets.all(50),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.cloud,
@@ -91,60 +94,60 @@ class _QRPageState extends State<QRPage> {
                       color: Colors.grey[600],
                     ),
                     Text(
-                      "Login To View QR",
+                      'Login To View QR',
                       style: theme.textTheme.headlineSmall,
                       textAlign: TextAlign.center,
                     )
                   ],
-                  crossAxisAlignment: CrossAxisAlignment.center,
                 ),
               )
             : ListView(
                 children: [
                   TitleWithBackButton(
                     child: Text(
-                      "QR Code",
+                      'QR Code',
                       style: theme.textTheme.displaySmall,
                     ),
                   ),
-                  loading
-                      ? Center(
-                          child: CircularProgressIndicator(),
-                        )
-                      : error
-                          ? Container(
-                              alignment: Alignment.center,
-                              padding: EdgeInsets.all(50),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.cloud,
-                                    size: 200,
-                                    color: Colors.grey[600],
-                                  ),
-                                  Text(
-                                    "Some error in generating QR",
-                                    style: theme.textTheme.headlineSmall,
-                                    textAlign: TextAlign.center,
-                                  )
-                                ],
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                              ),
-                            )
-                          : Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                              ),
-                              margin: EdgeInsets.all(50),
-                              alignment: Alignment.center,
-                              height: MediaQuery.of(context).size.height / 2,
-                              child: QrImage(
-                                // data: '',
-                                data: '${qrString}',
-                                size: MediaQuery.of(context).size.width / 2,
-                                foregroundColor: Colors.black,
-                              ),
+                  if (loading)
+                    const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  else
+                    error
+                        ? Container(
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.all(50),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.cloud,
+                                  size: 200,
+                                  color: Colors.grey[600],
+                                ),
+                                Text(
+                                  'Some error in generating QR',
+                                  style: theme.textTheme.headlineSmall,
+                                  textAlign: TextAlign.center,
+                                )
+                              ],
                             ),
+                          )
+                        : Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                            ),
+                            margin: const EdgeInsets.all(50),
+                            alignment: Alignment.center,
+                            height: MediaQuery.of(context).size.height / 2,
+                            child: QrImage(
+                              // data: '',
+                              data: '$qrString',
+                              size: MediaQuery.of(context).size.width / 2,
+                              foregroundColor: Colors.black,
+                            ),
+                          ),
                 ],
               ),
       ),
@@ -152,10 +155,10 @@ class _QRPageState extends State<QRPage> {
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
       floatingActionButton: (bloc.currSession?.profile != null)
           ? FloatingActionButton.extended(
-              icon: Icon(Icons.calendar_month),
-              label: Text("Mess Calendar"),
+              icon: const Icon(Icons.calendar_month),
+              label: const Text('Mess Calendar'),
               onPressed: () {
-                Navigator.of(context).pushNamed("/messcalendar");
+                Navigator.of(context).pushNamed('/messcalendar');
               },
             )
           : null,

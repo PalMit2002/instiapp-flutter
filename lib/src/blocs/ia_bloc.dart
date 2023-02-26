@@ -1,48 +1,51 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io' show Platform;
-import 'package:InstiApp/main.dart';
-import 'package:InstiApp/src/api/chatbotapiclient.dart';
-import 'package:InstiApp/src/api/model/achievements.dart';
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/api/model/community.dart';
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/api/model/role.dart';
-import 'package:InstiApp/src/api/model/venter.dart';
-import 'package:InstiApp/src/api/request/achievement_hidden_patch_request.dart';
-import 'package:InstiApp/src/api/request/postFAQ_request.dart';
-import 'package:InstiApp/src/api/request/user_fcm_patch_request.dart';
-import 'package:InstiApp/src/api/request/user_scn_patch_request.dart';
-import 'package:InstiApp/src/api/response/alumni_login_response.dart';
-import 'package:InstiApp/src/api/response/getencr_response.dart';
-import 'package:InstiApp/src/blocs/ach_to_vefiry_bloc.dart';
-import 'package:InstiApp/src/blocs/blog_bloc.dart';
-import 'package:InstiApp/src/blocs/calendar_bloc.dart';
-import 'package:InstiApp/src/blocs/community_bloc.dart';
-import 'package:InstiApp/src/blocs/community_post_bloc.dart';
-import 'package:InstiApp/src/blocs/complaints_bloc.dart';
-import 'package:InstiApp/src/blocs/drawer_bloc.dart';
-import 'package:InstiApp/src/api/apiclient.dart';
-import 'package:InstiApp/src/api/model/mess.dart';
-import 'package:InstiApp/src/api/model/user.dart';
-import 'package:InstiApp/src/blocs/explore_bloc.dart';
-import 'package:InstiApp/src/blocs/map_bloc.dart';
-import 'package:InstiApp/src/blocs/achievementform_bloc.dart';
-import 'package:InstiApp/src/blocs/mess_calendar_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/utils/app_brightness.dart';
+
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:collection';
 import 'package:rxdart/rxdart.dart';
 // import 'package:http/io_client.dart';
 // import 'package:http/browser_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:InstiApp/src/api/model/notification.dart' as ntf;
-import 'package:dio/dio.dart';
+
+import '../../main.dart';
+import '../api/apiclient.dart';
+import '../api/chatbotapiclient.dart';
+import '../api/model/achievements.dart';
+import '../api/model/body.dart';
+import '../api/model/community.dart';
+import '../api/model/event.dart';
+import '../api/model/mess.dart';
+import '../api/model/notification.dart' as ntf;
+import '../api/model/role.dart';
+import '../api/model/user.dart';
+import '../api/model/venter.dart';
+import '../api/request/achievement_hidden_patch_request.dart';
+import '../api/request/postFAQ_request.dart';
+import '../api/request/user_fcm_patch_request.dart';
+import '../api/request/user_scn_patch_request.dart';
+import '../api/response/alumni_login_response.dart';
+import '../api/response/getencr_response.dart';
+import '../api/response/news_feed_response.dart';
+import '../drawer.dart';
+import '../utils/app_brightness.dart';
+import 'ach_to_vefiry_bloc.dart';
+import 'achievementform_bloc.dart';
+import 'blog_bloc.dart';
+import 'calendar_bloc.dart';
+import 'community_bloc.dart';
+import 'community_post_bloc.dart';
+import 'complaints_bloc.dart';
+import 'drawer_bloc.dart';
+import 'explore_bloc.dart';
+import 'map_bloc.dart';
+import 'mess_calendar_bloc.dart';
 
 enum AddToCalendar { AlwaysAsk, Yes, No }
 
@@ -78,16 +81,16 @@ List<ColorSwatch<dynamic>> appColors = [
 
 class InstiAppBloc {
   // Dio instance
-  final dio = Dio();
+  final Dio dio = Dio();
 
   // Events StorageID
-  static String eventStorageID = "events";
+  static String eventStorageID = 'events';
   // Mess StorageID
-  static String messStorageID = "mess";
+  static String messStorageID = 'mess';
   // Notifications StorageID
-  static String notificationsStorageID = "notifications";
+  static String notificationsStorageID = 'notifications';
   // Achievement StorageID
-  static String achievementStorageID = "achievement";
+  static String achievementStorageID = 'achievement';
 
   // FCM handle
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
@@ -95,22 +98,25 @@ class InstiAppBloc {
   // Different Streams for the state
   ValueStream<UnmodifiableListView<Hostel>> get hostels =>
       _hostelsSubject.stream;
-  final _hostelsSubject = BehaviorSubject<UnmodifiableListView<Hostel>>();
+  final BehaviorSubject<UnmodifiableListView<Hostel>> _hostelsSubject =
+      BehaviorSubject<UnmodifiableListView<Hostel>>();
 
   ValueStream<Session?> get session => _sessionSubject.stream;
-  final _sessionSubject = BehaviorSubject<Session?>();
+  final BehaviorSubject<Session?> _sessionSubject = BehaviorSubject<Session?>();
 
   ValueStream<UnmodifiableListView<Event>> get events => _eventsSubject.stream;
-  final _eventsSubject = BehaviorSubject<UnmodifiableListView<Event>>();
+  final BehaviorSubject<UnmodifiableListView<Event>> _eventsSubject =
+      BehaviorSubject<UnmodifiableListView<Event>>();
 
   ValueStream<UnmodifiableListView<ntf.Notification>> get notifications =>
       _notificationsSubject.stream;
-  final _notificationsSubject =
+  final BehaviorSubject<UnmodifiableListView<ntf.Notification>>
+      _notificationsSubject =
       BehaviorSubject<UnmodifiableListView<ntf.Notification>>();
 
   ValueStream<UnmodifiableListView<Achievement>> get achievements =>
       _achievementSubject.stream;
-  final _achievementSubject =
+  final BehaviorSubject<UnmodifiableListView<Achievement>> _achievementSubject =
       BehaviorSubject<UnmodifiableListView<Achievement>>();
 
   // Sub Blocs
@@ -132,24 +138,24 @@ class InstiAppBloc {
   late CommunityPostBloc communityPostBloc;
   // actual current state
   Session? currSession;
-  var _hostels = <Hostel>[];
-  var _events = <Event>[];
-  var _achievements = <Achievement>[];
-  var _notifications = <ntf.Notification>[];
+  List<Hostel> _hostels = <Hostel>[];
+  List<Event> _events = <Event>[];
+  List<Achievement> _achievements = <Achievement>[];
+  List<ntf.Notification> _notifications = <ntf.Notification>[];
 
   // api functions
   late final InstiAppApi client;
   late final ChatBotApi clientChatBot;
 
   // default homepage
-  String homepageName = "/feed";
+  String homepageName = '/feed';
   bool isAlumni = false;
-  String msg = "";
-  String alumniLoginPage = "/alumniLoginPage";
-  String ldap = "";
+  String msg = '';
+  String alumniLoginPage = '/alumniLoginPage';
+  String ldap = '';
   //to implement method for toggling isAlumnReg
-  String alumni_OTP_Page = "/alumni-OTP-Page";
-  String _alumniOTP = "";
+  String alumni_OTP_Page = '/alumni-OTP-Page';
+  String _alumniOTP = '';
   // to create method to update this from apiclient.dart
   // default theme
   AppBrightness _brightness = AppBrightness.light;
@@ -174,8 +180,8 @@ class InstiAppBloc {
   set addToCalendarSetting(AddToCalendar mAddToCalendarSetting) {
     if (mAddToCalendarSetting != _addToCalendarSetting) {
       _addToCalendarSetting = mAddToCalendarSetting;
-      SharedPreferences.getInstance().then((s) {
-        s.setInt("addToCalendarSetting", _addToCalendarSetting.index);
+      SharedPreferences.getInstance().then((SharedPreferences s) {
+        s.setInt('addToCalendarSetting', _addToCalendarSetting.index);
       });
     }
   }
@@ -188,8 +194,8 @@ class InstiAppBloc {
   set defaultCalendarsSetting(List<String> mDefaultCalendarsSetting) {
     if (mDefaultCalendarsSetting != _defaultCalendarsSetting) {
       _defaultCalendarsSetting = mDefaultCalendarsSetting;
-      SharedPreferences.getInstance().then((s) {
-        s.setStringList("defaultCalendarsSetting", _defaultCalendarsSetting);
+      SharedPreferences.getInstance().then((SharedPreferences s) {
+        s.setStringList('defaultCalendarsSetting', _defaultCalendarsSetting);
       });
     }
   }
@@ -202,8 +208,8 @@ class InstiAppBloc {
   set brightness(AppBrightness newBrightness) {
     if (newBrightness != _brightness) {
       wholeAppKey.currentState?.setTheme(() => _brightness = newBrightness);
-      SharedPreferences.getInstance().then((s) {
-        s.setInt("brightness", newBrightness.index);
+      SharedPreferences.getInstance().then((SharedPreferences s) {
+        s.setInt('brightness', newBrightness.index);
       });
     }
   }
@@ -213,8 +219,8 @@ class InstiAppBloc {
   set primaryColor(ColorSwatch newColor) {
     if (newColor != _primaryColor) {
       wholeAppKey.currentState?.setTheme(() => _primaryColor = newColor);
-      SharedPreferences.getInstance().then((s) {
-        s.setInt("primaryColor", appColors.indexOf(newColor));
+      SharedPreferences.getInstance().then((SharedPreferences s) {
+        s.setInt('primaryColor', appColors.indexOf(newColor));
       });
     }
   }
@@ -224,8 +230,8 @@ class InstiAppBloc {
   set accentColor(ColorSwatch newColor) {
     if (newColor != _accentColor) {
       wholeAppKey.currentState?.setTheme(() => _accentColor = newColor);
-      SharedPreferences.getInstance().then((s) {
-        s.setInt("accentColor", appColors.indexOf(newColor));
+      SharedPreferences.getInstance().then((SharedPreferences s) {
+        s.setInt('accentColor', appColors.indexOf(newColor));
       });
     }
   }
@@ -282,11 +288,11 @@ class InstiAppBloc {
   Future<void> updateHomepage(String s) async {
     homepageName = s;
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("homepage", s);
+    await prefs.setString('homepage', s);
   }
 
   Future<void> patchUserShowContactNumber(bool userShowContactNumber) async {
-    var userMe = await client.patchSCNUserMe(getSessionIdHeader(),
+    final User userMe = await client.patchSCNUserMe(getSessionIdHeader(),
         UserSCNPatchRequest()..userShowContactNumber = userShowContactNumber);
     currSession?.profile = userMe;
     updateSession(currSession!);
@@ -307,7 +313,7 @@ class InstiAppBloc {
   // Mess bloc
   Future<void> updateHostels() async {
     List<Hostel> hostels = await client.getHostelMess();
-    hostels.sort((h1, h2) => h1.compareTo(h2));
+    hostels.sort((Hostel h1, Hostel h2) => h1.compareTo(h2));
     _hostels = hostels;
     _hostelsSubject.add(UnmodifiableListView(_hostels));
   }
@@ -319,43 +325,45 @@ class InstiAppBloc {
 
   // Event bloc
   Future<void> updateEvents() async {
-    var newsFeedResponse = await client.getNewsFeed(getSessionIdHeader());
+    NewsFeedResponse newsFeedResponse =
+        await client.getNewsFeed(getSessionIdHeader());
     _events = newsFeedResponse.events ?? [];
-    if (_events.length >= 1) {
+    if (_events.isNotEmpty) {
       _events[0].eventBigImage = true;
     }
     _eventsSubject.add(UnmodifiableListView(_events));
   }
 
   String get alumniID => ldap;
-  setAlumniID(updtAlumniID) {
+  void setAlumniID(String updtAlumniID) {
     ldap = updtAlumniID;
   }
 
   String get alumniOTP => _alumniOTP;
-  setAlumniOTP(updtAlumniOTP) {
+  void setAlumniOTP(String updtAlumniOTP) {
     _alumniOTP = updtAlumniOTP;
   }
 
   Future<void> updateAlumni() async {
-    var _alumniLoginResponse = await client.AlumniLogin(ldap);
-    isAlumni = _alumniLoginResponse.exist ?? false;
-    msg = _alumniLoginResponse.msg ?? "";
+    final AlumniLoginResponse alumniLoginResponse =
+        await client.AlumniLogin(ldap);
+    isAlumni = alumniLoginResponse.exist ?? false;
+    msg = alumniLoginResponse.msg ?? '';
   }
 
   Future<void> logAlumniIn(bool resend) async {
-    AlumniLoginResponse _alumniLoginResponse = resend
+    AlumniLoginResponse alumniLoginResponse = resend
         ? await client.ResendAlumniOTP(ldap)
         : await client.AlumniOTP(ldap, _alumniOTP);
-    isAlumni = !(_alumniLoginResponse.error_status ?? true);
-    msg = _alumniLoginResponse.msg ?? "";
+    isAlumni = !(alumniLoginResponse.error_status ?? true);
+    msg = alumniLoginResponse.msg ?? '';
     if (!resend) {
       if (isAlumni) {
         Session newSession = Session(
-          sessionid: _alumniLoginResponse.sessionid,
-          user: _alumniLoginResponse.user,
-          profile: _alumniLoginResponse.profile,
-          profileId: _alumniLoginResponse.profileId,
+          sessionid: alumniLoginResponse.sessionid,
+          user: alumniLoginResponse.user,
+          profile: alumniLoginResponse.profile,
+          profileId: alumniLoginResponse.profileId,
         );
         // print(newSession.toJson());
         updateSession(newSession);
@@ -365,25 +373,26 @@ class InstiAppBloc {
 
   // Your Achievement Bloc
   Future<void> updateAchievements() async {
-    var yourAchievementResponse =
+    final List<Achievement> yourAchievementResponse =
         await client.getYourAchievements(getSessionIdHeader());
     _achievements = yourAchievementResponse;
     _achievementSubject.add(UnmodifiableListView(_achievements));
   }
 
   // Notifications bloc
-  void updateNotificationPermission(bool permitted) async {
+  Future<void> updateNotificationPermission(bool permitted) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool("notifP", permitted);
+    await prefs.setBool('notifP', permitted);
   }
 
   Future<bool?> hasNotificationPermission() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool("notifP");
+    return prefs.getBool('notifP');
   }
 
   Future<void> updateNotifications() async {
-    var notifs = await client.getNotifications(getSessionIdHeader());
+    List<ntf.Notification> notifs =
+        await client.getNotifications(getSessionIdHeader());
     _notifications = notifs;
     _notificationsSubject.add(UnmodifiableListView(_notifications));
   }
@@ -395,9 +404,9 @@ class InstiAppBloc {
   }
 
   Future clearNotification(ntf.Notification notification) async {
-    await clearNotificationUsingID("${notification.notificationId}");
-    var idx = _notifications
-        .indexWhere((n) => n.notificationId == notification.notificationId);
+    await clearNotificationUsingID('${notification.notificationId}');
+    int idx = _notifications.indexWhere((ntf.Notification n) =>
+        n.notificationId == notification.notificationId);
     // print(idx);
     if (idx != -1) {
       _notifications.removeAt(idx);
@@ -413,7 +422,7 @@ class InstiAppBloc {
   // Navigator helper
   Future<Event?> getEvent(String uuid) async {
     try {
-      return _events.firstWhere((event) => event.eventID == uuid);
+      return _events.firstWhere((Event event) => event.eventID == uuid);
     } catch (ex) {
       return client.getEvent(getSessionIdHeader(), uuid);
     }
@@ -424,7 +433,7 @@ class InstiAppBloc {
   }
 
   Future<User> getUser(String uuid) async {
-    return uuid == "me"
+    return uuid == 'me'
         ? (currSession?.profile ?? await client.getUserMe(getSessionIdHeader()))
         : await client.getUser(getSessionIdHeader(), uuid);
   }
@@ -436,10 +445,10 @@ class InstiAppBloc {
   // Section
   // Send FCM key
   Future<void> patchFcmKey() async {
-    var req = UserFCMPatchRequest()
+    UserFCMPatchRequest req = UserFCMPatchRequest()
       ..userAndroidVersion = 28
       ..userFCMId = await firebaseMessaging.getToken();
-    var userMe = await client.patchFCMUserMe(getSessionIdHeader(), req);
+    User userMe = await client.patchFCMUserMe(getSessionIdHeader(), req);
     currSession?.profile = userMe;
     updateSession(currSession!);
   }
@@ -450,7 +459,7 @@ class InstiAppBloc {
     try {
       // print("updating Ues from ${e.eventUserUes} to $ues");
       await client.updateUserEventStatus(
-          getSessionIdHeader(), e.eventID ?? "", ues.index);
+          getSessionIdHeader(), e.eventID ?? '', ues.index);
       if (e.eventUserUes == UES.Going) {
         e.eventGoingCount--;
       }
@@ -473,7 +482,7 @@ class InstiAppBloc {
       Achievement achievement, bool hidden) async {
     try {
       // print("Updating hidden");
-      await client.toggleHidden(getSessionIdHeader(), achievement.id ?? "",
+      await client.toggleHidden(getSessionIdHeader(), achievement.id ?? '',
           AchievementHiddenPathRequest()..hidden = hidden);
       achievement.hidden = hidden;
       // print("Updated hidden");
@@ -493,7 +502,7 @@ class InstiAppBloc {
   Future<void> updateFollowBody(Body b) async {
     try {
       await client.updateBodyFollowing(
-          getSessionIdHeader(), b.bodyID ?? "", b.bodyUserFollows! ? 0 : 1);
+          getSessionIdHeader(), b.bodyID ?? '', b.bodyUserFollows! ? 0 : 1);
       b.bodyUserFollows = !b.bodyUserFollows!;
       b.bodyFollowersCount =
           b.bodyFollowersCount! + (b.bodyUserFollows! ? 1 : -1);
@@ -505,7 +514,7 @@ class InstiAppBloc {
   Future<void> updateFollowCommunity(Community c) async {
     try {
       await client.updateBodyFollowing(
-          getSessionIdHeader(), c.body ?? "", c.isUserFollowing! ? 0 : 1);
+          getSessionIdHeader(), c.body ?? '', c.isUserFollowing! ? 0 : 1);
       c.isUserFollowing = !c.isUserFollowing!;
       c.followersCount = c.followersCount! + (c.isUserFollowing! ? 1 : -1);
     } catch (ex) {
@@ -514,8 +523,9 @@ class InstiAppBloc {
   }
 
   bool editEventAccess(Event event) {
-    return currSession?.profile?.userRoles?.any((r) => r.roleBodies!.any(
-            (b) => event.eventBodies!.any((b1) => b.bodyID == b1.bodyID))) ??
+    return currSession?.profile?.userRoles?.any((Role r) => r.roleBodies!.any(
+            (Body b) =>
+                event.eventBodies!.any((Body b1) => b.bodyID == b1.bodyID))) ??
         false;
   }
 
@@ -524,11 +534,11 @@ class InstiAppBloc {
       return [];
     }
     List<Body> bodies = [];
-    List<Role>? roles = this.currSession?.profile?.userRoles!;
+    List<Role>? roles = currSession?.profile?.userRoles!;
     if (roles != null) {
-      for (Role role in roles) {
+      for (final Role role in roles) {
         if (role.rolePermissions!.contains(permission)) {
-          for (Body body in role.roleBodies!) {
+          for (final Body body in role.roleBodies!) {
             bodies.add(body);
           }
         }
@@ -538,24 +548,23 @@ class InstiAppBloc {
   }
 
   bool deleteEventAccess(Event event) {
-    for (Body body in event.eventBodies!) {
-      if (this
-              .getBodiesWithPermission('DelE')
-              .map((e) => e.bodyID!)
-              .toList()
-              .indexOf(body.bodyID!) !=
-          -1) {
+    for (final Body body in event.eventBodies!) {
+      if (getBodiesWithPermission('DelE')
+          .map((Body e) => e.bodyID!)
+          .toList()
+          .contains(body.bodyID!)) {
         return true;
       }
     }
-    return currSession?.profile?.userRoles?.any((r) => r.roleBodies!.any(
-            (b) => event.eventBodies!.any((b1) => b.bodyID == b1.bodyID))) ??
+    return currSession?.profile?.userRoles?.any((Role r) => r.roleBodies!.any(
+            (Body b) =>
+                event.eventBodies!.any((Body b1) => b.bodyID == b1.bodyID))) ??
         false;
   }
 
   bool editBodyAccess(Body body) {
-    return currSession?.profile?.userRoles
-            ?.any((r) => r.roleBodies!.any((b) => b.bodyID == body.bodyID)) ??
+    return currSession?.profile?.userRoles?.any((Role r) =>
+            r.roleBodies!.any((Body b) => b.bodyID == body.bodyID)) ??
         false;
   }
 
@@ -564,9 +573,9 @@ class InstiAppBloc {
       return false;
     }
 
-    return currSession?.profile?.userRoles?.any((element) =>
-            ((element.rolePermissions?.contains(permission) ?? false) &&
-                element.roleBody == bodyId)) ??
+    return currSession?.profile?.userRoles?.any((Role element) =>
+            (element.rolePermissions?.contains(permission) ?? false) &&
+            element.roleBody == bodyId) ??
         false;
   }
 
@@ -575,53 +584,56 @@ class InstiAppBloc {
   Future<void> restorePrefs() async {
     // print("Restoring prefs");
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.getKeys().contains("session")) {
-      var x = prefs.getString("session");
-      if (x != null && x != "") {
-        Session? sess = Session.fromJson(json.decode(x));
+    if (prefs.getKeys().contains('session')) {
+      String? x = prefs.getString('session');
+      if (x != null && x != '') {
+        Session? sess =
+            Session.fromJson(json.decode(x) as Map<String, dynamic>);
         if (sess.sessionid != null) {
           updateSession(sess);
         }
       }
     }
-    if (prefs.getKeys().contains("homepage")) {
-      homepageName = prefs.getString("homepage") ?? homepageName;
+    if (prefs.getKeys().contains('homepage')) {
+      homepageName = prefs.getString('homepage') ?? homepageName;
       int? x = pageToIndex[homepageName];
       drawerState.setPageIndex(x!);
     }
-    if (prefs.getKeys().contains("brightness")) {
-      int? x = prefs.getInt("brightness");
+    if (prefs.getKeys().contains('brightness')) {
+      int? x = prefs.getInt('brightness');
       if (x != null) _brightness = AppBrightness.values[x];
     }
-    if (prefs.getKeys().contains("accentColor")) {
-      int? x = prefs.getInt("accentColor");
+    if (prefs.getKeys().contains('accentColor')) {
+      int? x = prefs.getInt('accentColor');
       if (x != null) {
-        if (x < 0 || x >= appColors.length)
-          prefs.remove("accentColor");
-        else
+        if (x < 0 || x >= appColors.length) {
+          await prefs.remove('accentColor');
+        } else {
           _accentColor = appColors[x];
+        }
       }
     }
-    if (prefs.getKeys().contains("primaryColor")) {
-      int? x = prefs.getInt("primaryColor");
+    if (prefs.getKeys().contains('primaryColor')) {
+      int? x = prefs.getInt('primaryColor');
       if (x != null) {
-        if (x < 0 || x >= appColors.length)
-          prefs.remove("primaryColor");
-        else
+        if (x < 0 || x >= appColors.length) {
+          await prefs.remove('primaryColor');
+        } else {
           _primaryColor = appColors[x];
+        }
       }
     }
-    if (prefs.getKeys().contains("addToCalendarSetting")) {
-      int? x = prefs.getInt("addToCalendarSetting");
+    if (prefs.getKeys().contains('addToCalendarSetting')) {
+      int? x = prefs.getInt('addToCalendarSetting');
       if (x != null) _addToCalendarSetting = AddToCalendar.values[x];
     }
-    if (prefs.getKeys().contains("defaultCalendarsSetting")) {
+    if (prefs.getKeys().contains('defaultCalendarsSetting')) {
       _defaultCalendarsSetting =
-          prefs.getStringList("defaultCalendarsSetting") ??
+          prefs.getStringList('defaultCalendarsSetting') ??
               _defaultCalendarsSetting;
     }
 
-    restoreFromCache(sharedPrefs: prefs);
+    await restoreFromCache(sharedPrefs: prefs);
   }
 
   // Section
@@ -632,25 +644,25 @@ class InstiAppBloc {
     _persistSession(sess);
   }
 
-  void _persistSession(Session? sess) async {
+  Future<void> _persistSession(Session? sess) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (sess == null) {
-      prefs.setString("session", "");
+      await prefs.setString('session', '');
       return;
     }
-    prefs.setString("session", json.encode(sess.toJson()));
+    await prefs.setString('session', json.encode(sess.toJson()));
   }
 
   Future<void> reloadCurrentUser() async {
-    var userMe = await client.getUserMe(getSessionIdHeader());
+    final User userMe = await client.getUserMe(getSessionIdHeader());
     currSession?.profile = userMe;
     updateSession(currSession!);
   }
 
   String getSessionIdHeader() {
     return currSession?.sessionid != null
-        ? "sessionid=${currSession?.sessionid}"
-        : "";
+        ? 'sessionid=${currSession?.sessionid}'
+        : '';
   }
 
   Future<void> logout() async {
@@ -660,39 +672,44 @@ class InstiAppBloc {
   }
 
   Future saveToCache({SharedPreferences? sharedPrefs}) async {
-    var prefs = sharedPrefs ?? await SharedPreferences.getInstance();
+    final SharedPreferences prefs =
+        sharedPrefs ?? await SharedPreferences.getInstance();
     if (_hostels.isNotEmpty) {
-      prefs.setString(
-          messStorageID, json.encode(_hostels.map((e) => e.toJson()).toList()));
+      await prefs.setString(messStorageID,
+          json.encode(_hostels.map((Hostel e) => e.toJson()).toList()));
     }
     if (_events.isNotEmpty) {
-      prefs.setString(
-          eventStorageID, json.encode(_events.map((e) => e.toJson()).toList()));
+      await prefs.setString(eventStorageID,
+          json.encode(_events.map((Event e) => e.toJson()).toList()));
     }
     if (_achievements.isNotEmpty) {
-      prefs.setString(achievementStorageID,
-          json.encode(_achievements.map((e) => e.toJson()).toList()));
+      await prefs.setString(
+          achievementStorageID,
+          json.encode(
+              _achievements.map((Achievement e) => e.toJson()).toList()));
     }
     if (_notifications.isNotEmpty) {
-      prefs.setString(notificationsStorageID,
-          json.encode(_notifications.map((e) => e.toJson()).toList()));
+      await prefs.setString(
+          notificationsStorageID,
+          json.encode(
+              _notifications.map((ntf.Notification e) => e.toJson()).toList()));
     }
 
-    exploreBloc.saveToCache(sharedPrefs: prefs);
+    await exploreBloc.saveToCache(sharedPrefs: prefs);
     // complaintsBloc?.saveToCache(sharedPrefs: prefs);
-    calendarBloc.saveToCache(sharedPrefs: prefs);
-    messCalendarBloc.saveToCache(sharedPrefs: prefs);
-    mapBloc.saveToCache(sharedPrefs: prefs);
+    await calendarBloc.saveToCache(sharedPrefs: prefs);
+    await messCalendarBloc.saveToCache(sharedPrefs: prefs);
+    await mapBloc.saveToCache(sharedPrefs: prefs);
   }
 
   Future restoreFromCache({SharedPreferences? sharedPrefs}) async {
-    var prefs = sharedPrefs ?? await SharedPreferences.getInstance();
+    final SharedPreferences prefs =
+        sharedPrefs ?? await SharedPreferences.getInstance();
     if (prefs.getKeys().contains(messStorageID)) {
-      var x = prefs.getString(messStorageID);
+      String? x = prefs.getString(messStorageID);
       if (x != null) {
-        _hostels = json
-            .decode(x)
-            .map((e) => Hostel.fromJson(e))
+        _hostels = (json.decode(x) as List<Map<String, dynamic>>)
+            .map(Hostel.fromJson)
             .toList()
             .cast<Hostel>();
         _hostelsSubject.add(UnmodifiableListView(_hostels));
@@ -700,11 +717,13 @@ class InstiAppBloc {
     }
 
     if (prefs.getKeys().contains(eventStorageID)) {
-      var x = prefs.getString(eventStorageID);
+      String? x = prefs.getString(eventStorageID);
       if (x != null) {
-        _events =
-            json.decode(x).map((e) => Event.fromJson(e)).toList().cast<Event>();
-        if (_events.length >= 1) {
+        _events = (json.decode(x) as List<Map<String, dynamic>>)
+            .map(Event.fromJson)
+            .toList()
+            .cast<Event>();
+        if (_events.isNotEmpty) {
           _events[0].eventBigImage = true;
         }
         _eventsSubject.add(UnmodifiableListView(_events));
@@ -712,11 +731,10 @@ class InstiAppBloc {
     }
 
     if (prefs.getKeys().contains(achievementStorageID)) {
-      var x = prefs.getString(achievementStorageID);
+      final String? x = prefs.getString(achievementStorageID);
       if (x != null) {
-        _achievements = json
-            .decode(x)
-            .map((e) => Achievement.fromJson(e))
+        _achievements = (json.decode(x) as List<Map<String, dynamic>>)
+            .map(Achievement.fromJson)
             .toList()
             .cast<Achievement>();
         _achievementSubject.add(UnmodifiableListView(_achievements));
@@ -724,28 +742,28 @@ class InstiAppBloc {
     }
 
     if (prefs.getKeys().contains(notificationsStorageID)) {
-      var x = prefs.getString(notificationsStorageID);
+      final String? x = prefs.getString(notificationsStorageID);
       if (x != null) {
-        _notifications = json
-            .decode(x)
-            .map((e) => ntf.Notification.fromJson(e))
+        _notifications = (json.decode(x) as List<Map<String, dynamic>>)
+            .map(ntf.Notification.fromJson)
             .toList()
             .cast<ntf.Notification>();
         _notificationsSubject.add(UnmodifiableListView(_notifications));
       }
     }
 
-    exploreBloc.restoreFromCache(sharedPrefs: prefs);
+    await exploreBloc.restoreFromCache(sharedPrefs: prefs);
     // complaintsBloc?.restoreFromCache(sharedPrefs: prefs);
-    calendarBloc.restoreFromCache(sharedPrefs: prefs);
-    messCalendarBloc.restoreFromCache(sharedPrefs: prefs);
-    mapBloc.restoreFromCache(sharedPrefs: prefs);
+    await calendarBloc.restoreFromCache(sharedPrefs: prefs);
+    await messCalendarBloc.restoreFromCache(sharedPrefs: prefs);
+    await mapBloc.restoreFromCache(sharedPrefs: prefs);
   }
 
   // Set batch number on icon for iOS
   void _initNotificationBatch() {
     if (!kIsWeb && Platform.isIOS) {
-      notifications.listen((notifs) async {
+      notifications
+          .listen((UnmodifiableListView<ntf.Notification> notifs) async {
         try {
           await AwesomeNotifications().setGlobalBadgeCounter(notifs.length);
         } on PlatformException {}

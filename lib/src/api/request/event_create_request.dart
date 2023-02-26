@@ -1,36 +1,37 @@
 // import 'package:InstiApp/src/api/model/UserTag.dart';
-import 'package:InstiApp/src/api/model/user.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import '../model/user.dart';
 
 part 'event_create_request.g.dart';
 
 @JsonSerializable()
 class EventCreateRequest {
-  @JsonKey(name: "name")
+  @JsonKey(name: 'name')
   String? eventName;
-  @JsonKey(name: "description")
+  @JsonKey(name: 'description')
   String? eventDescription;
-  @JsonKey(name: "website_url")
+  @JsonKey(name: 'website_url')
   String? eventWebsiteURL;
-  @JsonKey(name: "image_url")
+  @JsonKey(name: 'image_url')
   String? eventImageURL;
-  @JsonKey(name: "start_time")
+  @JsonKey(name: 'start_time')
   String? eventStartTime;
-  @JsonKey(name: "end_time")
+  @JsonKey(name: 'end_time')
   String? eventEndTime;
-  @JsonKey(name: "all_day")
+  @JsonKey(name: 'all_day')
   bool? allDayEvent;
-  @JsonKey(name: "venue_names")
+  @JsonKey(name: 'venue_names')
   List<String>? eventVenueNames;
-  @JsonKey(name: "bodies_id")
+  @JsonKey(name: 'bodies_id')
   List<String>? eventBodiesID;
-  @JsonKey(name: "notify")
+  @JsonKey(name: 'notify')
   bool? notify;
-  @JsonKey(name: "user_tags")
+  @JsonKey(name: 'user_tags')
   List<int>? eventUserTags;
-  @JsonKey(name: "event_interest")
+  @JsonKey(name: 'event_interest')
   List<Interest>? eventInterest;
-  @JsonKey(name: "interests_id")
+  @JsonKey(name: 'interests_id')
   List<String>? eventInterestsID;
 
   EventCreateRequest({

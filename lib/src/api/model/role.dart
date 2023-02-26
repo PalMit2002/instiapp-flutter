@@ -1,39 +1,40 @@
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/api/model/user.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'body.dart';
+import 'user.dart';
 
 part 'role.g.dart';
 
 @JsonSerializable()
 class Role {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? roleID;
 
-  @JsonKey(name: "name")
+  @JsonKey(name: 'name')
   String? roleName;
 
-  @JsonKey(name: "inheritable")
+  @JsonKey(name: 'inheritable')
   bool? roleInheritable;
 
-  @JsonKey(name: "body")
+  @JsonKey(name: 'body')
   String? roleBody;
 
-  @JsonKey(name: "body_detail")
+  @JsonKey(name: 'body_detail')
   Body? roleBodyDetails;
 
-  @JsonKey(name: "bodies")
+  @JsonKey(name: 'bodies')
   List<Body>? roleBodies;
 
-  @JsonKey(name: "permissions")
+  @JsonKey(name: 'permissions')
   List<String>? rolePermissions;
 
-  @JsonKey(name: "users")
+  @JsonKey(name: 'users')
   List<String>? roleUsers;
 
-  @JsonKey(name: "users_detail")
+  @JsonKey(name: 'users_detail')
   List<User>? roleUsersDetail;
 
-  @JsonKey(name: "year")
+  @JsonKey(name: 'year')
   String? year;
 
   Role({this.roleID, this.roleName, this.roleInheritable, this.roleBody, this.roleBodyDetails, this.roleBodies, this.rolePermissions, this.roleUsers, this.roleUsersDetail, this.year});

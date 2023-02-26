@@ -1,30 +1,33 @@
 import 'dart:async';
+import 'dart:convert';
 
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
+import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:date_format/date_format.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+
+import '../api/model/event.dart';
+import '../api/response/news_feed_response.dart';
+import 'ia_bloc.dart';
 
 class CalendarBloc {
   // monthToEventMap StorageID
-  static String mteKeysStorageID = "monthToEventsKeys";
-  static String mteValuesStorageID = "monthToEventsValues";
+  static String mteKeysStorageID = 'monthToEventsKeys';
+  static String mteValuesStorageID = 'monthToEventsValues';
 
   // eventsMap StorageID
-  static String eventsMapKeysStorageID = "eventsMapKeys";
-  static String eventsMapValuesStorageID = "eventsMapValues";
+  static String eventsMapKeysStorageID = 'eventsMapKeys';
+  static String eventsMapValuesStorageID = 'eventsMapValues';
   // parent bloc
   InstiAppBloc bloc;
 
   // Streams
   ValueStream<Map<DateTime, List<Event>>> get events => _eventsSubject.stream;
-  final _eventsSubject = BehaviorSubject<Map<DateTime, List<Event>>>();
+  final BehaviorSubject<Map<DateTime, List<Event>>> _eventsSubject =
+      BehaviorSubject<Map<DateTime, List<Event>>>();
 
   ValueStream<bool> get loading => _loadingSubject.stream;
-  final _loadingSubject = BehaviorSubject<bool>();
+  final BehaviorSubject<bool> _loadingSubject = BehaviorSubject<bool>();
 
   // State
   Map<DateTime, List<Event>> monthToEvents = {};
@@ -41,40 +44,52 @@ class CalendarBloc {
   }
 
   List<Event> _getEventsOfMonth(List<Event> evs, DateTime month) {
-    return evs.where((e) {
+    return evs.where((Event e) {
       return e.eventStartDate!.year == month.year &&
           e.eventStartDate!.month == month.month;
     }).toList();
   }
 
-  void fetchEvents(DateTime currMonth, Widget icon) async {
+  Future<void> fetchEvents(DateTime currMonth, Widget icon) async {
     if (!_loading) {
       _loading = true;
       _loadingSubject.add(_loading);
     }
-    var isoFormat = [yyyy, "-", mm, "-", dd, " ", HH, ":", nn, ":", ss];
+    List<String> isoFormat = [
+      yyyy,
+      '-',
+      mm,
+      '-',
+      dd,
+      ' ',
+      HH,
+      ':',
+      nn,
+      ':',
+      ss
+    ];
 
-    var currMonthStart = _getMonthStart(currMonth);
-    var prevMonthStart =
+    DateTime currMonthStart = _getMonthStart(currMonth);
+    DateTime prevMonthStart =
         DateTime(currMonthStart.year, currMonthStart.month - 1);
-    var nextMonthStart =
+    final DateTime nextMonthStart =
         DateTime(currMonthStart.year, currMonthStart.month + 1);
-    var nextNextMonthStart =
+    DateTime nextNextMonthStart =
         DateTime(currMonthStart.year, currMonthStart.month + 2);
 
     receivingMonths.add(prevMonthStart);
     receivingMonths.add(currMonthStart);
     receivingMonths.add(nextMonthStart);
 
-    var newsFeedResp = await bloc.client.getEventsBetweenDates(
+    NewsFeedResponse newsFeedResp = await bloc.client.getEventsBetweenDates(
         bloc.getSessionIdHeader(),
         formatDate(prevMonthStart, isoFormat),
         formatDate(nextNextMonthStart, isoFormat));
-    var evs = newsFeedResp.events;
-    evs!.forEach((e) {
-      var time = DateTime.parse(e.eventStartTime!);
+    List<Event>? evs = newsFeedResp.events;
+    for (final Event e in evs!) {
+      final DateTime time = DateTime.parse(e.eventStartTime!);
       e.eventStartDate = DateTime(time.year, time.month, time.day);
-    });
+    }
 
     monthToEvents[prevMonthStart] = _getEventsOfMonth(evs, prevMonthStart);
     receivingMonths.remove(prevMonthStart);
@@ -82,9 +97,10 @@ class CalendarBloc {
     receivingMonths.remove(currMonthStart);
     monthToEvents[nextMonthStart] = _getEventsOfMonth(evs, nextMonthStart);
     receivingMonths.remove(nextMonthStart);
-    for (Event e in evs) {
-      var dateList = eventsMap.putIfAbsent(e.eventStartDate!, () => []);
-      dateList.removeWhere((e1) => e1.eventID == e.eventID);
+    for (final Event e in evs) {
+      final List<Event> dateList =
+          eventsMap.putIfAbsent(e.eventStartDate!, () => []);
+      dateList.removeWhere((Event e1) => e1.eventID == e.eventID);
       dateList.add(e);
     }
     _eventsSubject.add(eventsMap);
@@ -95,47 +111,48 @@ class CalendarBloc {
   }
 
   Future saveToCache({SharedPreferences? sharedPrefs}) async {
-    var prefs = sharedPrefs ?? await SharedPreferences.getInstance();
+    SharedPreferences prefs =
+        sharedPrefs ?? await SharedPreferences.getInstance();
     if (monthToEvents.isNotEmpty) {
       List<String> keys = [];
-      for (DateTime i in monthToEvents.keys) {
+      for (final DateTime i in monthToEvents.keys) {
         keys.add(i.toIso8601String());
       }
-      prefs.setString(mteKeysStorageID, json.encode(keys));
-      prefs.setString(
+      await prefs.setString(mteKeysStorageID, json.encode(keys));
+      await prefs.setString(
           mteValuesStorageID,
           json.encode(monthToEvents.values
-              .map((e) => e.map((k) => k.toJson()).toList())
+              .map((List<Event> e) => e.map((Event k) => k.toJson()).toList())
               .toList()));
     }
 
     if (eventsMap.isNotEmpty) {
       List<String> keys = [];
-      for (DateTime i in eventsMap.keys) {
+      for (final DateTime i in eventsMap.keys) {
         keys.add(i.toIso8601String());
       }
-      prefs.setString(eventsMapKeysStorageID, json.encode(keys));
-      prefs.setString(
+      await prefs.setString(eventsMapKeysStorageID, json.encode(keys));
+      await prefs.setString(
           eventsMapValuesStorageID,
           json.encode(eventsMap.values
-              .map((e) => e.map((k) => k.toJson()).toList())
+              .map((List<Event> e) => e.map((Event k) => k.toJson()).toList())
               .toList()));
     }
   }
 
   Future restoreFromCache({SharedPreferences? sharedPrefs}) async {
-    var prefs = sharedPrefs ?? await SharedPreferences.getInstance();
+    SharedPreferences prefs =
+        sharedPrefs ?? await SharedPreferences.getInstance();
     if (prefs.getKeys().contains(mteKeysStorageID) &&
         prefs.getKeys().contains(mteValuesStorageID)) {
       if (prefs.getString(mteKeysStorageID) != null &&
           prefs.getString(mteValuesStorageID) != null) {
-        var keys =
+        Iterable<DateTime> keys =
             (json.decode(prefs.getString(mteKeysStorageID) ?? '') as List)
                 .map((e) => DateTime.parse(e as String));
-        var values =
+        List<List<Event>> values =
             (json.decode(prefs.getString(mteValuesStorageID) ?? '') as List)
-                .map((evs) =>
-                    evs.map((e) => Event.fromJson(e)).toList().cast<Event>())
+                .map((evs) => evs.map(Event.fromJson).toList().cast<Event>())
                 .toList()
                 .cast<List<Event>>();
         monthToEvents = Map.fromIterables(keys, values);
@@ -146,14 +163,16 @@ class CalendarBloc {
         prefs.getKeys().contains(eventsMapValuesStorageID)) {
       if (prefs.getString(mteKeysStorageID) != null &&
           prefs.getString(mteValuesStorageID) != null) {
-        var keys =
-            (json.decode(prefs.getString(mteKeysStorageID) ?? '') as List)
-                .map((e) => DateTime.parse(e as String));
-        Iterable<List<Event>> values =
-            (json.decode(prefs.getString(mteValuesStorageID) ?? '') as List)
-                .map((evs) =>
-                    evs.map((e) => Event.fromJson(e)).toList().cast<Event>());
-        eventsMap = Map.fromIterables(keys, values);
+        final Iterable<DateTime> keys =
+            (json.decode(prefs.getString(mteKeysStorageID) ?? '')
+                    as List<String>)
+                .map(DateTime.parse);
+        final Iterable<List<Event>> values =
+            (json.decode(prefs.getString(mteValuesStorageID) ?? '')
+                    as List<List<Map<String, dynamic>>>)
+                .map((List<Map<String, dynamic>> evs) =>
+                    evs.map(Event.fromJson).toList().cast<Event>());
+        eventsMap = Map<DateTime, List<Event>>.fromIterables(keys, values);
         _eventsSubject.add(eventsMap);
       }
     }

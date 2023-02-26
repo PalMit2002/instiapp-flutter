@@ -1,54 +1,55 @@
-import 'package:InstiApp/src/api/model/communityPost.dart';
-import 'package:InstiApp/src/api/model/role.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'communityPost.dart';
+import 'role.dart';
 
 part 'community.g.dart';
 
 @JsonSerializable()
 class Community {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? id;
 
-  @JsonKey(name: "str_id")
+  @JsonKey(name: 'str_id')
   String? strId;
 
-  @JsonKey(name: "name")
+  @JsonKey(name: 'name')
   String? name;
 
-  @JsonKey(name: "about")
+  @JsonKey(name: 'about')
   String? about;
 
-  @JsonKey(name: "description")
+  @JsonKey(name: 'description')
   String? description;
 
-  @JsonKey(name: "created_at")
+  @JsonKey(name: 'created_at')
   String? createdAt;
 
-  @JsonKey(name: "updated_at")
+  @JsonKey(name: 'updated_at')
   String? updatedAt;
 
-  @JsonKey(name: "logo_image")
+  @JsonKey(name: 'logo_image')
   String? logoImg;
 
-  @JsonKey(name: "cover_image")
+  @JsonKey(name: 'cover_image')
   String? coverImg;
 
-  @JsonKey(name: "followers_count")
+  @JsonKey(name: 'followers_count')
   int? followersCount;
 
-  @JsonKey(name: "is_user_following")
+  @JsonKey(name: 'is_user_following')
   bool? isUserFollowing;
 
-  @JsonKey(name: "roles")
+  @JsonKey(name: 'roles')
   List<Role>? roles;
 
-  @JsonKey(name: "posts")
+  @JsonKey(name: 'posts')
   List<CommunityPost>? posts;
 
-  @JsonKey(name: "featured_posts")
+  @JsonKey(name: 'featured_posts')
   List<CommunityPost>? featuredPosts;
 
-  @JsonKey(name: "body")
+  @JsonKey(name: 'body')
   String? body;
 
   Community({
@@ -71,7 +72,7 @@ class Community {
   factory Community.fromJson(Map<String, dynamic> json) =>
       _$CommunityFromJson(json);
 
-  get communityStrId => null;
+  void get communityStrId => null;
 
   Map<String, dynamic> toJson() => _$CommunityToJson(this);
 }

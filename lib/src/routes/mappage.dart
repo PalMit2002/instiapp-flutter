@@ -1,12 +1,15 @@
 import 'dart:async';
 
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:jaguar/jaguar.dart' as jag;
 import 'package:flutter_webview_pro/webview_flutter.dart' as webview;
+import 'package:jaguar/jaguar.dart' as jag;
+
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
 
 class MapPage extends StatefulWidget {
+  const MapPage({Key? key}) : super(key: key);
+
   @override
   _MapPageState createState() => _MapPageState();
 }
@@ -14,8 +17,8 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   late jag.Jaguar server;
 
-  final String hostUrl = "www.insti.app";
-  final String mapUrl = "https://www.insti.app/map/?sandbox=true";
+  final String hostUrl = 'www.insti.app';
+  final String mapUrl = 'https://www.insti.app/map/?sandbox=true';
 
   StreamSubscription<String>? onUrlChangedSub;
   webview.WebViewController? webViewController;
@@ -23,7 +26,7 @@ class _MapPageState extends State<MapPage> {
   // Storing for dispose
   ThemeData? theme;
 
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   @override
   void initState() {
@@ -42,27 +45,27 @@ class _MapPageState extends State<MapPage> {
     theme = Theme.of(context);
     return Scaffold(
       key: _scaffoldKey,
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       bottomNavigationBar: MyBottomAppBar(
-        child: new Row(
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState!.openDrawer();
               },
             ),
             IconButton(
-              tooltip: "Refresh",
-              icon: Icon(
+              tooltip: 'Refresh',
+              icon: const Icon(
                 Icons.refresh_outlined,
-                semanticLabel: "Refresh",
+                semanticLabel: 'Refresh',
               ),
               onPressed: () {
                 webViewController?.loadUrl(mapUrl);

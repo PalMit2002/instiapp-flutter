@@ -1,11 +1,12 @@
-import 'package:InstiApp/src/api/model/achievements.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import '../model/achievements.dart';
 
 part 'your_achievements_response.g.dart';
 
 @JsonSerializable()
 class YourAchievementsResponse {
-  @JsonKey(name: "data")
+  @JsonKey(name: 'data')
   List<Achievement>? achievements;
 
   YourAchievementsResponse(this.achievements);

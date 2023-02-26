@@ -4,10 +4,10 @@ part 'postFAQ_request.g.dart';
 
 @JsonSerializable()
 class PostFAQRequest {
-  @JsonKey(name: "question")
+  @JsonKey(name: 'question')
   String? question;
 
-  @JsonKey(name: "category")
+  @JsonKey(name: 'category')
   String? category;
 
   PostFAQRequest({

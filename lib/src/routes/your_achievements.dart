@@ -1,13 +1,15 @@
 import 'dart:collection';
 
-import 'package:InstiApp/src/api/model/achievements.dart';
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/routes/verify_ach.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
 import 'package:flutter/material.dart';
+
+import '../api/model/achievements.dart';
+import '../api/model/body.dart';
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/title_with_backbutton.dart';
+import 'verify_ach.dart';
 
 class YourAchievementPage extends StatefulWidget {
   const YourAchievementPage({Key? key}) : super(key: key);
@@ -17,42 +19,42 @@ class YourAchievementPage extends StatefulWidget {
 }
 
 class _YourAchievementPageState extends State<YourAchievementPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   bool firstBuild = true;
   bool perToVerify = false;
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
+    ThemeData theme = Theme.of(context);
+    final InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
     if (firstBuild && bloc.currSession != null) {
       bloc.updateAchievements();
       bloc.achievementBloc.getVerifiableBodies();
       firstBuild = false;
     }
-    var fab;
+    FloatingActionButton fab;
     fab = FloatingActionButton.extended(
-      icon: Icon(Icons.add_outlined),
-      label: Text("Add Acheivement"),
+      icon: const Icon(Icons.add_outlined),
+      label: const Text('Add Acheivement'),
       onPressed: () {
-        Navigator.of(context).pushNamed("/achievements/add");
+        Navigator.of(context).pushNamed('/achievements/add');
       },
     );
     return Scaffold(
       key: _scaffoldKey,
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -65,8 +67,9 @@ class _YourAchievementPageState extends State<YourAchievementPage> {
         child: bloc.currSession == null
             ? Container(
                 alignment: Alignment.center,
-                padding: EdgeInsets.all(50),
+                padding: const EdgeInsets.all(50),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.cloud,
@@ -74,12 +77,11 @@ class _YourAchievementPageState extends State<YourAchievementPage> {
                       color: Colors.grey[600],
                     ),
                     Text(
-                      "Login To View Achievements",
+                      'Login To View Achievements',
                       style: theme.textTheme.headlineSmall,
                       textAlign: TextAlign.center,
                     )
                   ],
-                  crossAxisAlignment: CrossAxisAlignment.center,
                 ),
               )
             : RefreshIndicator(
@@ -93,26 +95,26 @@ class _YourAchievementPageState extends State<YourAchievementPage> {
                     slivers: [
                       StreamBuilder(
                         stream: bloc.achievementBloc.verifiableBodies,
-                        builder: (context,
+                        builder: (BuildContext context,
                             AsyncSnapshot<UnmodifiableListView<Body>>
                                 snapshot) {
                           if (snapshot.hasData) {
-                            if (snapshot.data!.length > 0) {
+                            if (snapshot.data!.isNotEmpty) {
                               return SliverToBoxAdapter(
                                 child: TitleWithBackButton(
                                   child: Text(
-                                    "Verify",
+                                    'Verify',
                                     style: theme.textTheme.headlineMedium,
                                   ),
                                 ),
                               );
                             } else {
-                              return SliverToBoxAdapter(
+                              return const SliverToBoxAdapter(
                                 child: Center(),
                               );
                             }
                           } else {
-                            return SliverToBoxAdapter(
+                            return const SliverToBoxAdapter(
                               child: Center(),
                             );
                           }
@@ -120,25 +122,25 @@ class _YourAchievementPageState extends State<YourAchievementPage> {
                       ),
                       StreamBuilder(
                         stream: bloc.achievementBloc.verifiableBodies,
-                        builder: (context,
+                        builder: (BuildContext context,
                             AsyncSnapshot<UnmodifiableListView<Body>>
                                 snapshot) {
                           if (snapshot.hasData) {
-                            if (snapshot.data!.length > 0) {
+                            if (snapshot.data!.isNotEmpty) {
                               return SliverList(
                                 delegate: SliverChildBuilderDelegate(
-                                  (context, index) =>
+                                  (BuildContext context, int index) =>
                                       BodyCard(thing: snapshot.data![index]),
                                   childCount: snapshot.data!.length,
                                 ),
                               );
                             } else {
-                              return SliverToBoxAdapter(
+                              return const SliverToBoxAdapter(
                                 child: Center(),
                               );
                             }
                           } else {
-                            return SliverToBoxAdapter(
+                            return const SliverToBoxAdapter(
                               child: Center(),
                             );
                           }
@@ -147,21 +149,21 @@ class _YourAchievementPageState extends State<YourAchievementPage> {
                       SliverToBoxAdapter(
                         child: TitleWithBackButton(
                           child: Text(
-                            "Your Acheivements",
+                            'Your Acheivements',
                             style: theme.textTheme.headlineMedium,
                           ),
                         ),
                       ),
                       StreamBuilder(
                         stream: bloc.achievements,
-                        builder: (context,
+                        builder: (BuildContext context,
                             AsyncSnapshot<UnmodifiableListView<Achievement>>
                                 snapshot) {
                           if (snapshot.hasData) {
-                            if (snapshot.data!.length > 0) {
+                            if (snapshot.data!.isNotEmpty) {
                               return SliverList(
                                 delegate: SliverChildBuilderDelegate(
-                                    (context, index) => AchListItem(
+                                    (BuildContext context, int index) => AchListItem(
                                         achievement: snapshot.data![index]),
                                     childCount: snapshot.data!.length),
                               );
@@ -178,7 +180,7 @@ class _YourAchievementPageState extends State<YourAchievementPage> {
                                       color: Colors.grey[500],
                                       size: 200.0,
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       height: 15.0,
                                     ),
                                     Text(
@@ -188,7 +190,7 @@ class _YourAchievementPageState extends State<YourAchievementPage> {
                                           color: Colors.grey[500],
                                           fontWeight: FontWeight.w300),
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       height: 5.0,
                                     ),
                                     Text('Let${"'"}s change that!!',
@@ -201,10 +203,10 @@ class _YourAchievementPageState extends State<YourAchievementPage> {
                               ));
                             }
                           } else {
-                            return SliverToBoxAdapter(
+                            return const SliverToBoxAdapter(
                               child: Center(
                                 child: CircularProgressIndicatorExtended(
-                                  label: Text("Getting your Achievements"),
+                                  label: Text('Getting your Achievements'),
                                 ),
                               ),
                             );
@@ -238,16 +240,16 @@ class AchListItem extends StatefulWidget {
   AchListItem({
     Key? key,
     required this.achievement,
-  })  : this.title = achievement.title ?? "",
-        this.company = achievement.body?.bodyName ?? "",
-        this.icon = achievement.body?.bodyImageURL ?? "",
-        this.forText = (achievement.event != null
+  })  : title = achievement.title ?? '',
+        company = achievement.body?.bodyName ?? '',
+        icon = achievement.body?.bodyImageURL ?? '',
+        forText = (achievement.event != null
             ? achievement.event!.eventName
-            : "No event name specified")!,
-        this.importance = achievement.description ?? "",
-        this.isVerified = achievement.verified ?? false,
-        this.isDismissed = achievement.dismissed ?? false,
-        this.isHidden = achievement.hidden ?? false,
+            : 'No event name specified')!,
+        importance = achievement.description ?? '',
+        isVerified = achievement.verified ?? false,
+        isDismissed = achievement.dismissed ?? false,
+        isHidden = achievement.hidden ?? false,
         super(key: key);
 
   @override
@@ -278,7 +280,7 @@ class _AchListItemState extends State<AchListItem> {
 
   @override
   Widget build(BuildContext context) {
-    var bloc = BlocProvider.of(context)!.bloc;
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -299,12 +301,12 @@ class _AchListItemState extends State<AchListItem> {
                 toggleSwitch(value);
                 bloc.updateHiddenAchievement(widget.achievement, value);
               },
-              activeColor: Color(0xFFFFEB3B),
+              activeColor: const Color(0xFFFFEB3B),
               activeTrackColor: Colors.yellow[200],
               inactiveThumbColor: Colors.grey[600],
               inactiveTrackColor: Colors.grey[400],
             ),
-            Text("Hidden"),
+            const Text('Hidden'),
           ],
         ),
         Divider(
@@ -318,31 +320,33 @@ class _AchListItemState extends State<AchListItem> {
 class BodyCard extends StatefulWidget {
   final Body? thing;
 
-  BodyCard({this.thing});
+  const BodyCard({Key? key, this.thing}) : super(key: key);
 
+  @override
   BodyCardState createState() => BodyCardState();
 }
 
 class BodyCardState extends State<BodyCard> {
+  @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
+    ThemeData theme = Theme.of(context);
     return ListTile(
       title: Text(
-        widget.thing?.bodyName ?? "",
+        widget.thing?.bodyName ?? '',
         style: theme.textTheme.titleLarge,
       ),
       enabled: true,
       leading: NullableCircleAvatar(
-        widget.thing?.bodyImageURL ?? widget.thing?.bodyImageURL ?? "",
+        widget.thing?.bodyImageURL ?? widget.thing?.bodyImageURL ?? '',
         Icons.event_outlined,
-        heroTag: widget.thing?.bodyID ?? "",
+        heroTag: widget.thing?.bodyID ?? '',
       ),
-      subtitle: Text(widget.thing?.bodyShortDescription ?? ""),
+      subtitle: Text(widget.thing?.bodyShortDescription ?? ''),
       onTap: () {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => VerifyAchPage(
+                builder: (BuildContext context) => VerifyAchPage(
                       bodyId: widget.thing?.bodyID,
                     )));
       },

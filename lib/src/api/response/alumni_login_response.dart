@@ -1,5 +1,6 @@
-import 'package:InstiApp/src/api/model/user.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import '../model/user.dart';
 
 part 'alumni_login_response.g.dart';
 
@@ -15,7 +16,7 @@ class AlumniLoginResponse {
   String? sessionid;
   String? user;
 
-  @JsonKey(name: "profile_id")
+  @JsonKey(name: 'profile_id')
   String? profileId;
   User? profile;
 

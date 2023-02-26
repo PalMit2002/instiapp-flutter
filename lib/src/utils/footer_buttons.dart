@@ -10,9 +10,9 @@ class FooterButtons extends StatelessWidget {
     return Container(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: footerButtons.map((e) {
+        children: footerButtons.map((Widget e) {
           return Container(
-            margin: EdgeInsets.only(right: 10),
+            margin: const EdgeInsets.only(right: 10),
             child: e,
           );
         }).toList(),

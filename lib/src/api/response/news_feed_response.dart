@@ -1,14 +1,14 @@
-import 'package:InstiApp/src/api/model/event.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../model/event.dart';
 
 part 'news_feed_response.g.dart';
 
 @JsonSerializable()
 class NewsFeedResponse {
-  @JsonKey(name: "data")
+  @JsonKey(name: 'data')
   List<Event>? events;
-  @JsonKey(name: "count")
+  @JsonKey(name: 'count')
   int? count;
 
   NewsFeedResponse(this.events, this.count);

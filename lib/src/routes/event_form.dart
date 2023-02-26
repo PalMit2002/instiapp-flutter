@@ -1,74 +1,75 @@
 import 'dart:io';
-import 'package:InstiApp/src/api/apiclient.dart';
-import 'package:InstiApp/src/api/model/UserTag.dart';
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/api/model/offeredAchievements.dart';
-import 'package:InstiApp/src/api/model/role.dart';
-import 'package:InstiApp/src/api/model/user.dart';
-import 'package:InstiApp/src/api/model/venue.dart';
-import 'package:InstiApp/src/api/request/event_create_request.dart';
-import 'package:InstiApp/src/api/response/event_create_response.dart';
-import 'package:InstiApp/src/api/response/image_upload_response.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/event_form_widgets.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/src/widgets/form.dart' as flut;
 import 'package:flutter/material.dart';
+import 'package:flutter/src/widgets/form.dart' as flut;
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 
+import '../api/apiclient.dart';
+import '../api/model/UserTag.dart';
+import '../api/model/body.dart';
+import '../api/model/event.dart';
+import '../api/model/offeredAchievements.dart';
+import '../api/model/role.dart';
+import '../api/model/user.dart';
+import '../api/model/venue.dart';
+import '../api/request/event_create_request.dart';
+import '../api/response/event_create_response.dart';
+import '../api/response/image_upload_response.dart';
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../utils/common_widgets.dart';
+import '../utils/event_form_widgets.dart';
+
 class CreateEventBtn extends StatelessWidget {
   final GlobalKey<FormState> formKey;
-  final Function formPoster;
+  final void Function() formPoster;
   final bool isEditing;
-  CreateEventBtn(
-      {required this.formKey,
+  const CreateEventBtn(
+      {Key? key,
+      required this.formKey,
       required this.isEditing,
-      required this.formPoster});
+      required this.formPoster})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.symmetric(vertical: 0, horizontal: 15.0),
+      margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 15.0),
       child: TextButton(
-        onPressed: () {
-          formPoster();
-        },
-        child: Text(isEditing ? 'Update' : 'Create'),
+        onPressed: formPoster,
         style: TextButton.styleFrom(
             foregroundColor: Colors.black,
             backgroundColor: Colors.amber,
             disabledForegroundColor: Colors.grey,
             elevation: 5.0),
+        child: Text(isEditing ? 'Update' : 'Create'),
       ),
     );
   }
 }
 
 class DeleteEventBtn extends StatelessWidget {
-  final Function delete;
-  DeleteEventBtn({required this.delete});
+  final void Function() delete;
+  const DeleteEventBtn({Key? key, required this.delete}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.symmetric(vertical: 0, horizontal: 15.0),
+      margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 15.0),
       child: TextButton(
-        onPressed: () {
-          delete();
-        },
-        child: Text(
-          'Delete',
-          style: TextStyle(color: Colors.white),
-        ),
+        onPressed: delete,
         style: TextButton.styleFrom(
             foregroundColor: Colors.black,
             backgroundColor: Colors.red,
             disabledForegroundColor: Colors.grey,
             elevation: 5.0),
+        child: const Text(
+          'Delete',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
     );
   }
@@ -79,11 +80,13 @@ class AchievementAdder extends StatefulWidget {
   final List<Body> eventBodies;
   final Future<List<OfferedAchievements>>? loadableOffers;
   final Function deleter;
-  AchievementAdder(
-      {required this.postData,
+  const AchievementAdder(
+      {Key? key,
+      required this.postData,
       required this.deleter,
       required this.loadableOffers,
-      required this.eventBodies});
+      required this.eventBodies})
+      : super(key: key);
 
   @override
   _AchievementAdderState createState() => _AchievementAdderState();
@@ -94,19 +97,19 @@ class _AchievementAdderState extends State<AchievementAdder> {
   List<Body> authOptions = [];
   List<Map<String, String>> acheveTypes = [
     //ng code loads it from local json file.
-    {"code": "generic", "name": "Unspecified"},
-    {"code": "participation", "name": "Participation"},
-    {"code": "gold-medal", "name": "First"},
-    {"code": "silver-medal", "name": "Second"},
-    {"code": "bronze-medal", "name": "Third"},
-    {"code": "medal", "name": "Special"}
+    {'code': 'generic', 'name': 'Unspecified'},
+    {'code': 'participation', 'name': 'Participation'},
+    {'code': 'gold-medal', 'name': 'First'},
+    {'code': 'silver-medal', 'name': 'Second'},
+    {'code': 'bronze-medal', 'name': 'Third'},
+    {'code': 'medal', 'name': 'Special'}
   ];
   void updateFormData() {
     widget.postData(acheves);
   }
 
   String getAchevTitle(OfferedAchievements achev) {
-    if (achev.title != null && achev.title!.length > 0) {
+    if (achev.title != null && achev.title!.isNotEmpty) {
       return achev.title!;
     } else {
       return 'Untitled Achievement';
@@ -116,7 +119,7 @@ class _AchievementAdderState extends State<AchievementAdder> {
   @override
   void initState() {
     if (widget.loadableOffers != null) {
-      widget.loadableOffers!.then((offers) {
+      widget.loadableOffers!.then((List<OfferedAchievements> offers) {
         setState(() {
           acheves = offers;
         });
@@ -137,7 +140,7 @@ class _AchievementAdderState extends State<AchievementAdder> {
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                children: const [
                   Text(
                     'Offered Achievements',
                     style: TextStyle(fontSize: 20),
@@ -152,7 +155,6 @@ class _AchievementAdderState extends State<AchievementAdder> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextButton(
-                child: Text('Add'),
                 onPressed: () {
                   setState(() {
                     acheves.add(OfferedAchievements());
@@ -164,13 +166,14 @@ class _AchievementAdderState extends State<AchievementAdder> {
                   disabledForegroundColor: Colors.grey,
                   elevation: 5.0,
                 ),
+                child: const Text('Add'),
               ),
             )
           ],
         ),
         ...acheves
             .map(
-              (acheve) => Padding(
+              (OfferedAchievements acheve) => Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Card(
                   elevation: 10,
@@ -185,9 +188,10 @@ class _AchievementAdderState extends State<AchievementAdder> {
                           children: [
                             TextFormField(
                               initialValue: acheve.title,
-                              decoration: InputDecoration(hintText: 'Title *'),
+                              decoration:
+                                  const InputDecoration(hintText: 'Title *'),
                               validator: (String? acheveTitle) {
-                                if (acheveTitle!.length == 0 ||
+                                if (acheveTitle!.isEmpty ||
                                     acheveTitle.length > 50) {
                                   return 'Title length must be 0 to 50';
                                 }
@@ -204,12 +208,11 @@ class _AchievementAdderState extends State<AchievementAdder> {
                               },
                             ),
                             TextFormField(
-                              initialValue:
-                                  (acheve.desc != null ? acheve.desc : ''),
+                              initialValue: acheve.desc ?? '',
                               keyboardType: TextInputType.multiline,
                               maxLines: 4,
-                              decoration:
-                                  InputDecoration(hintText: 'Description'),
+                              decoration: const InputDecoration(
+                                  hintText: 'Description'),
                               //Validator?
                               onSaved: (String? achevDesc) {
                                 acheves[acheves.indexOf(acheve)].desc =
@@ -217,17 +220,15 @@ class _AchievementAdderState extends State<AchievementAdder> {
                               },
                             ),
                             Container(
-                              padding: EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               width: double.infinity,
                               child: DropdownButtonFormField<Body>(
                                 value: (acheve.body != null &&
                                         authOptions
-                                                .where((element) =>
-                                                    element.bodyID ==
-                                                    acheve.body)
-                                                .length >
-                                            0)
-                                    ? authOptions.firstWhere((element) =>
+                                            .where((Body element) =>
+                                                element.bodyID == acheve.body)
+                                            .isNotEmpty)
+                                    ? authOptions.firstWhere((Body element) =>
                                         acheve.body == element.bodyID)
                                     : authOptions[0],
                                 onChanged: (Body? selectedBody) {
@@ -235,7 +236,7 @@ class _AchievementAdderState extends State<AchievementAdder> {
                                     acheve.body = selectedBody!.bodyID;
                                   });
                                 },
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   label: Text('Authority'),
                                 ),
                                 items: authOptions.map((Body b) {
@@ -251,15 +252,16 @@ class _AchievementAdderState extends State<AchievementAdder> {
                               ),
                             ),
                             Container(
-                              padding: EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               width: double.infinity,
                               child:
                                   DropdownButtonFormField<Map<String, String>>(
-                                decoration:
-                                    InputDecoration(label: Text('Type *')),
+                                decoration: const InputDecoration(
+                                    label: Text('Type *')),
                                 value: (acheve.generic != null)
-                                    ? acheveTypes.firstWhere((element) =>
-                                        element['code'] == acheve.generic)
+                                    ? acheveTypes.firstWhere(
+                                        (Map<String, String> element) =>
+                                            element['code'] == acheve.generic)
                                     : null,
                                 onChanged: (Map<String, String>? v) {
                                   setState(() {
@@ -291,18 +293,19 @@ class _AchievementAdderState extends State<AchievementAdder> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: TextButton(
-                          child: Text('Remove'),
+                          child: const Text('Remove'),
                           onPressed: () {
                             if (acheve.achievementID != null &&
                                 acheve.achievementID != '') {
                               showDialog(
-                                  builder: (ctx) => (AlertDialog(
-                                        title: Text('Delete Achievement?'),
-                                        content: Text(
+                                  builder: (BuildContext ctx) => AlertDialog(
+                                        title:
+                                            const Text('Delete Achievement?'),
+                                        content: const Text(
                                             'Remove this achievement? This action is irreversible!'),
                                         actions: [
                                           TextButton(
-                                            child: Text('Yes'),
+                                            child: const Text('Yes'),
                                             onPressed: () {
                                               widget.deleter(
                                                   acheve.achievementID);
@@ -313,13 +316,13 @@ class _AchievementAdderState extends State<AchievementAdder> {
                                             },
                                           ),
                                           TextButton(
-                                            child: Text('No'),
+                                            child: const Text('No'),
                                             onPressed: () {
                                               Navigator.of(context).pop();
                                             },
                                           )
                                         ],
-                                      )),
+                                      ),
                                   context: context);
                             } else {
                               setState(() {
@@ -345,11 +348,13 @@ class AudienceRestrictor extends StatefulWidget {
   final InstiAppApi client;
   final Future<List<int>>? loadableTags;
   final String cookie;
-  AudienceRestrictor(
-      {required this.onSave,
+  const AudienceRestrictor(
+      {Key? key,
+      required this.onSave,
       required this.loadableTags,
       required this.client,
-      required this.cookie});
+      required this.cookie})
+      : super(key: key);
 
   @override
   _AudienceRestrictorState createState() => _AudienceRestrictorState();
@@ -368,17 +373,18 @@ class _AudienceRestrictorState extends State<AudienceRestrictor> {
       List<UserTagHolder> tempTags =
           await widget.client.getUserTags(widget.cookie);
       restrictors = tempTags;
-      restrictables = restrictors.map((e) => e.holderName!).toList();
+      restrictables =
+          restrictors.map((UserTagHolder e) => e.holderName!).toList();
       if (widget.loadableTags != null) {
-        widget.loadableTags!.then((value) {
+        await widget.loadableTags!.then((List<int> value) {
           setState(() {
             selectedTagIds = value;
             selectedTags = [
-              ...restrictors.map((cat) => UserTagHolder(
+              ...restrictors.map((UserTagHolder cat) => UserTagHolder(
                       holderID: cat.holderID,
                       holderName: cat.holderName,
                       holderTags: cat.holderTags!
-                          .where((element) =>
+                          .where((UserTag element) =>
                               selectedTagIds.contains(element.tagID))
                           .toList()) //UserTagHolder
                   ) //map
@@ -389,14 +395,14 @@ class _AudienceRestrictorState extends State<AudienceRestrictor> {
         selectedTagIds = [];
 
         selectedTags = [
-          ...restrictors.map((cat) => UserTagHolder(
+          ...restrictors.map((UserTagHolder cat) => UserTagHolder(
                   holderID: cat.holderID,
                   holderName: cat.holderName,
                   holderTags: []) //UserTagHolder
               ) //map
         ];
       }
-      updateReach();
+      await updateReach();
     }();
 
     super.initState();
@@ -408,60 +414,62 @@ class _AudienceRestrictorState extends State<AudienceRestrictor> {
       padding: const EdgeInsets.all(8.0),
       child: flut.FormField(
         onSaved: (_) {
-          widget.onSave(this.selectedTagIds);
+          widget.onSave(selectedTagIds);
         },
-        builder: (ctx) => Column(
+        builder: (flut.FormFieldState<Object?> ctx) => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
+            const Text(
               'Restricted Audience',
               style: TextStyle(fontSize: 20),
             ),
-            Text(
+            const Text(
               'Event will be visible only to selected audiences',
               style: TextStyle(fontSize: 15),
             ),
-            Text(
+            const Text(
               'Do not select anything if the event is open for everyone',
               style: TextStyle(fontSize: 15),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Current estimated reach: ',
                   style: TextStyle(fontSize: 15),
                 ),
-                (reach.compareTo('...') != 0)
-                    ? Text(
-                        reach,
-                        style: TextStyle(fontSize: 15),
-                      )
-                    : Container(
-                        height: 10,
-                        width: 10,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        )),
+                if (reach.compareTo('...') != 0)
+                  Text(
+                    reach,
+                    style: const TextStyle(fontSize: 15),
+                  )
+                else
+                  const SizedBox(
+                      height: 10,
+                      width: 10,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      )),
               ],
             ),
             ...selectedTags
-                .map((cat) => Card(
+                .map((UserTagHolder cat) => Card(
                       elevation: 10,
                       child: ExpansionTile(
                           title: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(cat.holderName!),
-                              (cat.holderTags!.length == 0)
-                                  ? Text(
-                                      'All',
-                                      style: TextStyle(color: Colors.green),
-                                    )
-                                  : Text(
-                                      'Restricted',
-                                      style: TextStyle(color: Colors.red),
-                                    )
+                              if (cat.holderTags!.isEmpty)
+                                const Text(
+                                  'All',
+                                  style: TextStyle(color: Colors.green),
+                                )
+                              else
+                                const Text(
+                                  'Restricted',
+                                  style: TextStyle(color: Colors.red),
+                                )
                             ],
                           ),
                           children: [
@@ -469,12 +477,12 @@ class _AudienceRestrictorState extends State<AudienceRestrictor> {
                               chipColor: Colors.white,
                               scroll: false,
                               initialValue: selectedTags
-                                  .firstWhere((element) =>
+                                  .firstWhere((UserTagHolder element) =>
                                       element.holderID == cat.holderID)
                                   .holderTags!,
                               showHeader: false,
                               headerColor: Colors.white,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 boxShadow: [
                                   BoxShadow(
                                       blurRadius: 1.0,
@@ -482,13 +490,13 @@ class _AudienceRestrictorState extends State<AudienceRestrictor> {
                                       color: Colors.white)
                                 ],
                               ),
-                              textStyle: TextStyle(color: Colors.black),
+                              textStyle: const TextStyle(color: Colors.black),
                               selectedChipColor: Colors.amber,
                               items: restrictors
-                                  .firstWhere((element) =>
+                                  .firstWhere((UserTagHolder element) =>
                                       element.holderID == cat.holderID)
                                   .holderTags!
-                                  .map((e) =>
+                                  .map((UserTag e) =>
                                       MultiSelectItem<UserTag?>(e, e.tagName!))
                                   .toList(),
                               onTap: (List<UserTag?> values) {
@@ -518,11 +526,12 @@ class _AudienceRestrictorState extends State<AudienceRestrictor> {
   void updateSelectedTagIds() {
     selectedTagIds.clear();
     for (int i = 0; i < selectedTags.length; i++) {
-      selectedTagIds.addAll(selectedTags[i].holderTags!.map((e) => e.tagID!));
+      selectedTagIds
+          .addAll(selectedTags[i].holderTags!.map((UserTag e) => e.tagID!));
     }
   }
 
-  void updateReach() async {
+  Future<void> updateReach() async {
     int newReach =
         (await widget.client.getUserTagsReach(widget.cookie, selectedTagIds))
                 .count ??
@@ -538,8 +547,13 @@ class EventForm extends StatefulWidget {
   final String cookie;
   final bool isBody;
   final User? creator;
-  EventForm(
-      {required this.cookie, this.creator, this.entityID, this.isBody = false});
+  const EventForm(
+      {Key? key,
+      required this.cookie,
+      this.creator,
+      this.entityID,
+      this.isBody = false})
+      : super(key: key);
 
   @override
   _EventFormState createState() => _EventFormState();
@@ -548,11 +562,11 @@ class EventForm extends StatefulWidget {
 class _EventFormState extends State<EventForm> {
   static const String placeHolderImage = 'https://i.imgur.com/vxP6SFl.png';
   // Event eventToMake = Event();
-  final String addEventStr = "add-event";
-  final String editEventStr = "edit-event";
-  final String editBodyStr = "edit-body";
-  final String loginStr = "login";
-  final String sandboxTrueQParam = "sandbox=true";
+  final String addEventStr = 'add-event';
+  final String editEventStr = 'edit-event';
+  final String editBodyStr = 'edit-body';
+  final String loginStr = 'login';
+  final String sandboxTrueQParam = 'sandbox=true';
   List<TextEditingController> venues = [TextEditingController()];
   bool firstBuild = true;
   bool addedCookie = false;
@@ -593,15 +607,15 @@ class _EventFormState extends State<EventForm> {
 
   String dataLastLoadedFor = '';
 
-  Future<DateTime>? loadableEndTime = null;
+  Future<DateTime>? loadableEndTime;
 
-  Future<DateTime>? loadableStartTime = null;
+  Future<DateTime>? loadableStartTime;
 
   Future<List<int>>? loadableUserTags;
 
-  Future<List<OfferedAchievements>>? loadableOfferedAchevs = null;
+  Future<List<OfferedAchievements>>? loadableOfferedAchevs;
 
-  Future<List<Interest>>? loadableInterests = null;
+  Future<List<Interest>>? loadableInterests;
 
   Event? loadedEvent;
 
@@ -621,7 +635,7 @@ class _EventFormState extends State<EventForm> {
 
   @override
   Widget build(BuildContext context) {
-    var bloc = BlocProvider.of(context)!.bloc;
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
     theme = Theme.of(context);
     // final eventBloc
     User? temp = BlocProvider.of(context)!.bloc.currSession!.profile;
@@ -635,7 +649,7 @@ class _EventFormState extends State<EventForm> {
     }
     List<Body> tempbodyOptions = [];
     if (bloc.currSession!.profile!.userRoles != null) {
-      for (Role role in bloc.currSession!.profile!.userRoles!) {
+      for (final Role role in bloc.currSession!.profile!.userRoles!) {
         (role.roleBodies != null)
             ? tempbodyOptions.addAll(role.roleBodies!)
             : () {}();
@@ -651,16 +665,16 @@ class _EventFormState extends State<EventForm> {
     //     MultiSelectItem<Body?>(body, body.bodyName!)).toList();
     return Scaffold(
         bottomNavigationBar: MyBottomAppBar(
-          child: new Row(
+          child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              BackButton(),
+              const BackButton(),
               IconButton(
-                tooltip: "Refresh",
-                icon: Icon(
+                tooltip: 'Refresh',
+                icon: const Icon(
                   Icons.refresh_outlined,
-                  semanticLabel: "Refresh",
+                  semanticLabel: 'Refresh',
                 ),
                 onPressed: () {},
               ),
@@ -683,16 +697,16 @@ class _EventFormState extends State<EventForm> {
                           image: CachedNetworkImageProvider(eventImageURL))),
                   child: TextButton(
                     onPressed: () async {
-                      final ImagePicker _picker = ImagePicker();
+                      final ImagePicker picker = ImagePicker();
                       final XFile? pi =
-                          await _picker.pickImage(source: ImageSource.gallery);
+                          await picker.pickImage(source: ImageSource.gallery);
                       // if()
                       if (pi != null) {
                         double size = 1.0 * (await pi.length());
                         size = size / (1024 * 1024);
                         if (size >= 2) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                               content:
                                   Text("Image size can't be greater than 2MB"),
                               duration: Duration(seconds: 3),
@@ -703,16 +717,15 @@ class _EventFormState extends State<EventForm> {
                         ImageUploadResponse resp = await bloc.client
                             .uploadImage(widget.cookie, File(pi.path));
                         setState(() {
-                          eventImageURL = resp.pictureURL ?? "";
+                          eventImageURL = resp.pictureURL ?? '';
                         });
                       }
                     },
-                    child: Text(
-                        (eventImageURL.length == 0) ? 'Pick an Image' : ''),
+                    child: Text((eventImageURL.isEmpty) ? 'Pick an Image' : ''),
                   ),
                 ),
                 Container(
-                  decoration: BoxDecoration(color: Colors.blueAccent),
+                  decoration: const BoxDecoration(color: Colors.blueAccent),
                   padding: const EdgeInsets.all(8.0),
                   child: TextFormField(
                     controller: eventNameController,
@@ -722,19 +735,19 @@ class _EventFormState extends State<EventForm> {
                       });
                     },
                     decoration: InputDecoration(
-                        label: Text("Event Name",
+                        label: Text('Event Name',
                             style: TextStyle(
                               color: editingTitle
                                   ? Colors.amberAccent
                                   : Colors.white,
                             )),
                         suffixText: '${eventNameController.text.length}/50',
-                        suffixStyle: TextStyle(color: Colors.amberAccent),
-                        focusedBorder: UnderlineInputBorder(
+                        suffixStyle: const TextStyle(color: Colors.amberAccent),
+                        focusedBorder: const UnderlineInputBorder(
                             borderSide: BorderSide(
                                 color: Colors.amberAccent, width: 3)),
                         focusColor: Colors.amberAccent,
-                        border: UnderlineInputBorder(
+                        border: const UnderlineInputBorder(
                             borderSide: BorderSide(
                                 color: Colors.amberAccent, width: 3))),
                     validator: (String? value) {
@@ -789,7 +802,7 @@ class _EventFormState extends State<EventForm> {
                           });
                         },
                       ),
-                      Text('All day.')
+                      const Text('All day.')
                     ],
                   ),
                 ),
@@ -827,20 +840,20 @@ class _EventFormState extends State<EventForm> {
                 ),
                 ...venues
                     .map(
-                      (venue) => Padding(
+                      (TextEditingController venue) => Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: TypeAheadFormField<Venue>(
-                            noItemsFoundBuilder: (ctx) =>
-                                Text("No Venue Found."),
+                            noItemsFoundBuilder: (BuildContext ctx) =>
+                                const Text('No Venue Found.'),
                             // initialValue: eventVenues[venues.indexOf(venue)].venueShortName!,
                             textFieldConfiguration: TextFieldConfiguration(
                                 controller: venue,
                                 decoration: InputDecoration(
-                                  label: Text('Venue'),
+                                  label: const Text('Venue'),
                                   suffixIcon: IconButton(
                                     icon: (venues.indexOf(venue) > 0)
-                                        ? Icon(Icons.remove)
-                                        : Icon(Icons.add),
+                                        ? const Icon(Icons.remove)
+                                        : const Icon(Icons.add),
                                     onPressed: () {
                                       int index = venues.indexOf(venue);
                                       if (venues.length > 1 && (index != 0)) {
@@ -858,7 +871,7 @@ class _EventFormState extends State<EventForm> {
                                   ),
                                 )),
                             suggestionsCallback: (String q) => venueOptions
-                                .where((element) => (element.venueName! +
+                                .where((Venue element) => (element.venueName! +
                                         element.venueShortName!)
                                     .toLowerCase()
                                     .contains(q.toLowerCase())),
@@ -873,10 +886,10 @@ class _EventFormState extends State<EventForm> {
                             },
                             itemBuilder: (BuildContext ctx, Venue item) =>
                                 Container(
-                                    padding: EdgeInsets.all(4),
+                                    padding: const EdgeInsets.all(4),
                                     child: Text(
                                       item.venueShortName!,
-                                      style: TextStyle(fontSize: 20),
+                                      style: const TextStyle(fontSize: 20),
                                     )),
                           )),
                     )
@@ -884,18 +897,18 @@ class _EventFormState extends State<EventForm> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: MultiSelectDialogField(
-                    title: Text('Bodies *'),
+                    title: const Text('Bodies *'),
                     initialValue: eventBodies,
                     buttonText: eventBodies.isEmpty
-                        ? Text('Bodies *')
+                        ? const Text('Bodies *')
                         : Text(eventBodies
-                            .map((e) => e.bodyName!)
+                            .map((Body e) => e.bodyName!)
                             .toList()
                             .join(',')),
                     items: [...bodyOptions]
-                        .map((e) => MultiSelectItem<Body?>(e, e.bodyName!))
+                        .map((Body e) => MultiSelectItem<Body?>(e, e.bodyName!))
                         .toList(),
-                    onConfirm: (values) {
+                    onConfirm: (List<Object?> values) {
                       setState(() {
                         eventBodies.clear();
                         for (int i = 0; i < values.length; i++) {
@@ -906,7 +919,7 @@ class _EventFormState extends State<EventForm> {
                     },
                     validator: (List<Body?>? values) {
                       if (eventBodies.isEmpty) {
-                        return "Select at least one body.";
+                        return 'Select at least one body.';
                       }
                       return null;
                     },
@@ -916,7 +929,7 @@ class _EventFormState extends State<EventForm> {
                   padding: const EdgeInsets.all(8.0),
                   child: TextFormField(
                     controller: eventWesbiteURLController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       label: Text('Website URL'),
                     ),
                     validator: (String? s) {
@@ -936,10 +949,10 @@ class _EventFormState extends State<EventForm> {
                     keyboardType: TextInputType.multiline,
                     maxLines: 4,
                     controller: eventDescController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       label: Text('Description'),
                     ),
-                    style: TextStyle(),
+                    style: const TextStyle(),
                   ),
                 ),
                 // SelectInterests(
@@ -951,15 +964,15 @@ class _EventFormState extends State<EventForm> {
                 //   },
                 // ),
                 DropdownMultiSelect<Interest>(
-                  update: (i) {
+                  update: (List<Interest>? i) {
                     setState(() {
                       eventInterests = i ?? [];
                     });
                   },
                   load: loadableInterests,
                   onFind: bloc.achievementBloc.searchForInterest,
-                  singularObjectName: "interest",
-                  pluralObjectName: "interests",
+                  singularObjectName: 'interest',
+                  pluralObjectName: 'interests',
                 ),
                 AchievementAdder(
                     postData: (List<OfferedAchievements> achevs) {
@@ -996,7 +1009,7 @@ class _EventFormState extends State<EventForm> {
                           });
                         },
                       ),
-                      Text('Notify followers on creation/updation')
+                      const Text('Notify followers on creation/updation')
                     ],
                   ),
                 ),
@@ -1015,7 +1028,7 @@ class _EventFormState extends State<EventForm> {
                     if (DateTime.parse(eventStartTime).millisecondsSinceEpoch >
                         DateTime.parse(eventEndTime).millisecondsSinceEpoch) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text("Event can't start after it ends!"),
                         ),
                       );
@@ -1030,13 +1043,15 @@ class _EventFormState extends State<EventForm> {
                       allDayEvent: eventIsAllDay,
                       eventWebsiteURL: eventWesbiteURLController.text,
                       eventVenueNames: eventVenues
-                          .where((element) => element.venueShortName != null)
-                          .map((e) => e.venueShortName!)
+                          .where(
+                              (Venue element) => element.venueShortName != null)
+                          .map((Venue e) => e.venueShortName!)
                           .toList(),
-                      eventBodiesID: eventBodies.map((e) => e.bodyID!).toList(),
+                      eventBodiesID:
+                          eventBodies.map((Body e) => e.bodyID!).toList(),
                       eventInterest: eventInterests,
                       eventInterestsID:
-                          eventInterests.map((e) => e.id!).toList(),
+                          eventInterests.map((Interest e) => e.id!).toList(),
                       eventUserTags: eventUserTags,
                       notify: eventNotifications,
                     );
@@ -1046,73 +1061,75 @@ class _EventFormState extends State<EventForm> {
                           await bloc.client.createEvent(widget.cookie, req);
                       eventID = respo.eventId!;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Event created!"),
+                        const SnackBar(
+                          content: Text('Event created!'),
                         ),
                       );
-                      Navigator.of(context)
-                          .popAndPushNamed('/event/' + eventID);
+                      await Navigator.of(context)
+                          .popAndPushNamed('/event/$eventID');
                     } else {
                       await bloc.client
                           .updateEvent(widget.cookie, req, eventID);
                       Navigator.of(context).pop();
                     }
-                    postOffers(eventID, widget.cookie, bloc.client);
+                    await postOffers(eventID, widget.cookie, bloc.client);
                     //update achevs in this widget
                     //call post requests on the updated achevs
                   },
                 ),
-                (editingEvent &&
-                        (loadedEvent != null
-                            ? bloc.deleteEventAccess(loadedEvent!)
-                            : false))
-                    ? DeleteEventBtn(
-                        delete: () {
-                          showDialog(
-                              builder: (ctx) => (AlertDialog(
-                                    title: Text('Delete Event?'),
-                                    content: Text(
-                                        'Remove this event? This action is irreversible!'),
-                                    actions: [
-                                      TextButton(
-                                        child: Text('Yes'),
-                                        onPressed: () async {
-                                          Navigator.of(context).pop();
-                                          Navigator.popAndPushNamed(
-                                              context, '/feed');
-                                          await bloc.client.deleteEvent(
-                                              widget.cookie, eventID);
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: Text('No'),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      )
-                                    ],
-                                  )),
-                              context: context);
-                          // bloc.client
-                        },
-                      )
-                    : Container()
+                if (editingEvent &&
+                    (loadedEvent != null
+                        ? bloc.deleteEventAccess(loadedEvent!)
+                        : false))
+                  DeleteEventBtn(
+                    delete: () {
+                      showDialog(
+                          builder: (BuildContext ctx) => AlertDialog(
+                                title: const Text('Delete Event?'),
+                                content: const Text(
+                                    'Remove this event? This action is irreversible!'),
+                                actions: [
+                                  TextButton(
+                                    child: const Text('Yes'),
+                                    onPressed: () async {
+                                      Navigator.of(context).pop();
+                                      await Navigator.popAndPushNamed(
+                                          context, '/feed');
+                                      await bloc.client
+                                          .deleteEvent(widget.cookie, eventID);
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: const Text('No'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  )
+                                ],
+                              ),
+                          context: context);
+                      // bloc.client
+                    },
+                  )
+                else
+                  Container()
               ],
             ),
           ),
         ));
   }
 
-  void postOffers(String eventId, String cookie, client) async {
+  Future<void> postOffers(
+      String eventId, String cookie, InstiAppApi client) async {
     int index = 0;
-    for (OfferedAchievements offer in eventAchievementsOffered) {
+    for (final OfferedAchievements offer in eventAchievementsOffered) {
       offer.event = eventId;
       offer.priority = index;
       bool noErrors = false;
       if (offer.achievementID != null && offer.achievementID != '') {
         //put
         await client.updateAchievement(
-            widget.cookie, offer, offer.achievementID);
+            widget.cookie, offer, offer.achievementID ?? '');
       } else {
         //post
         OfferedAchievements ans = await client.createAchievement(cookie, offer);
@@ -1123,7 +1140,7 @@ class _EventFormState extends State<EventForm> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  "Achievement ${offer.title} failed. The event was updated."),
+                  'Achievement ${offer.title} failed. The event was updated.'),
             ),
           );
         }
@@ -1132,9 +1149,9 @@ class _EventFormState extends State<EventForm> {
     }
   }
 
-  void loadData(String eventID, client, String sessionID) {
+  void loadData(String eventID, InstiAppApi client, String sessionID) {
     Future<Event> eventOnItsWay = client.getEvent(sessionID, eventID);
-    eventOnItsWay.then((prevEv) {
+    eventOnItsWay.then((Event prevEv) {
       setState(() {
         loadedEvent = prevEv;
         eventNameController.text = prevEv.eventName!;
@@ -1147,27 +1164,27 @@ class _EventFormState extends State<EventForm> {
         eventIsAllDay = prevEv.allDayEvent!;
         eventVenues = prevEv.eventVenues!;
         venues = eventVenues
-            .map((e) => TextEditingController(text: e.venueShortName!))
+            .map((Venue e) => TextEditingController(text: e.venueShortName!))
             .toList();
         eventBodies = prevEv.eventBodies!;
         eventImageURL = prevEv.eventImageURL!;
       });
     });
-    loadableUserTags = eventOnItsWay.then((value) {
+    loadableUserTags = eventOnItsWay.then((Event value) {
       return value.eventUserTags!;
     });
-    loadableInterests = eventOnItsWay.then((value) {
+    loadableInterests = eventOnItsWay.then((Event value) {
       return value.eventInterest ?? [];
     });
-    loadableOfferedAchevs = eventOnItsWay.then((value) {
+    loadableOfferedAchevs = eventOnItsWay.then((Event value) {
       return value.eventOfferedAchievements!;
     });
-    loadableStartTime = eventOnItsWay.then((value) {
+    loadableStartTime = eventOnItsWay.then((Event value) {
       DateTime d = DateTime.parse(value.eventStartTime!).toLocal();
       eventStartTime = d.toString();
       return d;
     });
-    loadableEndTime = eventOnItsWay.then((value) {
+    loadableEndTime = eventOnItsWay.then((Event value) {
       DateTime d = DateTime.parse(value.eventEndTime!).toLocal();
       eventEndTime = d.toString();
       return d;

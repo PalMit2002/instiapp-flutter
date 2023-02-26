@@ -1,9 +1,9 @@
 import 'dart:collection';
 
-import 'package:InstiApp/src/api/model/achievements.dart';
-import 'package:InstiApp/src/api/request/ach_verify_request.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../api/model/achievements.dart';
+import '../api/request/ach_verify_request.dart';
 import 'ia_bloc.dart';
 
 class VerifyBloc extends Object {
@@ -15,11 +15,11 @@ class VerifyBloc extends Object {
 
   ValueStream<UnmodifiableListView<Achievement>> get achievements =>
       _achievementSubject.stream;
-  final _achievementSubject =
+  final BehaviorSubject<UnmodifiableListView<Achievement>> _achievementSubject =
       BehaviorSubject<UnmodifiableListView<Achievement>>();
 
   Future<void> updateAchievements(String bodyId) async {
-    var yourAchievementResponse = await bloc.client
+    List<Achievement> yourAchievementResponse = await bloc.client
         .getBodyAchievements(bloc.getSessionIdHeader(), bodyId);
     _achievements = yourAchievementResponse;
     _achievementSubject.add(UnmodifiableListView(_achievements));
@@ -27,7 +27,7 @@ class VerifyBloc extends Object {
 
   Future<void> dismissAchievement(bool verify, Achievement achievement) async {
     // print("Entered dismiss achievement");
-    var req = AchVerifyRequest();
+    AchVerifyRequest req = AchVerifyRequest();
     req.adminNote = achievement.adminNote;
     req.body = achievement.body;
     req.event = achievement.event;

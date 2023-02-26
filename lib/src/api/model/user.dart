@@ -1,7 +1,8 @@
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/api/model/role.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'body.dart';
+import 'event.dart';
+import 'role.dart';
 
 part 'user.g.dart';
 
@@ -10,7 +11,7 @@ class Session {
   String? sessionid;
   String? user;
 
-  @JsonKey(name: "profile_id")
+  @JsonKey(name: 'profile_id')
   String? profileId;
   User? profile;
 
@@ -22,10 +23,10 @@ class Session {
 
 @JsonSerializable()
 class Interest {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? id;
 
-  @JsonKey(name: "title")
+  @JsonKey(name: 'title')
   String? title;
   Interest({this.id, this.title});
   factory Interest.fromJson(Map<String, dynamic> json) =>
@@ -34,16 +35,16 @@ class Interest {
 
   @override
   String toString() {
-    return this.title ?? "";
+    return title ?? '';
   }
 }
 
 @JsonSerializable()
 class Skill {
-  @JsonKey(name: "title")
+  @JsonKey(name: 'title')
   String? title;
 
-  @JsonKey(name: "body")
+  @JsonKey(name: 'body')
   Body? body;
 
   Skill({this.title, this.body});
@@ -53,61 +54,61 @@ class Skill {
 
 @JsonSerializable()
 class User {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? userID;
 
-  @JsonKey(name: "name")
+  @JsonKey(name: 'name')
   String? userName;
 
-  @JsonKey(name: "profile_pic")
+  @JsonKey(name: 'profile_pic')
   String? userProfilePictureUrl;
 
-  @JsonKey(name: "events_interested")
+  @JsonKey(name: 'events_interested')
   List<Event>? userInterestedEvents;
 
-  @JsonKey(name: "events_going")
+  @JsonKey(name: 'events_going')
   List<Event>? userGoingEvents;
 
-  @JsonKey(name: "email")
+  @JsonKey(name: 'email')
   String? userEmail;
 
-  @JsonKey(name: "roll_no")
+  @JsonKey(name: 'roll_no')
   String? userRollNumber;
 
-  @JsonKey(name: "contact_no")
+  @JsonKey(name: 'contact_no')
   String? userContactNumber;
 
-  @JsonKey(name: "show_contact_no")
+  @JsonKey(name: 'show_contact_no')
   bool? userShowContactNumber;
 
-  @JsonKey(name: "about")
+  @JsonKey(name: 'about')
   String? userAbout;
 
-  @JsonKey(name: "followed_bodies")
+  @JsonKey(name: 'followed_bodies')
   List<Body>? userFollowedBodies;
 
-  @JsonKey(name: "followed_bodies_id")
+  @JsonKey(name: 'followed_bodies_id')
   List<String>? userFollowedBodiesID;
 
-  @JsonKey(name: "roles")
+  @JsonKey(name: 'roles')
   List<Role>? userRoles;
 
-  @JsonKey(name: "institute_roles")
+  @JsonKey(name: 'institute_roles')
   List<Role>? userInstituteRoles;
 
-  @JsonKey(name: "former_roles")
+  @JsonKey(name: 'former_roles')
   List<Role>? userFormerRoles;
 
-  @JsonKey(name: "website_url")
+  @JsonKey(name: 'website_url')
   String? userWebsiteURL;
 
-  @JsonKey(name: "ldap_id")
+  @JsonKey(name: 'ldap_id')
   String? userLDAPId;
 
-  @JsonKey(name: "hostel")
+  @JsonKey(name: 'hostel')
   String? hostel;
 
-  @JsonKey(name: "interests")
+  @JsonKey(name: 'interests')
   List<Interest>? interests;
 
   String? currentRole;
@@ -118,7 +119,7 @@ class User {
 
   @override
   String toString() {
-    return userName ?? "";
+    return userName ?? '';
   }
 
   User(

@@ -1,6 +1,7 @@
-import 'package:InstiApp/src/api/model/community.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
 import 'package:rxdart/rxdart.dart';
+
+import '../api/model/community.dart';
+import 'ia_bloc.dart';
 
 // List<Community> defCommunities = [
 //   Community(
@@ -29,16 +30,16 @@ import 'package:rxdart/rxdart.dart';
 // ];
 
 class CommunityBloc {
-  final String storageID = "community";
+  final String storageID = 'community';
 
   InstiAppBloc bloc;
 
   List<Community> _communities = [];
 
   ValueStream<List<Community>> get communities => _communitySubject.stream;
-  final _communitySubject = BehaviorSubject<List<Community>>();
+  final BehaviorSubject<List<Community>> _communitySubject = BehaviorSubject<List<Community>>();
 
-  String query = "";
+  String query = '';
 
   CommunityBloc(this.bloc);
 

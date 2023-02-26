@@ -4,7 +4,7 @@ part 'chat_bot_response.g.dart';
 
 @JsonSerializable()
 class ChatBotResponse {
-  @JsonKey(name: "data")
+  @JsonKey(name: 'data')
   List<String>? data;
 
 

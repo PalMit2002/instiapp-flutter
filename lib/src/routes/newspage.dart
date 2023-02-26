@@ -1,16 +1,19 @@
 import 'dart:core';
 
-import 'package:InstiApp/src/blocs/blog_bloc.dart';
-import 'package:InstiApp/src/routes/blogpage.dart';
 import 'package:flutter/material.dart';
 
+import '../blocs/blog_bloc.dart';
+import 'blogpage.dart';
+
 class NewsPage extends StatelessWidget {
+  const NewsPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return BlogPage(
+    return const BlogPage(
       loginNeeded: false,
       postType: PostType.NewsArticle,
-      title: "News",
+      title: 'News',
     );
   }
 }

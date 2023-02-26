@@ -1,21 +1,26 @@
-import 'package:InstiApp/src/api/response/explore_response.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/explore_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/routes/bodypage.dart';
-import 'package:InstiApp/src/routes/eventpage.dart';
-import 'package:InstiApp/src/routes/userpage.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
 import 'package:flutter/material.dart';
+
+import '../api/model/body.dart';
+import '../api/model/event.dart';
+import '../api/model/user.dart';
+import '../api/response/explore_response.dart';
+import '../bloc_provider.dart';
+import '../blocs/explore_bloc.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/title_with_backbutton.dart';
+import 'bodypage.dart';
+import 'eventpage.dart';
+import 'userpage.dart';
 // import 'package:flutter/rendering.dart';
 
 class ExplorePage extends StatefulWidget {
-  final String title = "Explore";
+  final String title = 'Explore';
   final bool searchMode;
   final bool fromNavigate;
 
-  ExplorePage({this.searchMode = false, this.fromNavigate = false});
+  const ExplorePage({Key? key, this.searchMode = false, this.fromNavigate = false}) : super(key: key);
 
   @override
   _ExplorePageState createState() => _ExplorePageState();
@@ -27,7 +32,7 @@ class ExplorePage extends StatefulWidget {
         settings: RouteSettings(
           name: "/explore?searchMode=${searchMode ? "true" : "false"}",
         ),
-        builder: (context) => ExplorePage(
+        builder: (BuildContext context) => ExplorePage(
           searchMode: searchMode,
           fromNavigate: true,
         ),
@@ -41,7 +46,7 @@ class _ExplorePageState extends State<ExplorePage> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
-  FocusNode _focusNode = FocusNode();
+  final FocusNode _focusNode = FocusNode();
   ScrollController? _hideButtonController;
   TextEditingController? _searchFieldController;
   double isFabVisible = 0;
@@ -79,11 +84,11 @@ class _ExplorePageState extends State<ExplorePage> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
-    var exploreBloc = bloc.exploreBloc;
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    ExploreBloc exploreBloc = bloc.exploreBloc;
     if (firstBuild) {
-      exploreBloc.query = "";
+      exploreBloc.query = '';
       exploreBloc.refresh();
       searchMode = widget.searchMode;
       if (widget.fromNavigate) {
@@ -95,18 +100,18 @@ class _ExplorePageState extends State<ExplorePage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       key: _scaffoldKey,
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -117,9 +122,7 @@ class _ExplorePageState extends State<ExplorePage> {
       ),
       body: SafeArea(
         child: GestureDetector(
-          onTap: () {
-            _focusNode.unfocus();
-          },
+          onTap: _focusNode.unfocus,
           child: ListView(controller: _hideButtonController, children: <Widget>[
             RefreshIndicator(
               key: _refreshIndicatorKey,
@@ -146,10 +149,10 @@ class _ExplorePageState extends State<ExplorePage> {
                           shape: CircleBorder(
                               side: BorderSide(color: theme.primaryColor))),
                       child: searchMode
-                          ? SizedBox()
+                          ? const SizedBox()
                           : IconButton(
-                              tooltip: "Search ${widget.title}",
-                              padding: EdgeInsets.all(16.0),
+                              tooltip: 'Search ${widget.title}',
+                              padding: const EdgeInsets.all(16.0),
                               icon: Icon(
                                 actionIcon,
                                 color: theme.primaryColor,
@@ -167,16 +170,14 @@ class _ExplorePageState extends State<ExplorePage> {
                 ),
               ),
             ),
-            !searchMode
-                ? SizedBox(
+            if (!searchMode) const SizedBox(
                     height: 0,
-                  )
-                : PreferredSize(
-                    preferredSize: Size.fromHeight(72),
+                  ) else PreferredSize(
+                    preferredSize: const Size.fromHeight(72),
                     child: AnimatedContainer(
                       color: theme.canvasColor,
-                      padding: EdgeInsets.all(8.0),
-                      duration: Duration(milliseconds: 500),
+                      padding: const EdgeInsets.all(8.0),
+                      duration: const Duration(milliseconds: 500),
                       child: TextField(
                         controller: _searchFieldController,
                         cursorColor: theme.textTheme.bodyMedium?.color,
@@ -187,30 +188,30 @@ class _ExplorePageState extends State<ExplorePage> {
                               borderRadius: BorderRadius.circular(30)),
                           labelStyle: theme.textTheme.bodyMedium,
                           hintStyle: theme.textTheme.bodyMedium,
-                          prefixIcon: Icon(
+                          prefixIcon: const Icon(
                             Icons.search_outlined,
                           ),
                           suffixIcon: IconButton(
-                            tooltip: "Search events, bodies, users...",
-                            icon: Icon(Icons.close_outlined),
+                            tooltip: 'Search events, bodies, users...',
+                            icon: const Icon(Icons.close_outlined),
                             onPressed: () {
                               setState(() {
                                 actionIcon = Icons.search_outlined;
-                                exploreBloc.query = "";
+                                exploreBloc.query = '';
                                 exploreBloc.refresh();
                                 searchMode = !searchMode;
                               });
                             },
                           ),
-                          hintText: "Search events, bodies, users...",
+                          hintText: 'Search events, bodies, users...',
                         ),
-                        onChanged: (query) async {
+                        onChanged: (String query) async {
                           if (query.length > 4) {
                             exploreBloc.query = query;
-                            exploreBloc.refresh();
+                            await exploreBloc.refresh();
                           }
                         },
-                        onSubmitted: (query) async {
+                        onSubmitted: (String query) async {
                           exploreBloc.query = query;
                           await exploreBloc.refresh();
                         },
@@ -238,13 +239,13 @@ class _ExplorePageState extends State<ExplorePage> {
       floatingActionButton: isFabVisible == 0
           ? null
           : FloatingActionButton(
-              tooltip: "Go to the Top",
+              tooltip: 'Go to the Top',
               onPressed: () {
                 _hideButtonController!.animateTo(0.0,
                     curve: Curves.fastOutSlowIn,
                     duration: const Duration(milliseconds: 600));
               },
-              child: Icon(Icons.keyboard_arrow_up_outlined),
+              child: const Icon(Icons.keyboard_arrow_up_outlined),
             ),
     );
   }
@@ -252,33 +253,33 @@ class _ExplorePageState extends State<ExplorePage> {
   List<Widget> _buildContent(AsyncSnapshot<ExploreResponse> snapshot,
       ThemeData theme, ExploreBloc exploreBloc) {
     if (snapshot.hasData) {
-      var bodies = snapshot.data!.bodies;
-      var events = snapshot.data!.events;
-      var users = snapshot.data!.users;
+      List<Body>? bodies = snapshot.data!.bodies;
+      List<Event>? events = snapshot.data!.events;
+      final List<User>? users = snapshot.data!.users;
       if (bodies?.isEmpty == true &&
           events?.isEmpty == true &&
           users?.isEmpty == true) {
         return [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 28.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 8.0),
             child: Text.rich(
                 TextSpan(style: theme.textTheme.titleLarge, children: [
-              TextSpan(text: "Nothing found for the query "),
+              const TextSpan(text: 'Nothing found for the query '),
               TextSpan(
-                  text: "\"${exploreBloc.query}\"",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              TextSpan(text: "."),
+                  text: '"${exploreBloc.query}"',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              const TextSpan(text: '.'),
             ])),
           )
         ];
       }
       //move to next page
       return (bodies
-                  ?.map((b) => _buildListTile(
-                      b.bodyID ?? "",
-                      b.bodyName ?? "",
-                      b.bodyShortDescription ?? "",
-                      b.bodyImageURL ?? "",
+                  ?.map((Body b) => _buildListTile(
+                      b.bodyID ?? '',
+                      b.bodyName ?? '',
+                      b.bodyShortDescription ?? '',
+                      b.bodyImageURL ?? '',
                       Icons.people_outline_outlined,
                       () => BodyPage.navigateWith(context, exploreBloc.bloc,
                           body: b),
@@ -286,11 +287,11 @@ class _ExplorePageState extends State<ExplorePage> {
                   .toList() ??
               []) +
           (events
-                  ?.map((e) => _buildListTile(
-                      e.eventID ?? "",
-                      e.eventName ?? "",
+                  ?.map((Event e) => _buildListTile(
+                      e.eventID ?? '',
+                      e.eventName ?? '',
                       e.getSubTitle(),
-                      e.eventImageURL ?? e.eventBodies?[0].bodyImageURL ?? "",
+                      e.eventImageURL ?? e.eventBodies?[0].bodyImageURL ?? '',
                       Icons.event_outlined,
                       () =>
                           EventPage.navigateWith(context, exploreBloc.bloc, e),
@@ -298,11 +299,11 @@ class _ExplorePageState extends State<ExplorePage> {
                   .toList() ??
               []) +
           (users
-                  ?.map((u) => _buildListTile(
-                      u.userID ?? "",
-                      u.userName ?? "",
-                      u.userLDAPId ?? "",
-                      u.userProfilePictureUrl ?? "",
+                  ?.map((User u) => _buildListTile(
+                      u.userID ?? '',
+                      u.userName ?? '',
+                      u.userLDAPId ?? '',
+                      u.userProfilePictureUrl ?? '',
                       Icons.person_outline_outlined,
                       () => UserPage.navigateWith(context, exploreBloc.bloc, u),
                       theme))
@@ -310,9 +311,9 @@ class _ExplorePageState extends State<ExplorePage> {
               []);
     } else {
       return [
-        Center(
+        const Center(
             child: CircularProgressIndicatorExtended(
-          label: Text("Loading the some default bodies"),
+          label: Text('Loading the some default bodies'),
         ))
       ];
     }

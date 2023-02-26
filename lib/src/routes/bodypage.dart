@@ -1,29 +1,31 @@
 import 'dart:async';
 
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/api/model/role.dart';
-import 'package:InstiApp/src/api/model/user.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/routes/eventpage.dart';
-import 'package:InstiApp/src/routes/userpage.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/footer_buttons.dart';
-import 'package:InstiApp/src/utils/share_url_maker.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:share/share.dart';
 import 'package:markdown/markdown.dart' as markdown;
+import 'package:share/share.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../api/model/body.dart';
+import '../api/model/event.dart';
+import '../api/model/role.dart';
+import '../api/model/user.dart';
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/footer_buttons.dart';
+import '../utils/share_url_maker.dart';
+import '../utils/title_with_backbutton.dart';
+import 'eventpage.dart';
+import 'userpage.dart';
 
 class BodyPage extends StatefulWidget {
   final Body? initialBody;
   final Future<Body>? bodyFuture;
   final String? heroTag;
 
-  BodyPage({this.bodyFuture, this.initialBody, this.heroTag});
+  const BodyPage({Key? key, this.bodyFuture, this.initialBody, this.heroTag})
+      : super(key: key);
 
   static void navigateWith(BuildContext context, InstiAppBloc bloc,
       {Body? body, Role? role}) {
@@ -31,12 +33,12 @@ class BodyPage extends StatefulWidget {
       context,
       MaterialPageRoute(
         settings: RouteSettings(
-          name: "/body/${(role?.roleBodyDetails ?? body)?.bodyID}",
+          name: '/body/${(role?.roleBodyDetails ?? body)?.bodyID}',
         ),
-        builder: (context) => BodyPage(
+        builder: (BuildContext context) => BodyPage(
           initialBody: role?.roleBodyDetails ?? body,
           bodyFuture:
-              bloc.getBody((role?.roleBodyDetails ?? body)?.bodyID ?? ""),
+              bloc.getBody((role?.roleBodyDetails ?? body)?.bodyID ?? ''),
           heroTag: role?.roleID ?? body?.bodyID,
         ),
       ),
@@ -48,7 +50,7 @@ class BodyPage extends StatefulWidget {
 }
 
 class _BodyPageState extends State<BodyPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   Body? body;
 
   bool loadingFollow = false;
@@ -57,17 +59,17 @@ class _BodyPageState extends State<BodyPage> {
   void initState() {
     super.initState();
     body = widget.initialBody;
-    widget.bodyFuture?.then((b) {
-      var tableParse = markdown.TableSyntax();
+    widget.bodyFuture?.then((Body b) {
+      markdown.TableSyntax tableParse = const markdown.TableSyntax();
       b.bodyDescription = markdown.markdownToHtml(
           b.bodyDescription
                   ?.split('\n')
-                  .map((s) => s.trimRight())
+                  .map((String s) => s.trimRight())
                   .toList()
                   .join('\n') ??
-              "",
+              '',
           blockSyntaxes: [tableParse]);
-      if (this.mounted) {
+      if (mounted) {
         setState(() {
           body = b;
         });
@@ -79,10 +81,10 @@ class _BodyPageState extends State<BodyPage> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
-    var footerButtons = <Widget>[];
-    var editAccess = false;
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    List<Widget> footerButtons = <Widget>[];
+    bool editAccess = false;
     if (body != null) {
       editAccess = bloc.editBodyAccess(body!);
       if (bloc.currSession != null) {
@@ -91,15 +93,15 @@ class _BodyPageState extends State<BodyPage> {
         ]);
       }
 
-      if ((body?.bodyWebsiteURL ?? "") != "") {
+      if ((body?.bodyWebsiteURL ?? '') != '') {
         footerButtons.add(IconButton(
-          tooltip: "Open website",
-          icon: Icon(Icons.language_outlined),
+          tooltip: 'Open website',
+          icon: const Icon(Icons.language_outlined),
           onPressed: () async {
             if (body?.bodyWebsiteURL != null) {
-              if (await canLaunchUrl(Uri.parse(body?.bodyWebsiteURL ?? ""))) {
+              if (await canLaunchUrl(Uri.parse(body?.bodyWebsiteURL ?? ''))) {
                 await launchUrl(
-                  Uri.parse(body?.bodyWebsiteURL ?? ""),
+                  Uri.parse(body?.bodyWebsiteURL ?? ''),
                   mode: LaunchMode.externalApplication,
                 );
               }
@@ -110,27 +112,27 @@ class _BodyPageState extends State<BodyPage> {
 
       if (editAccess) {
         footerButtons.add(IconButton(
-          icon: Icon(Icons.share_outlined),
-          tooltip: "Share this body",
+          icon: const Icon(Icons.share_outlined),
+          tooltip: 'Share this body',
           onPressed: () async {
             await Share.share(
-                "Check this Institute Body: ${ShareURLMaker.getBodyURL(body ?? Body())}");
+                'Check this Institute Body: ${ShareURLMaker.getBodyURL(body ?? Body())}');
           },
         ));
       }
     }
     return Scaffold(
       key: _scaffoldKey,
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       bottomNavigationBar: MyBottomAppBar(
-        child: new Row(
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -141,9 +143,9 @@ class _BodyPageState extends State<BodyPage> {
       ),
       body: SafeArea(
         child: body == null
-            ? Center(
+            ? const Center(
                 child: CircularProgressIndicatorExtended(
-                label: Text("Loading the body page"),
+                label: Text('Loading the body page'),
               ))
             : ListView(
                 children: <Widget>[
@@ -152,11 +154,11 @@ class _BodyPageState extends State<BodyPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          body?.bodyName ?? "",
+                          body?.bodyName ?? '',
                           style: theme.textTheme.displaySmall,
                         ),
-                        SizedBox(height: 8.0),
-                        Text(body?.bodyShortDescription ?? "",
+                        const SizedBox(height: 8.0),
+                        Text(body?.bodyShortDescription ?? '',
                             style: theme.textTheme.titleLarge),
                       ],
                     ),
@@ -166,123 +168,131 @@ class _BodyPageState extends State<BodyPage> {
                     child: body?.bodyImageURL != null
                         ? PhotoViewableImage(
                             url: body?.bodyImageURL ?? defUrl,
-                            heroTag: widget.heroTag ?? body?.bodyID ?? "",
+                            heroTag: widget.heroTag ?? body?.bodyID ?? '',
                             fit: BoxFit.fitWidth,
                           )
-                        : SizedBox(
+                        : const SizedBox(
                             height: 0.0,
                           ),
                   ),
-                  body?.bodyImageURL != null
-                      ? SizedBox(
-                          height: 16.0,
-                        )
-                      : SizedBox(
-                          height: 0.0,
-                        ),
+                  if (body?.bodyImageURL != null)
+                    const SizedBox(
+                      height: 16.0,
+                    )
+                  else
+                    const SizedBox(
+                      height: 0.0,
+                    ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 28.0, vertical: 16.0),
                     child: CommonHtml(
-                        data: body?.bodyDescription ?? "",
+                        data: body?.bodyDescription ?? '',
                         defaultTextStyle:
-                            theme.textTheme.titleMedium ?? TextStyle()),
+                            theme.textTheme.titleMedium ?? const TextStyle()),
                   ),
-                  body?.bodyDescription != null
-                      ? SizedBox(
-                          height: 16.0,
-                        )
-                      : SizedBox(
-                          height: 0.0,
-                        ),
-                  Divider(),
-                ] // Events
-                  ..addAll(_nonEmptyListWithHeaderOrEmpty(
+                  if (body?.bodyDescription != null)
+                    const SizedBox(
+                      height: 16.0,
+                    )
+                  else
+                    const SizedBox(
+                      height: 0.0,
+                    ),
+                  const Divider(),
+                  ..._nonEmptyListWithHeaderOrEmpty(
                       body?.bodyEvents
-                          ?.map((e) => _buildEventTile(bloc, theme, e))
+                          ?.map((Event e) => _buildEventTile(bloc, theme, e))
                           .toList(),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 28.0, vertical: 16.0),
                         child: Text(
-                          "Events",
+                          'Events',
                           style: theme.textTheme.headlineSmall,
                         ),
-                      )))
-                  // Children
-                  ..addAll(_nonEmptyListWithHeaderOrEmpty(
+                      )),
+                  ..._nonEmptyListWithHeaderOrEmpty(
                       body?.bodyChildren
-                          ?.map((b) => _buildBodyTile(bloc, theme.textTheme, b))
+                          ?.map((Body b) =>
+                              _buildBodyTile(bloc, theme.textTheme, b))
                           .toList(),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 28.0, vertical: 16.0),
                         child: Text(
-                          "Organizations",
+                          'Organizations',
                           style: theme.textTheme.headlineSmall,
                         ),
-                      )))
-                  // People
-                  ..addAll(_nonEmptyListWithHeaderOrEmpty(
+                      )),
+                  ..._nonEmptyListWithHeaderOrEmpty(
                       body?.bodyRoles
-                          ?.expand((r) {
+                          ?.expand<User>((Role r) {
                             if (r.roleUsersDetail != null) {
                               return r.roleUsersDetail!
-                                  .map((u) => u..currentRole = r.roleName)
+                                  .map((User u) => u..currentRole = r.roleName)
                                   .toList();
                             }
                             return [];
                           })
-                          .map((u) => _buildUserTile(bloc, theme, u))
+                          .map<Widget>(
+                              (User u) => _buildUserTile(bloc, theme, u))
                           .toList(),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 28.0, vertical: 16.0),
                         child: Text(
-                          "People",
+                          'People',
                           style: theme.textTheme.headlineSmall,
                         ),
-                      )))
-                  // Parents
-                  ..addAll(_nonEmptyListWithHeaderOrEmpty(
+                      )),
+                  ..._nonEmptyListWithHeaderOrEmpty(
                       body?.bodyParents
-                          ?.map((b) => _buildBodyTile(bloc, theme.textTheme, b))
+                          ?.map((Body b) =>
+                              _buildBodyTile(bloc, theme.textTheme, b))
                           .toList(),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 28.0, vertical: 16.0),
                         child: Text(
-                          "Part of",
+                          'Part of',
                           style: theme.textTheme.headlineSmall,
                         ),
-                      )))
-                  ..addAll([
-                    Divider(),
-                    SizedBox(
-                      height: 64.0,
-                    )
-                  ]),
+                      )),
+                  const Divider(),
+                  const SizedBox(
+                    height: 64.0,
+                  ),
+                ] // Events
+
+                // Children
+
+                // People
+
+                // Parents
+
+                ,
               ),
       ),
       floatingActionButton: body == null
           ? null
           : editAccess
               ? FloatingActionButton.extended(
-                  icon: Icon(Icons.edit_outlined),
-                  label: Text("Edit"),
-                  tooltip: "Edit this Body",
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Edit'),
+                  tooltip: 'Edit this Body',
                   onPressed: () {
                     Navigator.of(context)
-                        .pushNamed("/putentity/body/${body!.bodyID}");
+                        .pushNamed('/putentity/body/${body!.bodyID}');
                   },
                 )
               : FloatingActionButton(
-                  child: Icon(Icons.share_outlined),
-                  tooltip: "Share this body",
+                  tooltip: 'Share this body',
                   onPressed: () async {
                     await Share.share(
-                        "Check this Institute Body: ${ShareURLMaker.getBodyURL(body!)}");
+                        'Check this Institute Body: ${ShareURLMaker.getBodyURL(body!)}');
                   },
+                  child: const Icon(Icons.share_outlined),
                 ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       persistentFooterButtons: [
@@ -317,7 +327,7 @@ class _BodyPageState extends State<BodyPage> {
           side: BorderSide(
             color: theme.colorScheme.secondary,
           ),
-          borderRadius: BorderRadius.all(Radius.circular(4)),
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
         ),
       ),
       // color: body.bodyUserFollows ?? false
@@ -331,27 +341,28 @@ class _BodyPageState extends State<BodyPage> {
       //     ),
       //     borderRadius: BorderRadius.all(Radius.circular(4))),
       child: Row(children: () {
-        var rowChildren = <Widget>[
+        List<Widget> rowChildren = <Widget>[
           Text(
-            body?.bodyUserFollows ?? false ? "Following" : "Follow",
+            body?.bodyUserFollows ?? false ? 'Following' : 'Follow',
             // style: TextStyle(color: Colors.black),
           ),
-          SizedBox(
+          const SizedBox(
             width: 8.0,
           ),
-          body?.bodyFollowersCount != null
-              ? Text("${body?.bodyFollowersCount}")
-              : SizedBox(
-                  height: 18,
-                  width: 18,
-                  child: CircularProgressIndicator(
-                    valueColor: new AlwaysStoppedAnimation<Color>(
-                      body?.bodyUserFollows ?? false
-                          ? theme.floatingActionButtonTheme.foregroundColor!
-                          : theme.colorScheme.secondary,
-                    ),
-                    strokeWidth: 2,
-                  )),
+          if (body?.bodyFollowersCount != null)
+            Text('${body?.bodyFollowersCount}')
+          else
+            SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    body?.bodyUserFollows ?? false
+                        ? theme.floatingActionButtonTheme.foregroundColor!
+                        : theme.colorScheme.secondary,
+                  ),
+                  strokeWidth: 2,
+                )),
         ];
         if (loadingFollow) {
           rowChildren.insertAll(0, [
@@ -359,13 +370,13 @@ class _BodyPageState extends State<BodyPage> {
                 height: 18,
                 width: 18,
                 child: CircularProgressIndicator(
-                  valueColor: new AlwaysStoppedAnimation<Color>(
+                  valueColor: AlwaysStoppedAnimation<Color>(
                       body?.bodyUserFollows ?? false
                           ? theme.floatingActionButtonTheme.foregroundColor!
                           : theme.colorScheme.secondary),
                   strokeWidth: 2,
                 )),
-            SizedBox(
+            const SizedBox(
               width: 8.0,
             )
           ]);
@@ -390,12 +401,12 @@ class _BodyPageState extends State<BodyPage> {
 
   Widget _buildBodyTile(InstiAppBloc bloc, TextTheme theme, Body body) {
     return ListTile(
-      title: Text(body.bodyName ?? "", style: theme.titleLarge),
-      subtitle: Text(body.bodyShortDescription ?? "", style: theme.titleSmall),
+      title: Text(body.bodyName ?? '', style: theme.titleLarge),
+      subtitle: Text(body.bodyShortDescription ?? '', style: theme.titleSmall),
       leading: NullableCircleAvatar(
-        body.bodyImageURL ?? "",
+        body.bodyImageURL ?? '',
         Icons.people_outline_outlined,
-        heroTag: body.bodyID ?? "",
+        heroTag: body.bodyID ?? '',
       ),
       onTap: () {
         BodyPage.navigateWith(context, bloc, body: body);
@@ -406,14 +417,14 @@ class _BodyPageState extends State<BodyPage> {
   Widget _buildEventTile(InstiAppBloc bloc, ThemeData theme, Event event) {
     return ListTile(
       title: Text(
-        event.eventName ?? "",
+        event.eventName ?? '',
         style: theme.textTheme.titleLarge,
       ),
       enabled: true,
       leading: NullableCircleAvatar(
-        event.eventImageURL ?? event.eventBodies?[0].bodyImageURL ?? "",
+        event.eventImageURL ?? event.eventBodies?[0].bodyImageURL ?? '',
         Icons.event_outlined,
-        heroTag: event.eventID ?? "",
+        heroTag: event.eventID ?? '',
       ),
       subtitle: Text(event.getSubTitle()),
       onTap: () {
@@ -425,15 +436,15 @@ class _BodyPageState extends State<BodyPage> {
   Widget _buildUserTile(InstiAppBloc bloc, ThemeData theme, User u) {
     return ListTile(
       leading: NullableCircleAvatar(
-        u.userProfilePictureUrl ?? "",
+        u.userProfilePictureUrl ?? '',
         Icons.person_outline_outlined,
-        heroTag: u.userID ?? "",
+        heroTag: u.userID ?? '',
       ),
       title: Text(
-        u.userName ?? "",
+        u.userName ?? '',
         style: theme.textTheme.titleLarge,
       ),
-      subtitle: Text(u.getSubTitle() ?? ""),
+      subtitle: Text(u.getSubTitle() ?? ''),
       onTap: () {
         UserPage.navigateWith(context, bloc, u);
       },

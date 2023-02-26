@@ -4,7 +4,7 @@ part 'user_tags_reach_response.g.dart';
 
 @JsonSerializable()
 class UserTagsReachResponse {
-  @JsonKey(name: "count")
+  @JsonKey(name: 'count')
   int? count;
 
   UserTagsReachResponse(this.count);

@@ -4,7 +4,7 @@ part 'offersecret.g.dart';
 
 @JsonSerializable()
 class Offersecret {
-  @JsonKey(name: "secret")
+  @JsonKey(name: 'secret')
   String? secret;
 
   Offersecret({this.secret});

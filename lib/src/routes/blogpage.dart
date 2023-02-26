@@ -1,37 +1,39 @@
 // import 'dart:async';
-import 'dart:core';
 import 'dart:collection';
+import 'dart:core';
 
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/routes/bodypage.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/notif_settings.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter/rendering.dart';
-import 'package:InstiApp/src/api/model/post.dart';
-import 'package:InstiApp/src/api/model/user.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/blog_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
 // import 'package:flutter_html/shims/dart_ui_real.dart';
 // import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../api/model/body.dart';
+// import 'package:flutter/rendering.dart';
+import '../api/model/post.dart';
+import '../api/model/user.dart';
+import '../bloc_provider.dart';
+import '../blocs/blog_bloc.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/notif_settings.dart';
+import '../utils/title_with_backbutton.dart';
+import 'bodypage.dart';
+
 // import 'package:flutter/foundation.dart';
 TextSpan highlight(String result, String query, BuildContext context) {
   // var bloc = BlocProvider.of(context)!.bloc;
-  var theme = Theme.of(context);
+  ThemeData theme = Theme.of(context);
   TextStyle posRes =
-      TextStyle(color: Colors.white, backgroundColor: Colors.red);
+      const TextStyle(color: Colors.white, backgroundColor: Colors.red);
   TextStyle? negRes = theme.textTheme
       .titleMedium; // TextStyle(backgroundColor: bloc.bloc.brightness.toColor().withOpacity(1.0),);
-  if (result == "" || query == "") return TextSpan(text: result, style: negRes);
-  result.replaceAll('\n', " ").replaceAll("  ", "");
+  if (result == '' || query == '') return TextSpan(text: result, style: negRes);
+  result.replaceAll('\n', ' ').replaceAll('  ', '');
 
-  var refinedMatch = result.toLowerCase();
-  var refinedsearch = query.toLowerCase();
+  String refinedMatch = result.toLowerCase();
+  final String refinedsearch = query.toLowerCase();
 
   if (refinedMatch.contains(refinedsearch)) {
     if (refinedMatch.substring(0, refinedsearch.length) == refinedsearch) {
@@ -71,8 +73,12 @@ class BlogPage extends StatefulWidget {
   final PostType postType;
   final bool loginNeeded;
 
-  BlogPage(
-      {required this.postType, required this.title, this.loginNeeded = true});
+  const BlogPage(
+      {Key? key,
+      required this.postType,
+      required this.title,
+      this.loginNeeded = true})
+      : super(key: key);
 
   @override
   _BlogPageState createState() => _BlogPageState();
@@ -80,11 +86,11 @@ class BlogPage extends StatefulWidget {
 
 class _BlogPageState extends State<BlogPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-  final LocalKey _containerKey = ValueKey("container");
+  final LocalKey _containerKey = const ValueKey('container');
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
-  FocusNode _focusNode = FocusNode();
+  final FocusNode _focusNode = FocusNode();
   TextEditingController? _searchFieldController;
   ScrollController? _hideButtonController;
   double isFabVisible = 0;
@@ -131,14 +137,14 @@ class _BlogPageState extends State<BlogPage> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
-    var blogBloc = bloc.getPostsBloc(widget.postType);
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    PostBloc? blogBloc = bloc.getPostsBloc(widget.postType);
     args = ModalRoute.of(context)!.settings.arguments
         as NotificationRouteArguments?;
 
     if (firstBuild) {
-      blogBloc?.query = "";
+      blogBloc?.query = '';
       blogBloc?.refresh();
       firstBuild = false;
     }
@@ -146,18 +152,18 @@ class _BlogPageState extends State<BlogPage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       key: _scaffoldKey,
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -173,9 +179,7 @@ class _BlogPageState extends State<BlogPage> {
             if ((snapshot.hasData && snapshot.data != null) ||
                 !widget.loginNeeded) {
               return GestureDetector(
-                onTap: () {
-                  _focusNode.unfocus();
-                },
+                onTap: _focusNode.unfocus,
                 child: RefreshIndicator(
                   key: _refreshIndicatorKey,
                   onRefresh: _handleRefresh,
@@ -225,7 +229,7 @@ class _BlogPageState extends State<BlogPage> {
                     child: Padding(
                       padding: const EdgeInsets.all(28.0),
                       child: Text(
-                        "You must be logged in to view ${widget.title}",
+                        'You must be logged in to view ${widget.title}',
                         style: theme.textTheme.titleLarge,
                         textAlign: TextAlign.center,
                       ),
@@ -242,28 +246,29 @@ class _BlogPageState extends State<BlogPage> {
       floatingActionButton: isFabVisible == 0
           ? widget.postType == PostType.Query
               ? FloatingActionButton.extended(
-                  tooltip: "Ask a Question",
+                  tooltip: 'Ask a Question',
                   onPressed: () {
-                    Navigator.of(context).pushNamed("/query/add");
+                    Navigator.of(context).pushNamed('/query/add');
                   },
-                  icon: Icon(Icons.add),
-                  label: Text("Ask a Question"),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Ask a Question'),
                 )
               : null
           : FloatingActionButton(
-              tooltip: "Go to the Top",
+              tooltip: 'Go to the Top',
               onPressed: () {
                 _hideButtonController!.animateTo(0.0,
                     curve: Curves.fastOutSlowIn,
                     duration: const Duration(milliseconds: 600));
               },
-              child: Icon(Icons.keyboard_arrow_up_outlined),
+              child: const Icon(Icons.keyboard_arrow_up_outlined),
             ),
     );
   }
 
   Future<void> _handleRefresh() {
-    var blogbloc = BlocProvider.of(context)!.bloc.getPostsBloc(widget.postType);
+    PostBloc? blogbloc =
+        BlocProvider.of(context)!.bloc.getPostsBloc(widget.postType);
     return blogbloc!.refresh(force: blogbloc.query.isEmpty);
   }
 
@@ -284,10 +289,11 @@ class _BlogPageState extends State<BlogPage> {
             child: CircularProgressIndicatorExtended(
           label: Column(
             children: [
-              Text("Getting ${widget.title} Posts"),
-              widget.postType == PostType.ChatBot
-                  ? Text("This might take a while")
-                  : SizedBox()
+              Text('Getting ${widget.title} Posts'),
+              if (widget.postType == PostType.ChatBot)
+                const Text('This might take a while')
+              else
+                const SizedBox()
             ],
           ),
         )),
@@ -295,11 +301,12 @@ class _BlogPageState extends State<BlogPage> {
     }
 
     if (bloc.query.isEmpty && bloc.postType == PostType.ChatBot) {
-      if (post == null || post.content == null) return SizedBox();
+      if (post == null || post.content == null) return const SizedBox();
       return Container(
         alignment: Alignment.center,
-        padding: EdgeInsets.all(50),
+        padding: const EdgeInsets.all(50),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(
               Icons.bolt,
@@ -307,25 +314,24 @@ class _BlogPageState extends State<BlogPage> {
               color: Colors.grey[600],
             ),
             Text(
-              "Ask your queries!",
+              'Ask your queries!',
               style: theme.textTheme.headlineSmall,
               textAlign: TextAlign.center,
             )
           ],
-          crossAxisAlignment: CrossAxisAlignment.center,
         ),
       );
     }
 
     if (post?.content == null) {
       if (bloc.postType == PostType.ChatBot) {
-        if (bloc.bloc.currSession != null)
+        if (bloc.bloc.currSession != null) {
           return GestureDetector(
               onTap: () async {
                 await bloc.updateUserReactionChatBot(
-                    ChatBot("", "", "", "", "", "", body: bloc.query), 2);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text("Reaction Noted ❤️"),
+                    ChatBot('', '', '', '', '', '', body: bloc.query), 2);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text('Reaction Noted ❤️'),
                   duration: Duration(seconds: 1),
                 ));
               },
@@ -335,34 +341,35 @@ class _BlogPageState extends State<BlogPage> {
                 child: Center(
                     child: Text.rich(
                   TextSpan(children: [
-                    TextSpan(text: "👎 ", style: theme.textTheme.headlineSmall),
-                    TextSpan(text: " No Suitable Results"),
+                    TextSpan(text: '👎 ', style: theme.textTheme.headlineSmall),
+                    const TextSpan(text: ' No Suitable Results'),
                   ]),
                 )),
               )));
-        return SizedBox();
+        }
+        return const SizedBox();
       }
-      return Card(
+      return const Card(
           child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(8.0),
         child: Center(
-          child: Text("End of results"),
+          child: Text('End of results'),
         ),
       ));
     }
-    return _post(post, bloc, context);
+    return _post(post!, bloc, context);
   }
 
-  Widget _post(dynamic post, PostBloc bloc, BuildContext context) {
+  Widget _post(Post post, PostBloc bloc, BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    var theme = Theme.of(context);
+    ThemeData theme = Theme.of(context);
 
     if (post.id == args?.notif.notificationObjectID &&
         args?.key == ActionKeys.LIKE_REACT &&
         firstNotifAct) {
       firstNotifAct = false;
       WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _pressedReact(post, theme, bloc, context));
+          (_) => _pressedReact(post as NewsArticle, theme, bloc, context));
     }
 
     //print(post.title);
@@ -373,15 +380,15 @@ class _BlogPageState extends State<BlogPage> {
           children: <Widget>[
             InkWell(
               onTap: () async {
-                if (await canLaunchUrl(Uri.parse(post.link))) {
+                if (await canLaunchUrl(Uri.parse(post.link ?? ''))) {
                   await launchUrl(
-                    Uri.parse(post.link),
+                    Uri.parse(post.link ?? ''),
                     mode: LaunchMode.externalApplication,
                   );
                 }
               },
               child: Tooltip(
-                message: "Open post in browser",
+                message: 'Open post in browser',
                 child: Stack(
                   children: <Widget>[
                     Padding(
@@ -397,82 +404,85 @@ class _BlogPageState extends State<BlogPage> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            widget.postType == PostType.ChatBot
-                                ? RichText(
-                                    textScaleFactor: 0.8,
-                                    // textHeightBehavior: ,
-                                    text: TextSpan(
-                                        text: "Click here to know more",
-                                        style: theme.textTheme.titleMedium!
-                                            .copyWith(
-                                          fontWeight: FontWeight.normal,
-                                          color: Colors.blue,
-                                          decoration: TextDecoration.underline,
-                                        )),
-                                    textAlign: TextAlign.start,
-                                    strutStyle: StrutStyle.fromTextStyle(
-                                        theme.textTheme.headlineSmall!.copyWith(
-                                            fontWeight: FontWeight.w900,
-                                            color: Colors.blue),
-                                        height: 0.7,
-                                        fontWeight: FontWeight.w900))
-                                : RichText(
-                                    textScaleFactor: 1.55,
-                                    // textHeightBehavior: ,
-                                    text: highlight(
-                                        post.title, bloc.query, context),
-                                    textAlign: TextAlign.start,
-                                    strutStyle: StrutStyle.fromTextStyle(
-                                        theme.textTheme.headlineSmall!.copyWith(
-                                            fontWeight: FontWeight.w900),
-                                        height: 0.7,
-                                        fontWeight: FontWeight.w900)),
+                            if (widget.postType == PostType.ChatBot)
+                              RichText(
+                                  textScaleFactor: 0.8,
+                                  // textHeightBehavior: ,
+                                  text: TextSpan(
+                                      text: 'Click here to know more',
+                                      style:
+                                          theme.textTheme.titleMedium!.copyWith(
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.blue,
+                                        decoration: TextDecoration.underline,
+                                      )),
+                                  textAlign: TextAlign.start,
+                                  strutStyle: StrutStyle.fromTextStyle(
+                                      theme.textTheme.headlineSmall!.copyWith(
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.blue),
+                                      height: 0.7,
+                                      fontWeight: FontWeight.w900))
+                            else
+                              RichText(
+                                  textScaleFactor: 1.55,
+                                  // textHeightBehavior: ,
+                                  text: highlight(
+                                      post.title ?? '', bloc.query, context),
+                                  textAlign: TextAlign.start,
+                                  strutStyle: StrutStyle.fromTextStyle(
+                                      theme.textTheme.headlineSmall!.copyWith(
+                                          fontWeight: FontWeight.w900),
+                                      height: 0.7,
+                                      fontWeight: FontWeight.w900)),
                             // Text(
                             //   post.title,
                             //   textAlign: TextAlign.start,
                             //   style: theme.textTheme.headlineSmall
                             //       ?.copyWith(fontWeight: FontWeight.bold),
                             // ),
-                            widget.postType == PostType.NewsArticle
-                                ? InkWell(
-                                    onTap: () async {
-                                      var p = (post as NewsArticle);
-                                      BodyPage.navigateWith(context, bloc.bloc,
-                                          body: p.body ?? Body());
-                                    },
-                                    child: Tooltip(
-                                      message: "Open body page",
-                                      child: Text(
-                                        "${((post as NewsArticle).body?.bodyName)} | ${post.published}",
-                                        style: theme.textTheme.titleMedium
-                                            ?.copyWith(color: Colors.lightBlue),
-                                      ),
+                            if (widget.postType == PostType.NewsArticle)
+                              InkWell(
+                                onTap: () async {
+                                  final NewsArticle p = post as NewsArticle;
+                                  BodyPage.navigateWith(context, bloc.bloc,
+                                      body: p.body ?? Body());
+                                },
+                                child: Tooltip(
+                                  message: 'Open body page',
+                                  child: Text(
+                                    '${(post as NewsArticle).body?.bodyName} | ${post.published}',
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(color: Colors.lightBlue),
+                                  ),
+                                ),
+                              )
+                            else
+                              widget.postType == PostType.ChatBot
+                                  ? const SizedBox()
+                                  : Text(
+                                      post.published ?? '',
+                                      textAlign: TextAlign.start,
+                                      style: theme.textTheme.titleMedium,
                                     ),
-                                  )
-                                : widget.postType == PostType.ChatBot
-                                    ? SizedBox()
-                                    : Text(
-                                        post.published,
-                                        textAlign: TextAlign.start,
-                                        style: theme.textTheme.titleMedium,
-                                      ),
-                            SizedBox(
+                            const SizedBox(
                               height: 4.0,
                             ),
                           ],
                         ),
                       ),
                     ),
-                    (post.link != null && post.link != "")
-                        ? Positioned(
-                            top: 6,
-                            right: 6,
-                            child: Icon(
-                              Icons.launch_outlined,
-                              size: 16,
-                            ),
-                          )
-                        : SizedBox(),
+                    if (post.link != null && post.link != '')
+                      const Positioned(
+                        top: 6,
+                        right: 6,
+                        child: Icon(
+                          Icons.launch_outlined,
+                          size: 16,
+                        ),
+                      )
+                    else
+                      const SizedBox(),
 
                     //             Positioned(
                     //               top: 6,
@@ -488,7 +498,7 @@ class _BlogPageState extends State<BlogPage> {
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 4.0,
             ),
             Padding(
@@ -503,71 +513,198 @@ class _BlogPageState extends State<BlogPage> {
                       constraints: BoxConstraints(maxWidth: width * 0.8),
                       child: CommonHtml(
                           data: post.content,
-                          defaultTextStyle:
-                              theme.textTheme.titleMedium ?? TextStyle())),
+                          defaultTextStyle: theme.textTheme.titleMedium ??
+                              const TextStyle())),
                 )),
-            widget.postType == PostType.External
-                ? Padding(
-                    padding: const EdgeInsets.only(
-                      left: 20.0,
-                      right: 12.0,
-                    ),
-                    child: Text(
-                      "By " + post.body,
-                      style: theme.textTheme.bodyLarge,
-                    ),
-                  )
-                : SizedBox(),
-            widget.postType == PostType.External
-                ? SizedBox(height: 10)
-                : SizedBox(),
-            widget.postType == PostType.NewsArticle
-                ? Builder(builder: (BuildContext context) {
-                    const Map<String, String> reactionToEmoji = {
-                      "0": "👍",
-                      "1": "❤️", //heart
-                      "2": "😂",
-                      "3": "😯",
-                      "4": "😢",
-                      "5": "😡",
-                    };
+            if (widget.postType == PostType.External)
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 20.0,
+                  right: 12.0,
+                ),
+                child: Text(
+                  'By ${(post as ExternalBlogPost).body ?? ''}',
+                  style: theme.textTheme.bodyLarge,
+                ),
+              )
+            else
+              const SizedBox(),
+            if (widget.postType == PostType.External)
+              const SizedBox(height: 10)
+            else
+              const SizedBox(),
+            if (widget.postType == PostType.NewsArticle)
+              Builder(builder: (BuildContext context) {
+                const Map<String, String> reactionToEmoji = {
+                  '0': '👍',
+                  '1': '❤️', //heart
+                  '2': '😂',
+                  '3': '😯',
+                  '4': '😢',
+                  '5': '😡',
+                };
 
-                    // const Map<String, String> reactionToName = {
-                    //   "0": "Like",
-                    //   "1": "Love",
-                    //   "2": "Haha",
-                    //   "3": "Wow",
-                    //   "4": "Sad",
-                    //   "5": "Angry",
-                    // };
+                // const Map<String, String> reactionToName = {
+                //   "0": "Like",
+                //   "1": "Love",
+                //   "2": "Haha",
+                //   "3": "Wow",
+                //   "4": "Sad",
+                //   "5": "Angry",
+                // };
 
-                    var article = (post as NewsArticle);
-                    var totalNumberOfReactions = article.reactionCount?.values
-                        .reduce((i1, i2) => i1 + i2);
+                NewsArticle article = post as NewsArticle;
+                int? totalNumberOfReactions = article.reactionCount?.values
+                    .reduce((int i1, int i2) => i1 + i2);
 
-                    var nonZeroReactions = article.reactionCount?.keys
-                        .where((s) => ((article.reactionCount?[s] ?? 0) > 0))
-                        .toList();
-                    nonZeroReactions?.sort((s1, s2) =>
-                        ((article.reactionCount?[s1] ?? 0)
-                            .compareTo(article.reactionCount?[s2] ?? 0)));
-                    var numberOfPeopleOtherThanYou =
-                        (totalNumberOfReactions ?? 0) -
-                            ((article.userReaction ?? -1) >= 0 ? 1 : 0);
+                List<String>? nonZeroReactions = article.reactionCount?.keys
+                    .where((String s) => (article.reactionCount?[s] ?? 0) > 0)
+                    .toList();
+                nonZeroReactions?.sort((String s1, String s2) =>
+                    (article.reactionCount?[s1] ?? 0)
+                        .compareTo(article.reactionCount?[s2] ?? 0));
+                final int numberOfPeopleOtherThanYou =
+                    (totalNumberOfReactions ?? 0) -
+                        ((article.userReaction ?? -1) >= 0 ? 1 : 0);
 
-                    if (nonZeroReactions != null) {
+                if (nonZeroReactions != null) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      const Divider(
+                        height: 0.0,
+                      ),
+                      InkWell(
+                        onTap: (loadingReaction != null &&
+                                loadingReaction == article.id)
+                            ? null
+                            : () =>
+                                _pressedReact(article, theme, bloc, context),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              if ((totalNumberOfReactions ?? 0) > 0)
+                                Text.rich(
+                                  TextSpan(children: [
+                                    TextSpan(
+                                        text:
+                                            '${nonZeroReactions.map((String s) => reactionToEmoji[s]).join()} ',
+                                        style: theme.textTheme.headlineSmall),
+                                    TextSpan(
+                                        text:
+                                            " ${((article.userReaction ?? -1) < 0) ? "" : "You "}${((article.userReaction ?? -1) >= 0 && (totalNumberOfReactions ?? 0) > 1) ? "and " : ""}${numberOfPeopleOtherThanYou > 0 ? ("$numberOfPeopleOtherThanYou other ${numberOfPeopleOtherThanYou > 1 ? "people " : "person "}") : ""}reacted"),
+                                  ]),
+                                  textAlign: TextAlign.center,
+                                )
+                              else
+                                Center(
+                                    child: Text.rich(
+                                  TextSpan(children: [
+                                    TextSpan(
+                                        text: '👍 ',
+                                        style: theme.textTheme.headlineSmall),
+                                    const TextSpan(text: ' Like'),
+                                  ]),
+                                )),
+                              if (loadingReaction != null &&
+                                  loadingReaction == article.id) ...[
+                                const SizedBox(width: 8),
+                                const CircularProgressIndicatorExtended()
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                } else {
+                  return const SizedBox();
+                }
+              })
+            else
+              widget.postType == PostType.ChatBot &&
+                      bloc.query.isNotEmpty &&
+                      bloc.bloc.currSession != null
+                  ? Builder(builder: (BuildContext context) {
+                      const Map<String, String> reactionToEmoji = {
+                        '0': '👍',
+                        '1': '👎',
+                      };
+
+                      final ChatBot article = post as ChatBot;
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
-                          Divider(
+                          const Divider(
                             height: 0.0,
                           ),
                           InkWell(
                             onTap: (loadingReaction != null &&
                                     loadingReaction == article.id)
                                 ? null
-                                : () => _pressedReact(
-                                    article, theme, bloc, context),
+                                : () async {
+                                    setState(() {
+                                      loadingReaction = article.id;
+                                    });
+
+                                    String? sel = await showDialog<String>(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Dialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(100.0),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: reactionToEmoji.keys
+                                                .map((String s) {
+                                              return RawMaterialButton(
+                                                shape: const CircleBorder(),
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        minWidth: 36.0,
+                                                        minHeight: 12.0),
+                                                child: Text(
+                                                  reactionToEmoji[s] ?? '',
+                                                  style: theme
+                                                      .textTheme.headlineSmall,
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.of(context,
+                                                          rootNavigator: true)
+                                                      .pop(s);
+                                                },
+                                              );
+                                            }).toList(),
+                                          ),
+                                        );
+                                      },
+                                    );
+
+                                    if (sel != null) {
+                                      final int reaction = int.parse(sel);
+                                      await bloc.updateUserReactionChatBot(
+                                          article, reaction);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(const SnackBar(
+                                        content: Text('Reaction Noted ❤️'),
+                                        duration: Duration(seconds: 1),
+                                      ));
+                                    }
+
+                                    setState(() {
+                                      loadingReaction = null;
+                                    });
+                                  },
                             child: Padding(
                               padding: const EdgeInsets.all(12.0),
                               child: Row(
@@ -575,175 +712,47 @@ class _BlogPageState extends State<BlogPage> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  (totalNumberOfReactions ?? 0) > 0
-                                      ? Text.rich(
-                                          TextSpan(children: [
-                                            TextSpan(
-                                                text:
-                                                    "${nonZeroReactions.map((s) => reactionToEmoji[s]).join()} ",
-                                                style: theme
-                                                    .textTheme.headlineSmall),
-                                            TextSpan(
-                                                text:
-                                                    " ${((article.userReaction ?? -1) < 0) ? "" : "You "}${((article.userReaction ?? -1) >= 0 && (totalNumberOfReactions ?? 0) > 1) ? "and " : ""}${numberOfPeopleOtherThanYou > 0 ? (numberOfPeopleOtherThanYou.toString() + " other " + (numberOfPeopleOtherThanYou > 1 ? "people " : "person ")) : ""}reacted"),
-                                          ]),
-                                          textAlign: TextAlign.center,
-                                        )
-                                      : Center(
-                                          child: Text.rich(
-                                          TextSpan(children: [
-                                            TextSpan(
-                                                text: "👍 ",
-                                                style: theme
-                                                    .textTheme.headlineSmall),
-                                            TextSpan(text: " Like"),
-                                          ]),
-                                        )),
-                                ]..addAll(loadingReaction != null &&
-                                        loadingReaction == article.id
-                                    ? [
-                                        SizedBox(width: 8),
-                                        CircularProgressIndicatorExtended()
-                                      ]
-                                    : []),
+                                  Center(
+                                      child: Text.rich(
+                                    TextSpan(children: [
+                                      TextSpan(
+                                          text: '👍 ',
+                                          style: theme.textTheme.headlineSmall),
+                                      const TextSpan(text: ' Like'),
+                                    ]),
+                                  )),
+                                  if (loadingReaction != null &&
+                                      loadingReaction == article.id) ...[
+                                    const SizedBox(width: 8),
+                                    const CircularProgressIndicatorExtended()
+                                  ],
+                                ],
                               ),
                             ),
                           ),
                         ],
                       );
-                    } else {
-                      return SizedBox();
-                    }
-                  })
-                : widget.postType == PostType.ChatBot &&
-                        bloc.query.isNotEmpty &&
-                        bloc.bloc.currSession != null
-                    ? Builder(builder: (BuildContext context) {
-                        const Map<String, String> reactionToEmoji = {
-                          "0": "👍",
-                          "1": "👎",
-                        };
-
-                        var article = (post as ChatBot);
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            Divider(
-                              height: 0.0,
-                            ),
-                            InkWell(
-                              onTap: (loadingReaction != null &&
-                                      loadingReaction == article.id)
-                                  ? null
-                                  : () async {
-                                      setState(() {
-                                        loadingReaction = article.id;
-                                      });
-
-                                      var sel = await showDialog<String>(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Dialog(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(100.0),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              mainAxisSize: MainAxisSize.min,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children:
-                                                  reactionToEmoji.keys.map((s) {
-                                                return RawMaterialButton(
-                                                  shape: CircleBorder(),
-                                                  constraints:
-                                                      const BoxConstraints(
-                                                          minWidth: 36.0,
-                                                          minHeight: 12.0),
-                                                  child: Text(
-                                                    reactionToEmoji[s] ?? "",
-                                                    style: theme.textTheme
-                                                        .headlineSmall,
-                                                  ),
-                                                  onPressed: () {
-                                                    Navigator.of(context,
-                                                            rootNavigator: true)
-                                                        .pop(s);
-                                                  },
-                                                );
-                                              }).toList(),
-                                            ),
-                                          );
-                                        },
-                                      );
-
-                                      if (sel != null) {
-                                        final reaction = int.parse(sel);
-                                        await bloc.updateUserReactionChatBot(
-                                            article, reaction);
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                          content: Text("Reaction Noted ❤️"),
-                                          duration: Duration(seconds: 1),
-                                        ));
-                                      }
-
-                                      setState(() {
-                                        loadingReaction = null;
-                                      });
-                                    },
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: <Widget>[
-                                    Center(
-                                        child: Text.rich(
-                                      TextSpan(children: [
-                                        TextSpan(
-                                            text: "👍 ",
-                                            style:
-                                                theme.textTheme.headlineSmall),
-                                        TextSpan(text: " Like"),
-                                      ]),
-                                    )),
-                                  ]..addAll(loadingReaction != null &&
-                                          loadingReaction == article.id
-                                      ? [
-                                          SizedBox(width: 8),
-                                          CircularProgressIndicatorExtended()
-                                        ]
-                                      : []),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      })
-                    : SizedBox(),
+                    })
+                  : const SizedBox(),
           ],
         ));
   }
 
   final Map<String, String> reactionToEmoji = {
-    "0": "👍",
-    "1": "❤️",
-    "2": "😂",
-    "3": "😯",
-    "4": "😢",
-    "5": "😡",
+    '0': '👍',
+    '1': '❤️',
+    '2': '😂',
+    '3': '😯',
+    '4': '😢',
+    '5': '😡',
   };
-  void _pressedReact(NewsArticle article, ThemeData theme, PostBloc bloc,
-      BuildContext context) async {
+  Future<void> _pressedReact(NewsArticle article, ThemeData theme,
+      PostBloc bloc, BuildContext context) async {
     setState(() {
       loadingReaction = article.id;
     });
 
-    var sel = await showDialog<String>(
+    String? sel = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
         return Dialog(
@@ -754,16 +763,16 @@ class _BlogPageState extends State<BlogPage> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: reactionToEmoji.keys.map((s) {
+            children: reactionToEmoji.keys.map((String s) {
               return RawMaterialButton(
-                shape: CircleBorder(),
+                shape: const CircleBorder(),
                 constraints:
                     const BoxConstraints(minWidth: 36.0, minHeight: 12.0),
-                fillColor: "${article.userReaction}" == s
+                fillColor: '${article.userReaction}' == s
                     ? theme.colorScheme.secondary
                     : theme.cardColor,
                 child: Text(
-                  reactionToEmoji[s] ?? "",
+                  reactionToEmoji[s] ?? '',
                   style: theme.textTheme.headlineSmall,
                 ),
                 onPressed: () {
@@ -777,7 +786,7 @@ class _BlogPageState extends State<BlogPage> {
     );
 
     if (sel != null) {
-      final reaction = int.parse(sel);
+      final int reaction = int.parse(sel);
       await bloc.updateUserReaction(article, reaction);
     }
 
@@ -787,7 +796,7 @@ class _BlogPageState extends State<BlogPage> {
   }
 
   Widget _blogHeader(BuildContext context, PostBloc blogBloc, var bloc) {
-    var theme = Theme.of(context);
+    ThemeData theme = Theme.of(context);
     return Column(
       children: <Widget>[
         TitleWithBackButton(
@@ -803,20 +812,20 @@ class _BlogPageState extends State<BlogPage> {
                 ),
               ),
               AnimatedContainer(
-                duration: Duration(milliseconds: 500),
+                duration: const Duration(milliseconds: 500),
                 // width: searchMode ? 0.0 : null,
                 // height: searchMode ? 0.0 : null,
-                margin: EdgeInsets.only(left: 8.0),
+                margin: const EdgeInsets.only(left: 8.0),
                 decoration: ShapeDecoration(
                     shape: CircleBorder(
                         side: BorderSide(color: theme.primaryColor))),
                 child: searchMode
                     ? widget.postType == PostType.Query
                         ? buildDropdownButton(theme, blogBloc, bloc)
-                        : SizedBox()
+                        : const SizedBox()
                     : IconButton(
-                        tooltip: "Search ${widget.title}",
-                        padding: EdgeInsets.all(16.0),
+                        tooltip: 'Search ${widget.title}',
+                        padding: const EdgeInsets.all(16.0),
                         icon: Icon(
                           actionIcon,
                           color: theme.primaryColor,
@@ -833,60 +842,60 @@ class _BlogPageState extends State<BlogPage> {
             ],
           ),
         ),
-        !searchMode
-            ? SizedBox()
-            : PreferredSize(
-                preferredSize: Size.fromHeight(72),
-                child: AnimatedContainer(
-                  key: _containerKey,
-                  color: theme.canvasColor,
-                  padding: EdgeInsets.all(8.0),
-                  duration: Duration(milliseconds: 500),
-                  child: TextField(
-                    controller: _searchFieldController,
-                    cursorColor: theme.textTheme.bodyMedium?.color,
-                    style: theme.textTheme.bodyMedium,
-                    focusNode: _focusNode,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30)),
-                      labelStyle: theme.textTheme.bodyMedium,
-                      hintStyle: theme.textTheme.bodyMedium,
-                      prefixIcon: Icon(
-                        Icons.search_outlined,
-                      ),
-                      suffixIcon: IconButton(
-                        tooltip: "Clear search results",
-                        icon: Icon(
-                          actionIcon,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            actionIcon = Icons.search_outlined;
-                            _searchFieldController?.text = "";
-                            blogBloc.query = "";
-                            blogBloc.refresh();
-                            searchMode = !searchMode;
-                          });
-                        },
-                      ),
-                      hintText: "Search...",
-                    ),
-                    onChanged: (query) async {
-                      if (widget.postType != PostType.ChatBot &&
-                          query.length > 4) {
-                        blogBloc.query = query;
-                        blogBloc.refresh();
-                      }
-                    },
-                    onSubmitted: (query) async {
-                      blogBloc.query = query;
-                      await blogBloc.refresh();
-                    },
-                    autofocus: true,
+        if (!searchMode)
+          const SizedBox()
+        else
+          PreferredSize(
+            preferredSize: const Size.fromHeight(72),
+            child: AnimatedContainer(
+              key: _containerKey,
+              color: theme.canvasColor,
+              padding: const EdgeInsets.all(8.0),
+              duration: const Duration(milliseconds: 500),
+              child: TextField(
+                controller: _searchFieldController,
+                cursorColor: theme.textTheme.bodyMedium?.color,
+                style: theme.textTheme.bodyMedium,
+                focusNode: _focusNode,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30)),
+                  labelStyle: theme.textTheme.bodyMedium,
+                  hintStyle: theme.textTheme.bodyMedium,
+                  prefixIcon: const Icon(
+                    Icons.search_outlined,
                   ),
+                  suffixIcon: IconButton(
+                    tooltip: 'Clear search results',
+                    icon: Icon(
+                      actionIcon,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        actionIcon = Icons.search_outlined;
+                        _searchFieldController?.text = '';
+                        blogBloc.query = '';
+                        blogBloc.refresh();
+                        searchMode = !searchMode;
+                      });
+                    },
+                  ),
+                  hintText: 'Search...',
                 ),
+                onChanged: (String query) async {
+                  if (widget.postType != PostType.ChatBot && query.length > 4) {
+                    blogBloc.query = query;
+                    await blogBloc.refresh();
+                  }
+                },
+                onSubmitted: (String query) async {
+                  blogBloc.query = query;
+                  await blogBloc.refresh();
+                },
+                autofocus: true,
               ),
+            ),
+          ),
       ],
     );
   }
@@ -894,50 +903,54 @@ class _BlogPageState extends State<BlogPage> {
   Widget buildDropdownButton(ThemeData theme, PostBloc blogBloc, var bloc) {
     blogBloc.setCategories();
     return Container(
-        padding: EdgeInsets.all(6.0),
+        padding: const EdgeInsets.all(6.0),
         child: StreamBuilder<UnmodifiableListView<Map<String, String>>>(
             stream: blogBloc.categories,
             builder: (BuildContext context,
                 AsyncSnapshot<UnmodifiableListView<Map<String, String>>>
                     snapshot) {
               if (!snapshot.hasData || snapshot.data == null) {
-                return Text("No Filters");
+                return const Text('No Filters');
               }
-              var categories_1 = snapshot.data;
+              UnmodifiableListView<Map<String, String>>? categories_1 =
+                  snapshot.data;
               return MultiSelectDialogField<String?>(
                 title: Text(
-                  "Filters",
+                  'Filters',
                   style: theme.textTheme.titleMedium,
                 ),
                 searchable: true,
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 chipDisplay: MultiSelectChipDisplay.none(),
                 listType: MultiSelectListType.CHIP,
                 items: categories_1
-                        ?.map((cat) => MultiSelectItem<String>(
-                              cat['value'] ?? "",
-                              cat['name'] ?? "",
+                        ?.map((Map<String, String> cat) =>
+                            MultiSelectItem<String>(
+                              cat['value'] ?? '',
+                              cat['name'] ?? '',
                             ))
                         .toList() ??
                     [],
-                selectedItemsTextStyle: TextStyle(color: Colors.white),
+                selectedItemsTextStyle: const TextStyle(color: Colors.white),
                 selectedColor: theme.primaryColor,
                 barrierColor: Colors.black.withOpacity(0.7),
-                onConfirm: (c) {
+                onConfirm: (List<String?> c) {
                   setState(() {
-                    currCat = c.map((element) => element ?? "").toList();
-                    String category = "";
-                    currCat?.forEach((element) {
-                      category += element + ",";
+                    currCat =
+                        c.map((String? element) => element ?? '').toList();
+                    String category = '';
+                    currCat?.forEach((String element) {
+                      category += '$element,';
                     });
-                    if (category != "")
+                    if (category != '') {
                       category = category.substring(0, category.length - 1);
+                    }
                     blogBloc.category = category;
                     blogBloc.refresh();
                   });
                 },
-                buttonText: Text(
-                  "",
+                buttonText: const Text(
+                  '',
                 ),
                 buttonIcon: Icon(
                   Icons.filter_alt_outlined,

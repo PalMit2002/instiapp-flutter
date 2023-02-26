@@ -1,25 +1,29 @@
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/calendar_bloc.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/routes/eventpage.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
-import 'package:flutter_calendar_carousel/classes/event_list.dart' as el;
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_calendar_carousel/classes/event_list.dart' as el;
+import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
+
+import '../api/model/event.dart';
+import '../bloc_provider.dart';
+import '../blocs/calendar_bloc.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/title_with_backbutton.dart';
+import 'eventpage.dart';
+
 class CalendarPage extends StatefulWidget {
-  final String title = "Calendar";
+  final String title = 'Calendar';
+
+  const CalendarPage({Key? key}) : super(key: key);
 
   @override
   _CalendarPageState createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   DateTime _currentDate =
       DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
@@ -29,9 +33,9 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
-    var calBloc = bloc.calendarBloc;
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    CalendarBloc calBloc = bloc.calendarBloc;
 
     // print("Width: ${MediaQuery.of(context).size.width}");
 
@@ -51,16 +55,16 @@ class _CalendarPageState extends State<CalendarPage> {
     return Scaffold(
       key: _scaffoldKey,
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -69,7 +73,7 @@ class _CalendarPageState extends State<CalendarPage> {
           ],
         ),
       ),
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       body: SafeArea(
         child: StreamBuilder<Map<DateTime, List<Event>>>(
           stream: calBloc.events,
@@ -98,7 +102,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                       snapshot.data != false
                                   ? CircularProgressIndicator(
                                       valueColor:
-                                          new AlwaysStoppedAnimation<Color>(
+                                          AlwaysStoppedAnimation<Color>(
                                               theme.colorScheme.secondary),
                                       strokeWidth: 2,
                                     )
@@ -115,11 +119,11 @@ class _CalendarPageState extends State<CalendarPage> {
                     children: <Widget>[
                       Center(
                         child: CalendarCarousel<Event>(
-                          customGridViewPhysics: NeverScrollableScrollPhysics(),
+                          customGridViewPhysics: const NeverScrollableScrollPhysics(),
                           onDayPressed: (DateTime date, List<Event> evs) {
-                            this.setState(() => _currentDate = date);
+                            setState(() => _currentDate = date);
                           },
-                          onCalendarChanged: (date) {
+                          onCalendarChanged: (DateTime date) {
                             // print(
                             //     "Fetching events around ${date.month}/${date.year}");
                             calBloc.fetchEvents(
@@ -154,11 +158,11 @@ class _CalendarPageState extends State<CalendarPage> {
                           markedDateIconMaxShown: 10,
                           markedDateIconOffset: 0,
 
-                          markedDateIconBuilder: (e) => Container(
+                          markedDateIconBuilder: (Event e) => Container(
                               decoration: BoxDecoration(
                             color: theme.colorScheme.secondary.withOpacity(0.2),
                             borderRadius:
-                                BorderRadius.all(Radius.circular(1000.0)),
+                                const BorderRadius.all(Radius.circular(1000.0)),
                           )),
 
                           // markedDateMoreShowTotal: true,
@@ -186,7 +190,7 @@ class _CalendarPageState extends State<CalendarPage> {
                           staticSixWeekFormat: true,
 
                           iconColor: theme.colorScheme.secondary,
-                          weekdayTextStyle: TextStyle(
+                          weekdayTextStyle: const TextStyle(
                               // color: theme.accentColor.withOpacity(0.9),
                               color: Colors.grey,
                               fontWeight: FontWeight.bold),
@@ -195,7 +199,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       Center(
                         child: RawMaterialButton(
                           fillColor: theme.colorScheme.secondary,
-                          shape: StadiumBorder(),
+                          shape: const StadiumBorder(),
                           splashColor:
                               theme.colorScheme.secondary.withOpacity(0.8),
                           onPressed: () {},
@@ -206,8 +210,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                       (snapshot.data
                                               ?.containsKey(_currentDate) ??
                                           false)
-                                  ? "${snapshot.data?[_currentDate]?.length} Events"
-                                  : "No events",
+                                  ? '${snapshot.data?[_currentDate]?.length} Events'
+                                  : 'No events',
                               style: theme.textTheme.labelLarge?.copyWith(
                                 color: theme.colorScheme.onSecondary,
                               ),
@@ -217,12 +221,12 @@ class _CalendarPageState extends State<CalendarPage> {
                       )
                     ],
                   ),
+                ), ..._buildEvents(calBloc, theme), const SizedBox(
+                  height: 48,
                 ),
               ]
-                ..addAll(_buildEvents(calBloc, theme))
-                ..add(SizedBox(
-                  height: 48,
-                )),
+                
+                ,
             );
           },
         ),
@@ -232,9 +236,9 @@ class _CalendarPageState extends State<CalendarPage> {
       floatingActionButton:
           (bloc.currSession?.profile?.userRoles?.isNotEmpty ?? false)
               ? FloatingActionButton(
-                  child: Icon(Icons.add_outlined),
+                  child: const Icon(Icons.add_outlined),
                   onPressed: () {
-                    Navigator.of(context).pushNamed("/putentity/event");
+                    Navigator.of(context).pushNamed('/putentity/event');
                   },
                 )
               : null,
@@ -243,21 +247,21 @@ class _CalendarPageState extends State<CalendarPage> {
 
   Iterable<Widget> _buildEvents(CalendarBloc calBloc, ThemeData theme) {
     return calBloc.eventsMap[_currentDate]
-            ?.map((e) => _buildEventTile(calBloc.bloc, theme, e)) ??
+            ?.map((Event e) => _buildEventTile(calBloc.bloc, theme, e)) ??
         [];
   }
 
   Widget _buildEventTile(InstiAppBloc bloc, ThemeData theme, Event event) {
     return ListTile(
       title: Text(
-        event.eventName ?? "",
+        event.eventName ?? '',
         style: theme.textTheme.titleLarge,
       ),
       enabled: true,
       leading: NullableCircleAvatar(
-        event.eventImageURL ?? event.eventBodies?[0].bodyImageURL ?? "",
+        event.eventImageURL ?? event.eventBodies?[0].bodyImageURL ?? '',
         Icons.event_outlined,
-        heroTag: event.eventID ?? "",
+        heroTag: event.eventID ?? '',
       ),
       subtitle: Text(event.getSubTitle()),
       onTap: () {

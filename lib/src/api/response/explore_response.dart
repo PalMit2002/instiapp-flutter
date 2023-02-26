@@ -1,21 +1,22 @@
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/api/model/user.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import '../model/body.dart';
+import '../model/event.dart';
+import '../model/user.dart';
 
 part 'explore_response.g.dart';
 
 @JsonSerializable()
 class ExploreResponse {
-  @JsonKey(name: "interests")
+  @JsonKey(name: 'interests')
   List<Interest>? interest;
-  @JsonKey(name: "skills")
+  @JsonKey(name: 'skills')
   List<Skill>? skills;
-  @JsonKey(name: "bodies")
+  @JsonKey(name: 'bodies')
   List<Body>? bodies;
-  @JsonKey(name: "events")
+  @JsonKey(name: 'events')
   List<Event>? events;
-  @JsonKey(name: "users")
+  @JsonKey(name: 'users')
   List<User>? users;
 
   ExploreResponse({this.bodies, this.events, this.users, this.interest, this.skills});

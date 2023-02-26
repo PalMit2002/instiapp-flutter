@@ -1,24 +1,25 @@
 import 'dart:async';
 
-import 'package:InstiApp/src/api/model/communityPost.dart';
-import 'package:InstiApp/src/blocs/community_post_bloc.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
 // import 'package:InstiApp/src/utils/share_url_maker.dart';
 import 'package:flutter/material.dart';
-import 'package:InstiApp/src/utils/customappbar.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../api/model/communityPost.dart';
 // import 'package:share/share.dart';
 
 import '../bloc_provider.dart';
+import '../blocs/community_post_bloc.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/customappbar.dart';
 
 class CommunityPostPage extends StatefulWidget {
   final CommunityPost? initialCommunityPost;
   final Future<CommunityPost?> communityPostFuture;
-  CommunityPostPage(
-      {required this.communityPostFuture, this.initialCommunityPost});
+  const CommunityPostPage(
+      {Key? key, required this.communityPostFuture, this.initialCommunityPost}) : super(key: key);
 
   static void navigateWith(BuildContext context, CommunityPostBloc bloc,
       CommunityPost communityPost) {
@@ -28,9 +29,9 @@ class CommunityPostPage extends StatefulWidget {
         settings: RouteSettings(
           name: "/post/${communityPost.id ?? ""}",
         ),
-        builder: (context) => CommunityPostPage(
+        builder: (BuildContext context) => CommunityPostPage(
           initialCommunityPost: communityPost,
-          communityPostFuture: bloc.getCommunityPost(communityPost.id ?? ""),
+          communityPostFuture: bloc.getCommunityPost(communityPost.id ?? ''),
         ),
       ),
     );
@@ -42,8 +43,8 @@ class CommunityPostPage extends StatefulWidget {
 
 class _CommunityPostPageState extends State<CommunityPostPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-  TextEditingController _commentController = TextEditingController();
-  FocusNode _commentFocusNode = FocusNode();
+  final TextEditingController _commentController = TextEditingController();
+  final FocusNode _commentFocusNode = FocusNode();
 
   CommunityPost? communityPost;
   CommunityPost? currentlyCommentingPost;
@@ -66,11 +67,11 @@ class _CommunityPostPageState extends State<CommunityPostPage> {
     if (firstBuild) {
       communityPost = widget.initialCommunityPost;
       currentlyCommentingPost = communityPost;
-      widget.communityPostFuture.then((communityPost) {
+      widget.communityPostFuture.then((CommunityPost? communityPost) {
         setState(() {
           this.communityPost = communityPost;
           currentlyCommentingPost = communityPost;
-          this.threadRank = communityPost?.threadRank;
+          threadRank = communityPost?.threadRank;
         });
       });
       firstBuild = false;
@@ -87,7 +88,7 @@ class _CommunityPostPageState extends State<CommunityPostPage> {
               child: Scaffold(
                 key: _scaffoldKey,
                 // extendBodyBehindAppBar: true,
-                drawer: NavDrawer(),
+                drawer: const NavDrawer(),
                 appBar: CustomAppBar(
                   leadingStyle: LeadingStyle(
                     icon: Icons.arrow_back,
@@ -95,16 +96,16 @@ class _CommunityPostPageState extends State<CommunityPostPage> {
                   ),
                 ),
                 bottomNavigationBar: MyBottomAppBar(
-                  shape: RoundedNotchedRectangle(),
-                  child: new Row(
+                  shape: const RoundedNotchedRectangle(),
+                  child: Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       IconButton(
-                        tooltip: "Show bottom sheet",
-                        icon: Icon(
+                        tooltip: 'Show bottom sheet',
+                        icon: const Icon(
                           Icons.menu_outlined,
-                          semanticLabel: "Show bottom sheet",
+                          semanticLabel: 'Show bottom sheet',
                         ),
                         onPressed: () {
                           _scaffoldKey.currentState?.openDrawer();
@@ -127,23 +128,23 @@ class _CommunityPostPageState extends State<CommunityPostPage> {
                             },
                           ),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: Column(
                               children: _buildCommentList(
                                   theme, communityPost!, bloc),
                             ),
                           ),
-                          SizedBox(height: 150)
+                          const SizedBox(height: 150)
                         ],
                       ),
                     ),
                     Column(
                       children: [
-                        Expanded(child: SizedBox()),
+                        const Expanded(child: SizedBox()),
                         Container(
                           color: theme.colorScheme.surfaceVariant,
                           padding:
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           child: Row(
                             children: [
                               Expanded(
@@ -155,7 +156,7 @@ class _CommunityPostPageState extends State<CommunityPostPage> {
                                   focusNode: _commentFocusNode,
                                   decoration: InputDecoration(
                                     isDense: true,
-                                    contentPadding: EdgeInsets.symmetric(
+                                    contentPadding: const EdgeInsets.symmetric(
                                         vertical: 10, horizontal: 10),
                                     border: OutlineInputBorder(
                                         borderSide: BorderSide.none,
@@ -170,8 +171,8 @@ class _CommunityPostPageState extends State<CommunityPostPage> {
                                     fillColor: theme.colorScheme.surface,
                                     hintText: communityPost!.id ==
                                             currentlyCommentingPost!.id
-                                        ? "Add a comment"
-                                        : "Reply to ${currentlyCommentingPost!.content!.length > 23 ? currentlyCommentingPost!.content!.substring(0, 20) + "..." : currentlyCommentingPost!.content!}",
+                                        ? 'Add a comment'
+                                        : "Reply to ${currentlyCommentingPost!.content!.length > 23 ? "${currentlyCommentingPost!.content!.substring(0, 20)}..." : currentlyCommentingPost!.content!}",
                                     hintStyle: theme.textTheme.bodyLarge,
                                   ),
                                   // onChanged: widget.appBarSearchStyle.onChanged,
@@ -179,23 +180,23 @@ class _CommunityPostPageState extends State<CommunityPostPage> {
                                 ),
                               ),
                               Container(
-                                margin: EdgeInsets.only(left: 10),
+                                margin: const EdgeInsets.only(left: 10),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
                                   color: theme.colorScheme.surface,
                                 ),
                                 child: IconButton(
                                   padding: EdgeInsets.zero,
-                                  constraints: BoxConstraints(),
+                                  constraints: const BoxConstraints(),
                                   color: theme.colorScheme.onSurfaceVariant,
                                   splashColor: Colors.transparent,
-                                  tooltip: "Post",
-                                  icon: Icon(
+                                  tooltip: 'Post',
+                                  icon: const Icon(
                                     Icons.keyboard_double_arrow_up,
-                                    semanticLabel: "Post",
+                                    semanticLabel: 'Post',
                                   ),
                                   onPressed: () async {
-                                    if (_commentController.text.length > 0) {
+                                    if (_commentController.text.isNotEmpty) {
                                       CommunityPost comment = CommunityPost(
                                         content: _commentController.text,
                                         parent: currentlyCommentingPost!.id,
@@ -251,14 +252,14 @@ class _CommunityPostPageState extends State<CommunityPostPage> {
         (communityPost.commentsCount ?? 0) > 0) {
       return [
         Container(
-          child: CircularProgressIndicator(),
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
+          child: const CircularProgressIndicator(),
         )
       ];
     }
 
     return (communityPost.comments?.map(
-              (c) => Comment(
+              (CommunityPost c) => Comment(
                 comment: c,
                 onReply: changeCommentingPost,
               ),
@@ -270,7 +271,7 @@ class _CommunityPostPageState extends State<CommunityPostPage> {
   void changeCommentingPost(CommunityPost communityPost) {
     setState(() {
       currentlyCommentingPost = communityPost;
-      _commentController.text = "";
+      _commentController.text = '';
     });
     _commentFocusNode.requestFocus();
   }
@@ -280,7 +281,7 @@ class Comment extends StatefulWidget {
   final CommunityPost comment;
   final void Function(CommunityPost) onReply;
 
-  Comment({required this.comment, required this.onReply});
+  const Comment({Key? key, required this.comment, required this.onReply}) : super(key: key);
   @override
   State<Comment> createState() => _CommentState();
 }
@@ -301,6 +302,7 @@ class _CommentState extends State<Comment> {
     //print(communityPost?.comments);
   }
 
+  @override
   Widget build(BuildContext context) {
     if (comment!.deleted == true) {
       return Container();
@@ -309,11 +311,11 @@ class _CommentState extends State<Comment> {
     ThemeData theme = Theme.of(context);
     InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
 
-    String timeToShow = "";
+    String timeToShow = '';
 
     if (firstBuild && showingComments) {
-      bloc.communityPostBloc.getCommunityPost(widget.comment.id ?? "").then(
-        (value) {
+      bloc.communityPostBloc.getCommunityPost(widget.comment.id ?? '').then(
+        (CommunityPost? value) {
           setState(() {
             comment = value;
             loading = false;
@@ -326,11 +328,11 @@ class _CommentState extends State<Comment> {
     if (comment != null) {
       if (comment!.postedMinutes != null) {
         if (comment!.postedMinutes! > 1440) {
-          timeToShow = "${comment!.postedMinutes! ~/ 1440}d";
+          timeToShow = '${comment!.postedMinutes! ~/ 1440}d';
         } else if (comment!.postedMinutes! > 60) {
-          timeToShow = "${comment!.postedMinutes! ~/ 60}h";
+          timeToShow = '${comment!.postedMinutes! ~/ 60}h';
         } else {
-          timeToShow = "${comment!.postedMinutes!}m";
+          timeToShow = '${comment!.postedMinutes!}m';
         }
       }
     }
@@ -343,30 +345,30 @@ class _CommentState extends State<Comment> {
                 ListTile(
                   title: RichText(
                     text: TextSpan(
-                      text: comment!.postedBy?.userName ?? "Anonymous",
+                      text: comment!.postedBy?.userName ?? 'Anonymous',
                       style: theme.textTheme.bodyMedium,
                       children: [
                         TextSpan(
-                          text: "  ${timeToShow}",
+                          text: '  $timeToShow',
                           style: theme.textTheme.bodySmall,
                         ),
                       ],
                     ),
                   ),
                   leading: NullableCircleAvatar(
-                    comment!.postedBy?.userProfilePictureUrl ?? "",
+                    comment!.postedBy?.userProfilePictureUrl ?? '',
                     Icons.person,
                     radius: 16,
                   ),
                   trailing: PopupMenuButton<int>(
-                    itemBuilder: (context) {
+                    itemBuilder: (BuildContext context) {
                       List<PopupMenuItem<int>> items = [];
 
                       bool isAuthor = comment!.postedBy?.userID ==
                           bloc.currSession!.profile!.userID;
 
                       bool isAdmin = bloc.hasPermission(
-                          comment!.community?.body ?? "", "ModC");
+                          comment!.community?.body ?? '', 'ModC');
 
                       if (isAuthor) {
                         // items.add(
@@ -406,18 +408,18 @@ class _CommentState extends State<Comment> {
                             value: 2,
                             // row has two child icon and text
                             child: Row(
-                              children: [
+                              children: const [
                                 Icon(Icons.delete),
                                 SizedBox(
                                   // sized box with width 10
                                   width: 10,
                                 ),
-                                Text("Delete")
+                                Text('Delete')
                               ],
                             ),
                             onTap: () async {
                               await bloc.communityPostBloc
-                                  .deleteCommunityPost(comment!.id ?? "");
+                                  .deleteCommunityPost(comment!.id ?? '');
                               setState(() {
                                 comment!.deleted = true;
                               });
@@ -432,21 +434,17 @@ class _CommentState extends State<Comment> {
                           // row has two child icon and text
                           child: Row(
                             children: [
-                              !(comment?.hasUserReported ?? false)
-                                  ? Icon(Icons.report)
-                                  : Icon(Icons.report_off),
-                              SizedBox(
+                              if (!(comment?.hasUserReported ?? false)) const Icon(Icons.report) else const Icon(Icons.report_off),
+                              const SizedBox(
                                 // sized box with width 10
                                 width: 10,
                               ),
-                              !(comment?.hasUserReported ?? false)
-                                  ? Text("Report")
-                                  : Text("Unreport")
+                              if (!(comment?.hasUserReported ?? false)) const Text('Report') else const Text('Unreport')
                             ],
                           ),
                           onTap: () async {
                             await bloc.communityPostBloc
-                                .reportCommunityPost(comment!.id ?? "");
+                                .reportCommunityPost(comment!.id ?? '');
                             setState(() {
                               comment!.hasUserReported =
                                   !(comment?.hasUserReported ?? false);
@@ -459,8 +457,8 @@ class _CommentState extends State<Comment> {
                     },
                     // offset: Offset(0, 100),
                     elevation: 2,
-                    tooltip: "More",
-                    icon: Icon(
+                    tooltip: 'More',
+                    icon: const Icon(
                       Icons.more_vert,
                     ),
                   ),
@@ -469,8 +467,8 @@ class _CommentState extends State<Comment> {
                   contentPadding: EdgeInsets.zero,
                 ),
                 Container(
-                  margin: EdgeInsets.only(left: 16),
-                  padding: EdgeInsets.only(left: 16),
+                  margin: const EdgeInsets.only(left: 16),
+                  padding: const EdgeInsets.only(left: 16),
                   decoration: BoxDecoration(
                     border: Border(
                       left: BorderSide(
@@ -482,8 +480,8 @@ class _CommentState extends State<Comment> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SelectableLinkify(
-                        text: comment!.content ?? "",
-                        onOpen: (link) async {
+                        text: comment!.content ?? '',
+                        onOpen: (LinkableElement link) async {
                           if (await canLaunchUrl(Uri.parse(link.url))) {
                             await launchUrl(
                               Uri.parse(link.url),
@@ -510,17 +508,17 @@ class _CommentState extends State<Comment> {
           Container(
             alignment: Alignment.center,
             child: Container(
-              padding: EdgeInsets.all(5),
+              padding: const EdgeInsets.all(5),
               height: 20,
               width: 20,
-              child: CircularProgressIndicator(
+              child: const CircularProgressIndicator(
                 strokeWidth: 2,
               ),
             ),
           )
         ];
       }
-      return (communityPost.comments?.map((c) => Comment(
+      return (communityPost.comments?.map((CommunityPost c) => Comment(
                     comment: c,
                     onReply: widget.onReply,
                   )) ??
@@ -543,17 +541,17 @@ class _CommentState extends State<Comment> {
             child: Row(
               children: [
                 Expanded(
+                  flex: 1,
                   child: Divider(
                     color: theme.colorScheme.inverseSurface,
                     thickness: 1,
                   ),
-                  flex: 1,
                 ),
-                SizedBox(width: 5),
+                const SizedBox(width: 5),
                 Expanded(
                   flex: 3,
                   child: Text(
-                    "View ${communityPost.commentsCount} Replies",
+                    'View ${communityPost.commentsCount} Replies',
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.bold,
@@ -573,7 +571,7 @@ class _CommentState extends State<Comment> {
   Widget _buildFooter(
       ThemeData theme, InstiAppBloc bloc, CommunityPost communityPost) {
     int numReactions = communityPost.reactionCount?.values
-            .reduce((sum, element) => sum + element) ??
+            .reduce((int sum, int element) => sum + element) ??
         0;
     return Container(
       decoration: BoxDecoration(
@@ -585,7 +583,7 @@ class _CommentState extends State<Comment> {
         ),
       ),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(10),
@@ -596,7 +594,7 @@ class _CommentState extends State<Comment> {
             Row(
               children: [
                 PopupMenuButton<int>(
-                  onSelected: (val) async {
+                  onSelected: (int val) async {
                     await bloc.communityPostBloc
                         .updateUserCommunityPostReaction(communityPost, val);
                     setState(() {
@@ -619,17 +617,17 @@ class _CommentState extends State<Comment> {
                   },
                   itemBuilder: (BuildContext context) {
                     return [
-                      new PopupMenuWidget(
+                      PopupMenuWidget(
                         height: 20,
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 5),
-                          child: new Row(
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: emojis
                                 .asMap()
                                 .entries
                                 .map(
-                                  (e) => Container(
+                                  (MapEntry<int, String> e) => Container(
                                     color: e.key == communityPost.userReaction
                                         ? Colors.blue
                                         : Colors.transparent,
@@ -647,14 +645,13 @@ class _CommentState extends State<Comment> {
                     ];
                   },
                   child: Row(children: [
-                    Icon(
+                    const Icon(
                       Icons.add_reaction_outlined,
                       size: 20,
                     ),
-                    numReactions > 0
-                        ? Container(
-                            margin: EdgeInsets.symmetric(horizontal: 5),
-                            padding: EdgeInsets.all(5),
+                    if (numReactions > 0) Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 5),
+                            padding: const EdgeInsets.all(5),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(100),
                               color: theme.colorScheme.surfaceVariant,
@@ -664,7 +661,7 @@ class _CommentState extends State<Comment> {
                                   .asMap()
                                   .entries
                                   .map(
-                                    (e) => (communityPost.reactionCount?[
+                                    (MapEntry<int, String> e) => (communityPost.reactionCount?[
                                                     e.key.toString()] ??
                                                 0) >
                                             0
@@ -673,18 +670,15 @@ class _CommentState extends State<Comment> {
                                   )
                                   .toList(),
                             ),
-                          )
-                        : Container(),
-                    numReactions > 0
-                        ? Text(
+                          ) else Container(),
+                    if (numReactions > 0) Text(
                             numReactions.toString(),
                             style: theme.textTheme.bodySmall,
-                          )
-                        : Container(),
+                          ) else Container(),
                   ]),
                 ),
                 Container(
-                  margin: EdgeInsets.only(left: 15),
+                  margin: const EdgeInsets.only(left: 15),
                   child: Row(
                     children: [
                       IconButton(
@@ -693,7 +687,7 @@ class _CommentState extends State<Comment> {
                         highlightColor: Colors.transparent,
                         // iconSize: 20,
                         padding: EdgeInsets.zero,
-                        constraints: BoxConstraints(),
+                        constraints: const BoxConstraints(),
                         icon: Icon(
                           Icons.reply,
                           color: theme.colorScheme.onSurfaceVariant,
@@ -703,7 +697,7 @@ class _CommentState extends State<Comment> {
                           widget.onReply(communityPost);
                         },
                       ),
-                      SizedBox(width: 3),
+                      const SizedBox(width: 3),
                       Text((communityPost.commentsCount ?? 0).toString(),
                           style: theme.textTheme.bodySmall),
                     ],

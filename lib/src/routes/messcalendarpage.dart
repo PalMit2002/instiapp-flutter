@@ -1,18 +1,19 @@
 import 'dart:math';
 
-import 'package:InstiApp/src/api/model/messCalEvent.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-// import 'package:InstiApp/src/blocs/calendar_bloc.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/blocs/mess_calendar_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
-// import 'package:InstiApp/src/routes/eventpage.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
 import 'package:flutter_calendar_carousel/classes/event_list.dart' as el;
+import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
 import 'package:intl/intl.dart';
+
+import '../api/model/messCalEvent.dart';
+import '../bloc_provider.dart';
+// import 'package:InstiApp/src/blocs/calendar_bloc.dart';
+import '../blocs/ia_bloc.dart';
+import '../blocs/mess_calendar_bloc.dart';
+import '../drawer.dart';
+// import 'package:InstiApp/src/routes/eventpage.dart';
+import '../utils/common_widgets.dart';
+import '../utils/title_with_backbutton.dart';
 
 class MessCalendarPage extends StatefulWidget {
   const MessCalendarPage({Key? key}) : super(key: key);
@@ -22,7 +23,7 @@ class MessCalendarPage extends StatefulWidget {
 }
 
 class _MessCalendarPageState extends State<MessCalendarPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   DateTime _currentDate =
       DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
@@ -32,9 +33,9 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
-    var calBloc = bloc.messCalendarBloc;
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    MessCalendarBloc calBloc = bloc.messCalendarBloc;
 
     _eventIcon = Material(
       type: MaterialType.transparency,
@@ -53,16 +54,16 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
     return Scaffold(
       key: _scaffoldKey,
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -71,13 +72,14 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
           ],
         ),
       ),
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       body: SafeArea(
         child: bloc.currSession == null
             ? Container(
                 alignment: Alignment.center,
-                padding: EdgeInsets.all(50),
+                padding: const EdgeInsets.all(50),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.cloud,
@@ -85,12 +87,11 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
                       color: Colors.grey[600],
                     ),
                     Text(
-                      "Login To Have Your Meal",
+                      'Login To Have Your Meal',
                       style: theme.textTheme.headlineSmall,
                       textAlign: TextAlign.center,
                     )
                   ],
-                  crossAxisAlignment: CrossAxisAlignment.center,
                 ),
               )
             : StreamBuilder<Map<DateTime, List<MessCalEvent>>>(
@@ -105,7 +106,7 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
-                              "Mess Calendar",
+                              'Mess Calendar',
                               style: theme.textTheme.displaySmall,
                             ),
                             SizedBox(
@@ -120,7 +121,7 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
                                             snapshot.data != false
                                         ? CircularProgressIndicator(
                                             valueColor:
-                                                new AlwaysStoppedAnimation<
+                                                AlwaysStoppedAnimation<
                                                         Color>(
                                                     theme
                                                         .colorScheme.secondary),
@@ -140,12 +141,12 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
                             Center(
                               child: CalendarCarousel<MessCalEvent>(
                                 customGridViewPhysics:
-                                    NeverScrollableScrollPhysics(),
+                                    const NeverScrollableScrollPhysics(),
                                 onDayPressed:
                                     (DateTime date, List<MessCalEvent> evs) {
-                                  this.setState(() => _currentDate = date);
+                                  setState(() => _currentDate = date);
                                 },
-                                onCalendarChanged: (date) {
+                                onCalendarChanged: (DateTime date) {
                                   // print(
                                   //     "Fetching events around ${date.month}/${date.year}");
                                   calBloc.fetchEvents(
@@ -181,12 +182,12 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
                                 markedDateIconMaxShown: 10,
                                 markedDateIconOffset: 0,
 
-                                markedDateIconBuilder: (e) => Container(
+                                markedDateIconBuilder: (MessCalEvent e) => Container(
                                     decoration: BoxDecoration(
                                   color: theme.colorScheme.secondary
                                       .withOpacity(0.2),
                                   borderRadius:
-                                      BorderRadius.all(Radius.circular(1000.0)),
+                                      const BorderRadius.all(Radius.circular(1000.0)),
                                 )),
 
                                 // markedDateMoreShowTotal: true,
@@ -218,7 +219,7 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
                                 staticSixWeekFormat: true,
 
                                 iconColor: theme.colorScheme.secondary,
-                                weekdayTextStyle: TextStyle(
+                                weekdayTextStyle: const TextStyle(
                                     // color: theme.accentColor.withOpacity(0.9),
                                     color: Colors.grey,
                                     fontWeight: FontWeight.bold),
@@ -227,7 +228,7 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
                             Center(
                               child: RawMaterialButton(
                                 fillColor: theme.colorScheme.secondary,
-                                shape: StadiumBorder(),
+                                shape: const StadiumBorder(),
                                 splashColor: theme.colorScheme.secondary
                                     .withOpacity(0.8),
                                 onPressed: () {},
@@ -238,8 +239,8 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
                                             (snapshot.data?.containsKey(
                                                     _currentDate) ??
                                                 false)
-                                        ? "${snapshot.data?[_currentDate]?.length} Meals"
-                                        : "No meals",
+                                        ? '${snapshot.data?[_currentDate]?.length} Meals'
+                                        : 'No meals',
                                     style: theme.textTheme.labelLarge?.copyWith(
                                       color: theme.colorScheme.onSecondary,
                                     ),
@@ -249,12 +250,12 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
                             )
                           ],
                         ),
+                      ), ..._buildEvents(calBloc, theme), const SizedBox(
+                        height: 48,
                       ),
                     ]
-                      ..addAll(_buildEvents(calBloc, theme))
-                      ..add(SizedBox(
-                        height: 48,
-                      )),
+                      
+                      ,
                   );
                 },
               ),
@@ -264,7 +265,7 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
 
   Iterable<Widget> _buildEvents(MessCalendarBloc calBloc, ThemeData theme) {
     return calBloc.eventsMap[_currentDate]
-            ?.map((e) => _buildEventTile(calBloc.bloc, theme, e)) ??
+            ?.map((MessCalEvent e) => _buildEventTile(calBloc.bloc, theme, e)) ??
         [];
   }
 
@@ -272,7 +273,7 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
       InstiAppBloc bloc, ThemeData theme, MessCalEvent event) {
     return ListTile(
       title: Text(
-        event.title ?? "",
+        event.title ?? '',
         style: theme.textTheme.titleLarge,
       ),
       enabled: true,
@@ -284,7 +285,7 @@ class _MessCalendarPageState extends State<MessCalendarPage> {
       subtitle: Text(
         DateFormat.jm()
             .add_yMMMd()
-            .format(DateTime.parse(event.dateTime ?? "").toLocal()),
+            .format(DateTime.parse(event.dateTime ?? '').toLocal()),
       ),
       // onTap: () {
       //   EventPage.navigateWith(context, bloc, event);

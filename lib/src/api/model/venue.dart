@@ -4,40 +4,40 @@ part 'venue.g.dart';
 
 @JsonSerializable()
 class Venue {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? venueID;
 
-  @JsonKey(name: "name")
+  @JsonKey(name: 'name')
   String? venueName;
 
-  @JsonKey(name: "short_name")
+  @JsonKey(name: 'short_name')
   String? venueShortName;
 
-  @JsonKey(name: "description")
+  @JsonKey(name: 'description')
   String? venueDescripion;
 
-  @JsonKey(name: "parent")
+  @JsonKey(name: 'parent')
   String? venueParentId;
 
-  @JsonKey(name: "parent_relation")
+  @JsonKey(name: 'parent_relation')
   String? venueParentRelation;
 
-  @JsonKey(name: "group_id")
+  @JsonKey(name: 'group_id')
   int? venueGroupId;
 
-  @JsonKey(name: "pixel_x")
+  @JsonKey(name: 'pixel_x')
   int? venuePixelX;
 
-  @JsonKey(name: "pixel_y")
+  @JsonKey(name: 'pixel_y')
   int? venuePixelY;
 
-  @JsonKey(name: "reusable")
+  @JsonKey(name: 'reusable')
   bool? venueReusable;
 
-  @JsonKey(name: "lat")
+  @JsonKey(name: 'lat')
   String? venueLatitude;
 
-  @JsonKey(name: "lng")
+  @JsonKey(name: 'lng')
   String? venueLongitude;
 
   Venue(

@@ -75,6 +75,7 @@ dev_dependencies:
   json_model: any
   json_serializable: ^6.6.1
   firebase_core: ^2.7.0
+  flutter_lints: ^2.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

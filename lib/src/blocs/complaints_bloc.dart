@@ -2,18 +2,20 @@
 import 'dart:collection';
 import 'dart:math';
 
-import 'package:InstiApp/src/api/model/venter.dart';
-import 'package:InstiApp/src/api/request/comment_create_request.dart';
-import 'package:InstiApp/src/api/request/complaint_create_request.dart';
-import 'package:InstiApp/src/api/response/image_upload_response.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
 import 'package:rxdart/rxdart.dart';
+
+import '../api/model/user.dart';
+import '../api/model/venter.dart';
+import '../api/request/comment_create_request.dart';
+import '../api/request/complaint_create_request.dart';
+import '../api/response/image_upload_response.dart';
+import 'ia_bloc.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 
 class ComplaintsBloc {
   // Unique ID for use in SharedPrefs
-  static String allStorageID = "allcomplaints";
-  static String myStorageID = "mycomplaints";
+  static String allStorageID = 'allcomplaints';
+  static String myStorageID = 'mycomplaints';
 
   // parent bloc
   InstiAppBloc bloc;
@@ -21,30 +23,30 @@ class ComplaintsBloc {
   // Streams
   ValueStream<UnmodifiableListView<Complaint>> get allComplaints =>
       _complaintsSubject.stream;
-  final _complaintsSubject = BehaviorSubject<UnmodifiableListView<Complaint>>();
+  final BehaviorSubject<UnmodifiableListView<Complaint>> _complaintsSubject = BehaviorSubject<UnmodifiableListView<Complaint>>();
 
   ValueStream<UnmodifiableListView<Complaint>> get myComplaints =>
       _mycomplaintsSubject.stream;
-  final _mycomplaintsSubject =
+  final BehaviorSubject<UnmodifiableListView<Complaint>> _mycomplaintsSubject =
       BehaviorSubject<UnmodifiableListView<Complaint>>();
 
   Sink<int> get inComplaintIndex => _indexController.sink;
   PublishSubject<int> _indexController = PublishSubject<int>();
 
   // Params
-  int _noOfComplaintsPerPage = 20;
-  String query = "";
+  final int _noOfComplaintsPerPage = 20;
+  String query = '';
 
   // State
-  List<Complaint> _allComplaints = [] as List<Complaint>;
+  final List<Complaint> _allComplaints = [] as List<Complaint>;
   List<Complaint> _myComplaints = [] as List<Complaint>;
   // // //
 
-  final _fetchPages = <int, List<Complaint>>{};
-  final _pagesBeingFetched = Set<int>();
+  final Map<int, List<Complaint>> _fetchPages = <int, List<Complaint>>{};
+  final Set<int> _pagesBeingFetched = <int>{};
 
-  final _searchFetchPages = <int, List<Complaint>>{};
-  final _searchPagesBeingFetched = Set<int>();
+  final Map<int, List<Complaint>> _searchFetchPages = <int, List<Complaint>>{};
+  final Set<int> _searchPagesBeingFetched = <int>{};
 
   ComplaintsBloc(this.bloc) {
     // _setIndexListener();
@@ -52,8 +54,8 @@ class ComplaintsBloc {
 
   void _setIndexListener() {
     _indexController.stream
-        .bufferTime(Duration(milliseconds: 500))
-        .where((batch) => batch.isNotEmpty)
+        .bufferTime(const Duration(milliseconds: 500))
+        .where((List<int> batch) => batch.isNotEmpty)
         .listen(_handleIndexes);
   }
 
@@ -67,7 +69,7 @@ class ComplaintsBloc {
   }
 
   Future<List<Complaint>> getAllComplaintsPage(int page) async {
-    var allComplaints = await bloc.client.getAllComplaints(
+    List<Complaint> allComplaints = await bloc.client.getAllComplaints(
         bloc.getSessionIdHeader(),
         page * _noOfComplaintsPerPage,
         _noOfComplaintsPerPage,
@@ -76,11 +78,11 @@ class ComplaintsBloc {
   }
 
   void _handleIndexes(List<int> indexes) {
-    var pages = query.isEmpty ? _fetchPages : _searchFetchPages;
-    var pagesBeingFetched =
+    final Map<int, List<Complaint>> pages = query.isEmpty ? _fetchPages : _searchFetchPages;
+    final Set<int> pagesBeingFetched =
         query.isEmpty ? _pagesBeingFetched : _searchPagesBeingFetched;
-    indexes.forEach((int index) {
-      final int pageIndex = ((index + 1) ~/ _noOfComplaintsPerPage);
+    for (final int index in indexes) {
+      final int pageIndex = (index + 1) ~/ _noOfComplaintsPerPage;
 
       // check if the page has already been fetched
       if (!pages.containsKey(pageIndex)) {
@@ -95,7 +97,7 @@ class ComplaintsBloc {
               _handleFetchedPage(fetchedPage, pageIndex));
         }
       }
-    });
+    }
   }
 
   ///
@@ -104,8 +106,8 @@ class ComplaintsBloc {
   /// 2) notify everyone who might be interested in knowing it
   ///
   void _handleFetchedPage(List<Complaint> page, int pageIndex) {
-    var pages = query.isEmpty ? _fetchPages : _searchFetchPages;
-    var pagesBeingFetched =
+    Map<int, List<Complaint>> pages = query.isEmpty ? _fetchPages : _searchFetchPages;
+    Set<int> pagesBeingFetched =
         query.isEmpty ? _pagesBeingFetched : _searchPagesBeingFetched;
 
     // Remember the page
@@ -142,13 +144,13 @@ class ComplaintsBloc {
     }
 
     // Only notify when there are complaints
-    if (complaints.length > 0) {
+    if (complaints.isNotEmpty) {
       _complaintsSubject.add(UnmodifiableListView<Complaint>(complaints));
     }
   }
 
   Future refreshAllComplaints({bool force = false}) async {
-    _indexController.close();
+    await _indexController.close();
 
     _searchFetchPages.clear();
     _searchPagesBeingFetched.clear();
@@ -195,14 +197,14 @@ class ComplaintsBloc {
 
     Complaint c;
     try {
-      c = (reload
+      c = reload
           ? await bloc.client.getComplaint(bloc.getSessionIdHeader(), uuid)
-          : _allComplaints.firstWhere((c) => c.complaintID == uuid));
+          : _allComplaints.firstWhere((Complaint c) => c.complaintID == uuid);
     } catch (ex) {
       c = await bloc.client.getComplaint(bloc.getSessionIdHeader(), uuid);
     }
     c.voteCount = c.usersUpVoted!
-            .any((u) => u.userID == bloc.currSession!.profile!.userID)
+            .any((User u) => u.userID == bloc.currSession!.profile!.userID)
         ? 1
         : 0;
     return c;
@@ -213,7 +215,7 @@ class ComplaintsBloc {
       return await bloc.client.getAllTags(bloc.getSessionIdHeader());
     } catch (ex) {
       // print(ex);
-      return Future.delayed(Duration(seconds: 0));
+      return Future.delayed(const Duration(seconds: 0));
     }
   }
 
@@ -247,7 +249,7 @@ class ComplaintsBloc {
   Future<void> postComment(
       Complaint complaint, CommentCreateRequest req) async {
     try {
-      var comment = await bloc.client
+      final Comment comment = await bloc.client
           .postComment(bloc.getSessionIdHeader(), complaint.complaintID!, req);
       complaint.comments!.add(comment);
     } catch (ex) {
@@ -258,9 +260,9 @@ class ComplaintsBloc {
   Future<void> updateComment(
       Complaint complaint, Comment mComment, CommentCreateRequest req) async {
     try {
-      var comment = await bloc.client
+      Comment comment = await bloc.client
           .updateComment(bloc.getSessionIdHeader(), mComment.id!, req);
-      var idx = complaint.comments?.indexWhere((c) => c.id == comment.id);
+      int? idx = complaint.comments?.indexWhere((Comment c) => c.id == comment.id);
       complaint.comments![idx!].text = comment.text;
       complaint.comments![idx].time = comment.time;
     } catch (ex) {
@@ -271,7 +273,7 @@ class ComplaintsBloc {
   Future<void> deleteComment(Complaint complaint, Comment comment) async {
     try {
       await bloc.client.deleteComment(bloc.getSessionIdHeader(), comment.id!);
-      complaint.comments?.removeWhere((c) => c.id == comment.id);
+      complaint.comments?.removeWhere((Comment c) => c.id == comment.id);
     } catch (ex) {
       // print(ex);
     }

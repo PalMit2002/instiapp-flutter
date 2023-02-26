@@ -1,29 +1,30 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:flutter_webview_pro/webview_flutter.dart' as webview;
 import 'package:flutter/material.dart';
+import 'package:flutter_webview_pro/webview_flutter.dart' as webview;
 import 'package:permission_handler/permission_handler.dart';
+
+import '../utils/common_widgets.dart';
 
 class PutEntityPage extends StatefulWidget {
   final String? entityID;
   final String cookie;
   final bool isBody;
 
-  PutEntityPage({required this.cookie, this.entityID, this.isBody = false});
+  const PutEntityPage({Key? key, required this.cookie, this.entityID, this.isBody = false}) : super(key: key);
 
   @override
   _PutEntityPageState createState() => _PutEntityPageState();
 }
 
 class _PutEntityPageState extends State<PutEntityPage> {
-  final String hostUrl = "https://www.insti.app/";
-  final String addEventStr = "add-event";
-  final String editEventStr = "edit-event";
-  final String editBodyStr = "edit-body";
-  final String loginStr = "login";
-  final String sandboxTrueQParam = "sandbox=true";
+  final String hostUrl = 'https://www.insti.app/';
+  final String addEventStr = 'add-event';
+  final String editEventStr = 'edit-event';
+  final String editBodyStr = 'edit-body';
+  final String loginStr = 'login';
+  final String sandboxTrueQParam = 'sandbox=true';
 
   bool firstBuild = true;
   bool addedCookie = false;
@@ -39,7 +40,7 @@ class _PutEntityPageState extends State<PutEntityPage> {
   void initState() {
     // Permission.camera.request();
     if (Platform.isAndroid) {
-      Permission.storage.request().then((e) {
+      Permission.storage.request().then((PermissionStatus e) {
         if (e.isGranted) {
           setState(() {
             hasPermission = true;
@@ -47,7 +48,7 @@ class _PutEntityPageState extends State<PutEntityPage> {
         }
       });
     } else {
-      Permission.photos.request().then((e) {
+      Permission.photos.request().then((PermissionStatus e) {
         if (e.isGranted) {
           setState(() {
             hasPermission = true;
@@ -68,20 +69,20 @@ class _PutEntityPageState extends State<PutEntityPage> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    var url =
-        "$hostUrl${widget.entityID == null ? addEventStr : ((widget.isBody ? editBodyStr : editEventStr) + "/" + widget.entityID!)}?${widget.cookie}&$sandboxTrueQParam";
+    String url =
+        "$hostUrl${widget.entityID == null ? addEventStr : ("${widget.isBody ? editBodyStr : editEventStr}/${widget.entityID!}")}?${widget.cookie}&$sandboxTrueQParam";
     return Scaffold(
       bottomNavigationBar: MyBottomAppBar(
-        child: new Row(
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            BackButton(),
+            const BackButton(),
             IconButton(
-              tooltip: "Refresh",
-              icon: Icon(
+              tooltip: 'Refresh',
+              icon: const Icon(
                 Icons.refresh_outlined,
-                semanticLabel: "Refresh",
+                semanticLabel: 'Refresh',
               ),
               onPressed: () {
                 webViewController?.reload();
@@ -93,30 +94,30 @@ class _PutEntityPageState extends State<PutEntityPage> {
       body: hasPermission
           ? Center(
               child: Text(
-                "Permission Denined",
+                'Permission Denined',
                 style: theme.textTheme.displayLarge,
               ),
             )
           : webview.WebView(
               // javascriptMode: JavascriptMode.unrestricted,
-              onWebViewCreated: (controller) {
+              onWebViewCreated: (webview.WebViewController controller) {
                 webViewController = controller;
               },
               initialUrl: url,
-              onPageStarted: (url) async {
+              onPageStarted: (String url) async {
                 // print("Changed URL: $url");
-                if (url.toString().contains("/event/")) {
-                  var uri = url
+                if (url.toString().contains('/event/')) {
+                  String uri = url
                       .toString()
-                      .substring(url.toString().lastIndexOf("/") + 1);
+                      .substring(url.toString().lastIndexOf('/') + 1);
 
-                  Navigator.of(context).pushReplacementNamed("/event/$uri");
-                } else if (url.toString().contains("/org/")) {
-                  var uri = url
+                  await Navigator.of(context).pushReplacementNamed('/event/$uri');
+                } else if (url.toString().contains('/org/')) {
+                  String uri = url
                       .toString()
-                      .substring(url.toString().lastIndexOf("/") + 1);
+                      .substring(url.toString().lastIndexOf('/') + 1);
 
-                  Navigator.of(context).pushReplacementNamed("/body/$uri");
+                  await Navigator.of(context).pushReplacementNamed('/body/$uri');
                 }
               },
             ),

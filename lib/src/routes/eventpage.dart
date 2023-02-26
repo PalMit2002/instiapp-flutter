@@ -1,30 +1,32 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:io';
 
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/routes/bodypage.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/footer_buttons.dart';
-import 'package:InstiApp/src/utils/notif_settings.dart';
-import 'package:InstiApp/src/utils/share_url_maker.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
+import 'package:device_calendar/device_calendar.dart' as cal;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:share/share.dart';
 import 'package:markdown/markdown.dart' as markdown;
-import 'package:device_calendar/device_calendar.dart' as cal;
+import 'package:share/share.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:url_launcher/url_launcher.dart';
+
+import '../api/model/body.dart';
+import '../api/model/event.dart';
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/footer_buttons.dart';
+import '../utils/notif_settings.dart';
+import '../utils/share_url_maker.dart';
+import '../utils/title_with_backbutton.dart';
+import 'bodypage.dart';
 
 class EventPage extends StatefulWidget {
   final Event? initialEvent;
   final Future<Event?> eventFuture;
 
-  EventPage({required this.eventFuture, this.initialEvent});
+  const EventPage({Key? key, required this.eventFuture, this.initialEvent}) : super(key: key);
 
   static void navigateWith(
       BuildContext context, InstiAppBloc bloc, Event event) {
@@ -34,9 +36,9 @@ class EventPage extends StatefulWidget {
         settings: RouteSettings(
           name: "/event/${event.eventID ?? ""}",
         ),
-        builder: (context) => EventPage(
+        builder: (BuildContext context) => EventPage(
           initialEvent: event,
-          eventFuture: bloc.getEvent(event.eventID ?? ""),
+          eventFuture: bloc.getEvent(event.eventID ?? ''),
         ),
       ),
     );
@@ -47,12 +49,12 @@ class EventPage extends StatefulWidget {
 }
 
 class _EventPageState extends State<EventPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   Event? event;
 
   UES loadingUes = UES.NotGoing;
 
-  bool _bottomSheetActive = false;
+  final bool _bottomSheetActive = false;
 
   bool firstBuild = true;
 
@@ -60,17 +62,17 @@ class _EventPageState extends State<EventPage> {
   void initState() {
     super.initState();
     event = widget.initialEvent;
-    widget.eventFuture.then((ev) {
-      var tableParse = markdown.TableSyntax();
+    widget.eventFuture.then((Event? ev) {
+      markdown.TableSyntax tableParse = const markdown.TableSyntax();
       ev?.eventDescription = markdown.markdownToHtml(
           ev.eventDescription
                   ?.split('\n')
-                  .map((s) => s.trimRight())
+                  .map((String s) => s.trimRight())
                   .toList()
                   .join('\n') ??
-              "",
+              '',
           blockSyntaxes: [tableParse]);
-      if (this.mounted) {
+      if (mounted) {
         setState(() {
           event = ev;
         });
@@ -82,20 +84,20 @@ class _EventPageState extends State<EventPage> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
     final NotificationRouteArguments? args = ModalRoute.of(context)!
         .settings
         .arguments as NotificationRouteArguments?;
     List<Widget> footerButtons = [];
-    var editAccess = false;
+    bool editAccess = false;
     if (event != null) {
       footerButtons = <Widget>[];
       editAccess = bloc.editEventAccess(event!);
       if (bloc.currSession != null) {
         footerButtons.addAll([
-          buildUserStatusButton("Going", UES.Going, theme, bloc),
-          buildUserStatusButton("Interested", UES.Interested, theme, bloc),
+          buildUserStatusButton('Going', UES.Going, theme, bloc),
+          buildUserStatusButton('Interested', UES.Interested, theme, bloc),
         ]);
 
         if (args?.key == ActionKeys.ADD_TO_CALENDAR && firstBuild) {
@@ -104,10 +106,10 @@ class _EventPageState extends State<EventPage> {
         }
       }
 
-      if ((event!.eventWebsiteURL ?? "") != "") {
+      if ((event!.eventWebsiteURL ?? '') != '') {
         footerButtons.add(IconButton(
-          tooltip: "Open website",
-          icon: Icon(Icons.language_outlined),
+          tooltip: 'Open website',
+          icon: const Icon(Icons.language_outlined),
           onPressed: () async {
             if (await canLaunchUrl(Uri.parse(event!.eventWebsiteURL!))) {
               await launchUrl(
@@ -121,12 +123,12 @@ class _EventPageState extends State<EventPage> {
       if ((event!.eventVenues?.isNotEmpty ?? false) &&
           event!.eventVenues![0].venueLatitude != null) {
         footerButtons.add(IconButton(
-          tooltip: "Navigate to event",
-          icon: Icon(Icons.navigation_outlined),
+          tooltip: 'Navigate to event',
+          icon: const Icon(Icons.navigation_outlined),
           onPressed: () async {
             String uri = defaultTargetPlatform == TargetPlatform.iOS
-                ? "http://maps.apple.com/?ll=${event!.eventVenues![0].venueLatitude},${event!.eventVenues![0].venueLongitude}&z=20"
-                : "google.navigation:q=${event!.eventVenues![0].venueLatitude},${event!.eventVenues![0].venueLongitude}";
+                ? 'http://maps.apple.com/?ll=${event!.eventVenues![0].venueLatitude},${event!.eventVenues![0].venueLongitude}&z=20'
+                : 'google.navigation:q=${event!.eventVenues![0].venueLatitude},${event!.eventVenues![0].venueLongitude}';
             if (await canLaunchUrl(Uri.parse(uri))) {
               await launchUrl(
                 Uri.parse(uri),
@@ -139,12 +141,12 @@ class _EventPageState extends State<EventPage> {
 
       footerButtons.add(
         IconButton(
-          icon: Icon(Icons.share_outlined),
-          tooltip: "Share this event",
-          padding: EdgeInsets.all(0),
+          icon: const Icon(Icons.share_outlined),
+          tooltip: 'Share this event',
+          padding: const EdgeInsets.all(0),
           onPressed: () async {
             await Share.share(
-                "Check this event: ${ShareURLMaker.getEventURL(event!)}");
+                'Check this event: ${ShareURLMaker.getEventURL(event!)}');
           },
         ),
       );
@@ -152,16 +154,16 @@ class _EventPageState extends State<EventPage> {
 
     return Scaffold(
         key: _scaffoldKey,
-        drawer: NavDrawer(),
+        drawer: const NavDrawer(),
         bottomNavigationBar: MyBottomAppBar(
-          child: new Row(
+          child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.menu_outlined,
-                  semanticLabel: "Show navigation drawer",
+                  semanticLabel: 'Show navigation drawer',
                 ),
                 onPressed: () {
                   _scaffoldKey.currentState?.openDrawer();
@@ -172,9 +174,9 @@ class _EventPageState extends State<EventPage> {
         ),
         body: SafeArea(
           child: event == null
-              ? Center(
+              ? const Center(
                   child: CircularProgressIndicatorExtended(
-                  label: Text("Loading the event page"),
+                  label: Text('Loading the event page'),
                 ))
               : ListView(
                   children: <Widget>[
@@ -183,10 +185,10 @@ class _EventPageState extends State<EventPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            event!.eventName ?? "",
+                            event!.eventName ?? '',
                             style: theme.textTheme.displaySmall,
                           ),
-                          SizedBox(height: 8.0),
+                          const SizedBox(height: 8.0),
                           Text(event!.getSubTitle(),
                               style: theme.textTheme.titleLarge),
                         ],
@@ -198,57 +200,54 @@ class _EventPageState extends State<EventPage> {
                         url: event!.eventImageURL ??
                             event!.eventBodies?[0].bodyImageURL ??
                             defUrl,
-                        heroTag: event!.eventID ?? "",
+                        heroTag: event!.eventID ?? '',
                         fit: BoxFit.fitWidth,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 16.0,
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 28.0, vertical: 16.0),
                       child: CommonHtml(
-                        data: event!.eventDescription ?? "",
+                        data: event!.eventDescription ?? '',
                         defaultTextStyle:
-                            theme.textTheme.titleMedium ?? TextStyle(),
+                            theme.textTheme.titleMedium ?? const TextStyle(),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 16.0,
                     ),
-                    Divider(),
-                  ]
-                    ..addAll(event!.eventBodies?.map(
-                            (b) => _buildBodyTile(bloc, theme.textTheme, b)) ??
-                        [])
-                    ..addAll([
-                      Divider(),
-                      SizedBox(
+                    const Divider(), ...?event!.eventBodies?.map(
+                            (Body b) => _buildBodyTile(bloc, theme.textTheme, b)), const Divider(),
+                      const SizedBox(
                         height: 64.0,
-                      )
-                    ]),
+                      ),
+                  ]
+                    
+                    ,
                 ),
         ),
         floatingActionButton: _bottomSheetActive || event == null
             ? null
             : editAccess
                 ? FloatingActionButton.extended(
-                    icon: Icon(Icons.edit_outlined),
-                    label: Text("Edit"),
-                    tooltip: "Edit this event",
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('Edit'),
+                    tooltip: 'Edit this event',
                     onPressed: () {
                       Navigator.of(context)
-                          .pushNamed("/putentity/event/${event!.eventID}");
+                          .pushNamed('/putentity/event/${event!.eventID}');
                     },
                   )
                 : FloatingActionButton(
-                    child: Icon(Icons.share_outlined),
-                    tooltip: "Share this event",
+                    tooltip: 'Share this event',
                     onPressed: () async {
                       await Share.share(
-                          "Check this event: ${ShareURLMaker.getEventURL(event!)}");
+                          'Check this event: ${ShareURLMaker.getEventURL(event!)}');
                     },
+                    child: const Icon(Icons.share_outlined),
                   ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         persistentFooterButtons: [
@@ -260,12 +259,12 @@ class _EventPageState extends State<EventPage> {
 
   Widget _buildBodyTile(InstiAppBloc bloc, TextTheme theme, Body body) {
     return ListTile(
-      title: Text(body.bodyName ?? "", style: theme.titleLarge),
-      subtitle: Text(body.bodyShortDescription ?? "", style: theme.titleSmall),
+      title: Text(body.bodyName ?? '', style: theme.titleLarge),
+      subtitle: Text(body.bodyShortDescription ?? '', style: theme.titleSmall),
       leading: NullableCircleAvatar(
         body.bodyImageURL ?? defUrl,
         Icons.work_outline_outlined,
-        heroTag: body.bodyID ?? "",
+        heroTag: body.bodyID ?? '',
       ),
       onTap: () {
         BodyPage.navigateWith(context, bloc, body: body);
@@ -287,16 +286,16 @@ class _EventPageState extends State<EventPage> {
             side: BorderSide(
               color: theme.colorScheme.secondary,
             ),
-            borderRadius: BorderRadius.all(Radius.circular(4))),
+            borderRadius: const BorderRadius.all(Radius.circular(4))),
       ),
       child: Row(children: () {
-        var rowChildren = <Widget>[
+        List<Widget> rowChildren = <Widget>[
           Text(name),
-          SizedBox(
+          const SizedBox(
             width: 8.0,
           ),
           Text(
-              "${uesButton == UES.Interested ? event?.eventInterestedCount : event?.eventGoingCount}"),
+              '${uesButton == UES.Interested ? event?.eventInterestedCount : event?.eventGoingCount}'),
         ];
         if (loadingUes == uesButton) {
           rowChildren.insertAll(0, [
@@ -304,13 +303,13 @@ class _EventPageState extends State<EventPage> {
                 height: 18,
                 width: 18,
                 child: CircularProgressIndicator(
-                  valueColor: new AlwaysStoppedAnimation<Color?>(
+                  valueColor: AlwaysStoppedAnimation<Color?>(
                       event?.eventUserUes == uesButton
                           ? theme.floatingActionButtonTheme.foregroundColor
                           : theme.colorScheme.secondary),
                   strokeWidth: 2,
                 )),
-            SizedBox(
+            const SizedBox(
               width: 8.0,
             )
           ]);
@@ -323,7 +322,7 @@ class _EventPageState extends State<EventPage> {
     );
   }
 
-  void UESButtonOnClicked(UES uesButton, ThemeData theme, InstiAppBloc bloc,
+  Future<void> UESButtonOnClicked(UES uesButton, ThemeData theme, InstiAppBloc bloc,
       {bool forceInterested = false}) async {
     if (bloc.currSession == null) {
       return;
@@ -343,29 +342,29 @@ class _EventPageState extends State<EventPage> {
 
     if (event?.eventUserUes != UES.NotGoing) {
       if (forceInterested) {
-        _actualAddEventToDeviceCalendar(bloc);
+        await _actualAddEventToDeviceCalendar(bloc);
       } else {
         // Add to calendar (or not)
-        _addEventToCalendar(theme, bloc);
+        await _addEventToCalendar(theme, bloc);
       }
     }
   }
 
   bool lastCheck = false;
 
-  void _addEventToCalendar(ThemeData theme, InstiAppBloc bloc) async {
+  Future<void> _addEventToCalendar(ThemeData theme, InstiAppBloc bloc) async {
     lastCheck = false;
     if (bloc.addToCalendarSetting == AddToCalendar.AlwaysAsk) {
       bool? addToCal = await showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-                title: Text("Add to Calendar?"),
+          builder: (BuildContext context) => AlertDialog(
+                title: const Text('Add to Calendar?'),
                 content: DialogContent(
                   parent: this,
                 ),
                 actions: <Widget>[
                   TextButton(
-                    child: Text("No"),
+                    child: const Text('No'),
                     onPressed: () {
                       Navigator.of(context).pop(false);
                       if (lastCheck) {
@@ -374,7 +373,7 @@ class _EventPageState extends State<EventPage> {
                     },
                   ),
                   TextButton(
-                    child: Text("Yes"),
+                    child: const Text('Yes'),
                     onPressed: () {
                       Navigator.of(context).pop(true);
                     },
@@ -391,20 +390,20 @@ class _EventPageState extends State<EventPage> {
       }
 
       if (addToCal) {
-        _actualAddEventToDeviceCalendar(bloc);
+        await _actualAddEventToDeviceCalendar(bloc);
       }
     } else if (bloc.addToCalendarSetting == AddToCalendar.Yes) {
-      _actualAddEventToDeviceCalendar(bloc);
+      await _actualAddEventToDeviceCalendar(bloc);
     }
   }
 
   List<bool>? selector;
-  void _actualAddEventToDeviceCalendar(InstiAppBloc bloc) async {
+  Future<void> _actualAddEventToDeviceCalendar(InstiAppBloc bloc) async {
     // Init Device Calendar plugin
     cal.DeviceCalendarPlugin calendarPlugin = cal.DeviceCalendarPlugin();
 
     // Get Calendar Permissions
-    var permissionsGranted = await calendarPlugin.hasPermissions();
+    cal.Result<bool> permissionsGranted = await calendarPlugin.hasPermissions();
     if (permissionsGranted.isSuccess && !(permissionsGranted.data ?? false)) {
       permissionsGranted = await calendarPlugin.requestPermissions();
       if (!permissionsGranted.isSuccess ||
@@ -414,26 +413,26 @@ class _EventPageState extends State<EventPage> {
     }
 
     // Get All Calendars
-    final calendarsResult = await calendarPlugin.retrieveCalendars();
+    final cal.Result<UnmodifiableListView<cal.Calendar>> calendarsResult = await calendarPlugin.retrieveCalendars();
     if (calendarsResult.data != null) {
       lastCheck = false;
       // Get Calendar Permissions
       if (bloc.defaultCalendarsSetting.isEmpty) {
         bool? toContinue = await showDialog(
             context: context,
-            builder: (context) {
+            builder: (BuildContext context) {
               return AlertDialog(
-                title: Text("Select which calendars to add to?"),
+                title: const Text('Select which calendars to add to?'),
                 content: CalendarList(calendarsResult.data ?? [], parent: this),
                 actions: <Widget>[
                   TextButton(
-                    child: Text("Cancel"),
+                    child: const Text('Cancel'),
                     onPressed: () {
                       Navigator.pop(context, false);
                     },
                   ),
                   TextButton(
-                    child: Text("Yes"),
+                    child: const Text('Yes'),
                     onPressed: () {
                       Navigator.pop(context, true);
                     },
@@ -447,9 +446,9 @@ class _EventPageState extends State<EventPage> {
 
         if (lastCheck) {
           bloc.defaultCalendarsSetting =
-              calendarsResult.data?.asMap().entries.expand((entry) {
+              calendarsResult.data?.asMap().entries.expand((MapEntry<int, cal.Calendar> entry) {
                     if (selector?[entry.key] == true) {
-                      return <String>[entry.value.id ?? ""];
+                      return <String>[entry.value.id ?? ''];
                     }
                     return <String>[];
                   }).toList() ??
@@ -459,19 +458,21 @@ class _EventPageState extends State<EventPage> {
 
       if (!lastCheck && bloc.defaultCalendarsSetting.isNotEmpty) {
         selector = calendarsResult.data
-            ?.map((calen) => bloc.defaultCalendarsSetting.contains(calen.id))
+            ?.map((cal.Calendar calen) => bloc.defaultCalendarsSetting.contains(calen.id))
             .toList();
       }
 
       List<Future<cal.Result<String>?>> futures =
-          calendarsResult.data?.asMap().entries.expand((entry) {
+          calendarsResult.data?.asMap().entries.expand((MapEntry<int, cal.Calendar> entry) {
                 if (selector?[entry.key] == true) {
                   DateTime? startTime;
-                  if (event?.eventStartTime != null)
+                  if (event?.eventStartTime != null) {
                     startTime = DateTime.parse(event!.eventStartTime!);
+                  }
                   DateTime? endTime;
-                  if (event?.eventEndTime != null)
+                  if (event?.eventEndTime != null) {
                     endTime = DateTime.parse(event!.eventEndTime!);
+                  }
 
                   cal.Event ev = cal.Event(
                     entry.value.id,
@@ -509,22 +510,22 @@ class _EventPageState extends State<EventPage> {
               }).toList() ??
               [];
 
-      if ((await Future.wait(futures)).every((res) {
+      if ((await Future.wait(futures)).every((cal.Result<String>? res) {
         return res?.isSuccess ?? false;
       })) {
-        showDialog<void>(
+        await showDialog<void>(
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text(
-                  "Success",
+                title: const Text(
+                  'Success',
                   style: TextStyle(color: Colors.green),
                 ),
                 content: Text(
                     'Event has been successfully added to ${futures.length} calendar${futures.length > 1 ? "s" : ""}.\n \nIt may take a few minutes to appear in your calendar.'),
                 actions: <Widget>[
                   TextButton(
-                    child: Text('OK'),
+                    child: const Text('OK'),
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
@@ -546,7 +547,7 @@ class CalendarList extends StatefulWidget {
   final _EventPageState? parent;
   final List<bool>? defaultSelector;
 
-  CalendarList(this.calendarsResult, {this.parent, this.defaultSelector});
+  const CalendarList(this.calendarsResult, {Key? key, this.parent, this.defaultSelector}) : super(key: key);
 
   @override
   _CalendarListState createState() => _CalendarListState();
@@ -568,31 +569,31 @@ class _CalendarListState extends State<CalendarList> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[]
-        ..addAll(widget.calendarsResult
+      children: <Widget>[...widget.calendarsResult
             .asMap()
             .entries
-            .where((entry) => !(entry.value.isReadOnly ?? false))
-            .map((calEntry) => CheckboxListTile(
-                  title: Text(calEntry.value.name ?? ""),
+            .where((MapEntry<int, cal.Calendar> entry) => !(entry.value.isReadOnly ?? false))
+            .map((MapEntry<int, cal.Calendar> calEntry) => CheckboxListTile(
+                  title: Text(calEntry.value.name ?? ''),
                   dense: true,
                   value: selector?[calEntry.key],
-                  onChanged: (val) {
+                  onChanged: (bool? val) {
                     setState(() {
                       selector?[calEntry.key] = val ?? false;
                     });
                   },
-                )))
-        ..add(DialogContent(
+                )), DialogContent(
           parent: widget.parent,
-        )),
+        )]
+        
+        ,
     );
   }
 }
 
 class DialogContent extends StatefulWidget {
   final _EventPageState? parent;
-  DialogContent({this.parent});
+  const DialogContent({Key? key, this.parent}) : super(key: key);
 
   @override
   _DialogContentState createState() => _DialogContentState();
@@ -609,14 +610,14 @@ class _DialogContentState extends State<DialogContent> {
       children: <Widget>[
         Checkbox(
           value: lastCheck,
-          onChanged: (val) {
+          onChanged: (bool? val) {
             setState(() {
               lastCheck = val ?? false;
               widget.parent?.lastCheck = val ?? false;
             });
           },
         ),
-        Text("Do not ask again?"),
+        const Text('Do not ask again?'),
       ],
     );
   }

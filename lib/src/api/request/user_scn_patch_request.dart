@@ -4,7 +4,7 @@ part 'user_scn_patch_request.g.dart';
 
 @JsonSerializable()
 class UserSCNPatchRequest {
-  @JsonKey(name: "show_contact_no")
+  @JsonKey(name: 'show_contact_no')
   bool? userShowContactNumber;
 
   UserSCNPatchRequest({this.userShowContactNumber});

@@ -13,23 +13,24 @@ enum UES {
 
 @JsonSerializable()
 class MessCalEvent extends elt.Event {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? eid;
 
-  @JsonKey(name: "title")
+  @override
+  @JsonKey(name: 'title')
   String? title;
 
-  @JsonKey(name: "datetime")
+  @JsonKey(name: 'datetime')
   String? dateTime;
 
-  @JsonKey(name: "hostel")
+  @JsonKey(name: 'hostel')
   int? hostel;
 
   DateTime? eventStartDate;
 
   MessCalEvent({this.eid, this.title, this.dateTime, this.hostel})
       : super(
-          date: DateTime.parse(dateTime ?? ""),
+          date: DateTime.parse(dateTime ?? ''),
           title: title,
         );
 

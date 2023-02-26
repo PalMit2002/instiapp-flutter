@@ -4,7 +4,7 @@ part 'achievement_hidden_patch_request.g.dart';
 
 @JsonSerializable()
 class AchievementHiddenPathRequest {
-  @JsonKey(name: "hidden")
+  @JsonKey(name: 'hidden')
   bool? hidden;
 
   AchievementHiddenPathRequest({this.hidden});

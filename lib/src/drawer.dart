@@ -1,18 +1,21 @@
 import 'dart:collection';
 
-import 'package:InstiApp/src/blocs/drawer_bloc.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/routes/userpage.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:InstiApp/src/api/model/user.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/api/model/notification.dart' as ntf;
 import 'package:rxdart/rxdart.dart';
 import 'package:upgrader/upgrader.dart';
 
+import 'api/model/notification.dart' as ntf;
+import 'api/model/user.dart';
+import 'bloc_provider.dart';
+import 'blocs/drawer_bloc.dart';
+import 'blocs/ia_bloc.dart';
+import 'routes/userpage.dart';
+import 'utils/common_widgets.dart';
+
 // A Navigation Drawer
 class NavDrawer extends StatefulWidget {
+  const NavDrawer({Key? key}) : super(key: key);
+
   static void setPageIndex(InstiAppBloc bloc, int pageIndex) {
     bloc.drawerState.setPageIndex(pageIndex);
   }
@@ -35,8 +38,8 @@ class _NavDrawerState extends State<NavDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    var bloc = BlocProvider.of(context)?.bloc;
-    var drawerState = bloc?.drawerState;
+    final InstiAppBloc? bloc = BlocProvider.of(context)?.bloc;
+    DrawerBloc? drawerState = bloc?.drawerState;
     navi = Navigator.of(context);
 
     return UpgradeAlert(
@@ -44,7 +47,7 @@ class _NavDrawerState extends State<NavDrawer> {
         // debugLogging: true,
         // debugDisplayAlways: true,
         dialogStyle: UpgradeDialogStyle.cupertino,
-        durationUntilAlertAgain: Duration(days: 1),
+        durationUntilAlertAgain: const Duration(days: 1),
         showReleaseNotes: false,
         messages: MyUpgraderMessages(),
       ),
@@ -53,7 +56,7 @@ class _NavDrawerState extends State<NavDrawer> {
           child: StreamBuilder<Session?>(
             stream: bloc?.session,
             builder: (BuildContext context, AsyncSnapshot<Session?> snapshot) {
-              var theme = Theme.of(context);
+              ThemeData theme = Theme.of(context);
               if (snapshot.hasData &&
                   snapshot.data != null &&
                   !loggingOutLoading) {
@@ -67,7 +70,7 @@ class _NavDrawerState extends State<NavDrawer> {
                     Map<int, Widget> navMap = {
                       0: NavListTile(
                         icon: Icons.dashboard_outlined,
-                        title: "Feed",
+                        title: 'Feed',
                         onTap: () {
                           changeSelection(0, drawerState!);
                           navigateNamed('/feed');
@@ -77,7 +80,7 @@ class _NavDrawerState extends State<NavDrawer> {
                       ),
                       1: NavListTile(
                         icon: Icons.rss_feed_outlined,
-                        title: "News",
+                        title: 'News',
                         onTap: () {
                           changeSelection(1, drawerState!);
                           navigateNamed('/news');
@@ -87,7 +90,7 @@ class _NavDrawerState extends State<NavDrawer> {
                       ),
                       2: NavListTile(
                         icon: Icons.search_outlined,
-                        title: "Explore",
+                        title: 'Explore',
                         onTap: () {
                           changeSelection(2, drawerState!);
                           navigateNamed('/explore');
@@ -96,14 +99,14 @@ class _NavDrawerState extends State<NavDrawer> {
                         selected: indexSnapshot.data == 2,
                       ),
                       3: NavExpansionTile(
-                        title: "Mess",
+                        title: 'Mess',
                         leading: Icons.restaurant_outlined,
                         initiallyExpanded:
                             indexSnapshot.data == 3 || indexSnapshot.data == 14,
                         children: [
                           NavListTile(
                             icon: Icons.restaurant_outlined,
-                            title: "Mess Menu",
+                            title: 'Mess Menu',
                             onTap: () {
                               changeSelection(3, drawerState!);
                               navigateNamed('/mess');
@@ -113,7 +116,7 @@ class _NavDrawerState extends State<NavDrawer> {
                           ),
                           NavListTile(
                             icon: Icons.restaurant_outlined,
-                            title: "Take your meal",
+                            title: 'Take your meal',
                             onTap: () {
                               changeSelection(3, drawerState!);
                               navigateNamed('/messcalendar/qr');
@@ -125,13 +128,13 @@ class _NavDrawerState extends State<NavDrawer> {
                       ),
                       4: NavExpansionTile(
                         leading: Icons.work_outline,
-                        title: "Blogs",
+                        title: 'Blogs',
                         initiallyExpanded: indexSnapshot.data! <= 6 &&
                             indexSnapshot.data! >= 4,
                         children: [
                           NavListTile(
                             icon: Icons.work_outline,
-                            title: "Placement Blog",
+                            title: 'Placement Blog',
                             onTap: () {
                               changeSelection(4, drawerState!);
                               navigateNamed('/placeblog');
@@ -141,7 +144,7 @@ class _NavDrawerState extends State<NavDrawer> {
                           ),
                           NavListTile(
                             icon: Icons.work_outline,
-                            title: "Internship Blog",
+                            title: 'Internship Blog',
                             onTap: () {
                               changeSelection(5, drawerState!);
                               navigateNamed('/trainblog');
@@ -152,7 +155,7 @@ class _NavDrawerState extends State<NavDrawer> {
                           NavListTile(
                             // key: Key((indexSnapshot.data == 6).toString()),
                             icon: Icons.work_outline,
-                            title: "External Blog",
+                            title: 'External Blog',
                             onTap: () {
                               changeSelection(6, drawerState!);
                               navigateNamed('/externalblog');
@@ -164,7 +167,7 @@ class _NavDrawerState extends State<NavDrawer> {
                       ),
                       15: NavListTile(
                         icon: Icons.forum_outlined,
-                        title: "Insight Discussion Forum",
+                        title: 'Insight Discussion Forum',
                         onTap: () {
                           changeSelection(15, drawerState!);
                           navigateNamed('/groups');
@@ -174,7 +177,7 @@ class _NavDrawerState extends State<NavDrawer> {
                       ),
                       9: NavListTile(
                         icon: Icons.verified_outlined,
-                        title: "Achievements",
+                        title: 'Achievements',
                         onTap: () {
                           changeSelection(9, drawerState!);
                           navigateNamed('/achievements');
@@ -183,7 +186,7 @@ class _NavDrawerState extends State<NavDrawer> {
                         selected: indexSnapshot.data == 9,
                       ),
                       8: NavExpansionTile(
-                        title: "Utilities",
+                        title: 'Utilities',
                         initiallyExpanded: indexSnapshot.data == 8 ||
                             indexSnapshot.data == 11 ||
                             indexSnapshot.data == 12 ||
@@ -192,7 +195,7 @@ class _NavDrawerState extends State<NavDrawer> {
                         children: [
                           NavListTile(
                             icon: Icons.date_range_outlined,
-                            title: "Calendar",
+                            title: 'Calendar',
                             onTap: () {
                               changeSelection(7, drawerState!);
                               navigateNamed('/calendar');
@@ -202,7 +205,7 @@ class _NavDrawerState extends State<NavDrawer> {
                           ),
                           NavListTile(
                             icon: Icons.map_outlined,
-                            title: "Map",
+                            title: 'Map',
                             onTap: () {
                               changeSelection(8, drawerState!);
                               navigateNamed('/map');
@@ -212,7 +215,7 @@ class _NavDrawerState extends State<NavDrawer> {
                           ),
                           NavListTile(
                             icon: Icons.link_outlined,
-                            title: "Quick Links",
+                            title: 'Quick Links',
                             onTap: () {
                               changeSelection(11, drawerState!);
                               navigateNamed('/quicklinks');
@@ -222,7 +225,7 @@ class _NavDrawerState extends State<NavDrawer> {
                           ),
                           NavListTile(
                             icon: Icons.settings_outlined,
-                            title: "Settings",
+                            title: 'Settings',
                             onTap: () {
                               changeSelection(12, drawerState!);
                               navigateNamed('/settings');
@@ -256,7 +259,7 @@ class _NavDrawerState extends State<NavDrawer> {
 
                     List<Widget> navList, navDownList = <Widget>[];
                     navList = <Widget>[
-                      SizedBox(
+                      const SizedBox(
                         height: 8.0,
                       ),
                       Row(
@@ -267,26 +270,23 @@ class _NavDrawerState extends State<NavDrawer> {
                                       indexSnapshot.data == -2
                                   ? BoxDecoration(
                                       color: theme.primaryColor.withAlpha(100),
-                                      borderRadius: BorderRadius.only(
-                                          bottomRight:
-                                              const Radius.circular(48.0),
-                                          topRight:
-                                              const Radius.circular(48.0)))
+                                      borderRadius: const BorderRadius.only(
+                                          bottomRight: Radius.circular(48.0),
+                                          topRight: Radius.circular(48.0)))
                                   : snapshot.data?.profile?.userName != null
                                       ? BoxDecoration(
                                           color:
                                               theme.primaryColor.withAlpha(60),
-                                          borderRadius: BorderRadius.only(
+                                          borderRadius: const BorderRadius.only(
                                               bottomRight:
-                                                  const Radius.circular(48.0),
-                                              topRight:
-                                                  const Radius.circular(48.0)))
+                                                  Radius.circular(48.0),
+                                              topRight: Radius.circular(48.0)))
                                       : null,
                               child: ListTile(
                                 leading: NullableCircleAvatar(
                                   snapshot.data?.profile
                                           ?.userProfilePictureUrl ??
-                                      "",
+                                      '',
                                   Icons.person_outline_outlined,
                                 ),
                                 title: Text(
@@ -299,11 +299,11 @@ class _NavDrawerState extends State<NavDrawer> {
                                     ? Text(
                                         snapshot.data?.profile
                                                 ?.userRollNumber ??
-                                            "",
+                                            '',
                                         style: theme.textTheme.bodyMedium)
                                     : ElevatedButton(
-                                        child: Text(
-                                          "Log in",
+                                        child: const Text(
+                                          'Log in',
                                         ),
                                         onPressed: () {
                                           Navigator.of(context)
@@ -321,127 +321,115 @@ class _NavDrawerState extends State<NavDrawer> {
                               ),
                             ),
                           ),
-                        ]..addAll(snapshot.data != null
-                            ? [
-                                StreamBuilder(
-                                  stream: bloc?.notifications,
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot<
-                                              UnmodifiableListView<
-                                                  ntf.Notification>>
-                                          snapshot) {
-                                    bool ex =
-                                        snapshot.data?.isNotEmpty ?? false;
-                                    return Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Stack(
-                                        children: <Widget>[
-                                          ClipOval(
-                                            child: Container(
+                          if (snapshot.data != null) ...[
+                            StreamBuilder(
+                              stream: bloc?.notifications,
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<
+                                          UnmodifiableListView<
+                                              ntf.Notification>>
+                                      snapshot) {
+                                bool ex = snapshot.data?.isNotEmpty ?? false;
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Stack(
+                                    children: <Widget>[
+                                      ClipOval(
+                                        child: Container(
+                                          color: indexSnapshot.data == -1
+                                              ? theme.primaryColor
+                                                  .withAlpha(100)
+                                              : null,
+                                          child: IconButton(
+                                            tooltip: 'Notifications',
+                                            icon: Icon(
+                                              (snapshot.hasData && ex) ||
+                                                      (!snapshot.hasData)
+                                                  ? Icons
+                                                      .notifications_active_outlined
+                                                  : Icons
+                                                      .notifications_none_outlined,
                                               color: indexSnapshot.data == -1
                                                   ? theme.primaryColor
-                                                      .withAlpha(100)
                                                   : null,
-                                              child: IconButton(
-                                                tooltip: "Notifications",
-                                                icon: Icon(
-                                                  (snapshot.hasData && ex) ||
-                                                          (!snapshot.hasData)
-                                                      ? Icons
-                                                          .notifications_active_outlined
-                                                      : Icons
-                                                          .notifications_none_outlined,
-                                                  color:
-                                                      indexSnapshot.data == -1
-                                                          ? theme.primaryColor
-                                                          : null,
-                                                ),
-                                                onPressed: () {
-                                                  changeSelection(
-                                                      -1, drawerState!);
-                                                  var navi =
-                                                      Navigator.of(context);
-                                                  navi.pop();
-                                                  navi.pushNamed(
-                                                      '/notifications');
-                                                },
-                                              ),
                                             ),
+                                            onPressed: () {
+                                              changeSelection(-1, drawerState!);
+                                              NavigatorState navi =
+                                                  Navigator.of(context);
+                                              navi.pop();
+                                              navi.pushNamed('/notifications');
+                                            },
                                           ),
-                                        ]..addAll((snapshot.hasData && ex) ||
-                                                (!snapshot.hasData)
-                                            ? [
-                                                Positioned(
-                                                  bottom: 0,
-                                                  right: 0,
-                                                  child: snapshot.hasData
-                                                      ? Container(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  3.0),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: theme
-                                                                .colorScheme
-                                                                .secondary,
-                                                            shape:
-                                                                BoxShape.circle,
-                                                          ),
-                                                          child: Center(
-                                                            child: Text(
-                                                              "${snapshot.data?.length}",
-                                                              style: theme
-                                                                  .textTheme
-                                                                  .labelSmall
-                                                                  ?.copyWith(
-                                                                color: theme
-                                                                    .colorScheme
-                                                                    .onSecondary,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        )
-                                                      : CircularProgressIndicatorExtended(
-                                                          size: 12,
-                                                        ),
-                                                )
-                                              ]
-                                            : []),
+                                        ),
                                       ),
-                                    );
-                                  },
-                                )
-                              ]
-                            : []),
+                                      if ((snapshot.hasData && ex) ||
+                                          (!snapshot.hasData)) ...[
+                                        Positioned(
+                                          bottom: 0,
+                                          right: 0,
+                                          child: snapshot.hasData
+                                              ? Container(
+                                                  padding:
+                                                      const EdgeInsets.all(3.0),
+                                                  decoration: BoxDecoration(
+                                                    color: theme
+                                                        .colorScheme.secondary,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      '${snapshot.data?.length}',
+                                                      style: theme
+                                                          .textTheme.labelSmall
+                                                          ?.copyWith(
+                                                        color: theme.colorScheme
+                                                            .onSecondary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                              : const CircularProgressIndicatorExtended(
+                                                  size: 12,
+                                                ),
+                                        )
+                                      ],
+                                    ],
+                                  ),
+                                );
+                              },
+                            )
+                          ],
+                        ],
                       ),
-                      Divider(),
+                      const Divider(),
                     ];
                     navList.addAll(navMap.values.take(10));
                     navDownList.addAll(navMap.values.skip(10));
                     if (snapshot.data?.sessionid != null) {
                       navDownList.add(NavListTile(
                         icon: Icons.exit_to_app_outlined,
-                        title: "Logout",
+                        title: 'Logout',
                         onTap: loggingOutLoading
                             ? null
                             : () async {
-                                bool confirmLogout = await showDialog(
+                                bool? confirmLogout = await showDialog<bool>(
                                     context: context,
-                                    builder: (context) {
+                                    builder: (BuildContext context) {
                                       return AlertDialog(
-                                        title: Text(
-                                            "Are you sure you want to logout?"),
-                                        content: Text(
+                                        title: const Text(
+                                            'Are you sure you want to logout?'),
+                                        content: const Text(
                                             "You won't be able to see Blogs, Notifications, or Profile after logout."),
                                         actions: <Widget>[
                                           TextButton(
-                                            child: Text("Cancel"),
+                                            child: const Text('Cancel'),
                                             onPressed: () {
                                               Navigator.pop(context, false);
                                             },
                                           ),
                                           TextButton(
-                                            child: Text("Logout",
+                                            child: const Text('Logout',
                                                 style: TextStyle(
                                                     color: Colors.red)),
                                             onPressed: () {
@@ -451,7 +439,7 @@ class _NavDrawerState extends State<NavDrawer> {
                                         ],
                                       );
                                     });
-                                if (confirmLogout) {
+                                if (confirmLogout ?? false) {
                                   setState(() {
                                     loggingOutLoading = true;
                                   });
@@ -459,11 +447,12 @@ class _NavDrawerState extends State<NavDrawer> {
                                   setState(() {
                                     loggingOutLoading = false;
                                   });
-                                  Navigator.pushReplacementNamed(context, "/");
+                                  await Navigator.pushReplacementNamed(
+                                      context, '/');
                                 }
                               },
                         trailing: loggingOutLoading
-                            ? CircularProgressIndicatorExtended()
+                            ? const CircularProgressIndicatorExtended()
                             : null,
                       ));
                     }
@@ -497,7 +486,8 @@ class NavListTile extends StatelessWidget {
   final bool highlight;
   final Widget? trailing;
 
-  NavListTile({
+  const NavListTile({
+    Key? key,
     // Key? key,
     this.icon,
     this.title,
@@ -505,44 +495,45 @@ class NavListTile extends StatelessWidget {
     this.selected = false,
     this.highlight = false,
     this.trailing,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
+    ThemeData theme = Theme.of(context);
     ListTileThemeData listTileTheme = ListTileTheme.of(context);
     return Container(
       decoration: !highlight
           ? null
           : BoxDecoration(
               color: listTileTheme.selectedColor?.withAlpha(100),
-              borderRadius: BorderRadius.only(
-                  bottomRight: const Radius.circular(48.0),
-                  topRight: const Radius.circular(48.0))),
+              borderRadius: const BorderRadius.only(
+                  bottomRight: Radius.circular(48.0),
+                  topRight: Radius.circular(48.0))),
       child: ListTile(
         // key: Key(highlight.toString()),
         selected: selected,
         enabled: true,
         leading: Icon(
-          this.icon,
+          icon,
           color: theme.colorScheme.onSurface,
         ),
         dense: true,
         title: Text(
-          this.title!,
+          title!,
           style: TextStyle(
               fontWeight: FontWeight.w700,
               color: _iconAndTextColor(theme, listTileTheme)),
         ),
-        onTap: this.onTap,
-        trailing: this.trailing,
+        onTap: onTap,
+        trailing: trailing,
       ),
     );
   }
 
   Color? _iconAndTextColor(ThemeData theme, ListTileThemeData tileTheme) {
-    if (selected && tileTheme.selectedColor != null)
+    if (selected && tileTheme.selectedColor != null) {
       return theme.colorScheme.onSurface;
+    }
 
     if (!selected && tileTheme.iconColor != null) return tileTheme.iconColor!;
     // assert(theme.brightness != null);
@@ -589,7 +580,7 @@ class _NavExpansionTileState extends State<NavExpansionTile> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
+    final ThemeData theme = Theme.of(context);
     ListTileThemeData listTileTheme = ListTileTheme.of(context);
     return ListTileTheme(
       data: listTileTheme.copyWith(dense: true),
@@ -603,13 +594,13 @@ class _NavExpansionTileState extends State<NavExpansionTile> {
         ),
         leading: Icon(widget.leading),
         initiallyExpanded: widget.initiallyExpanded,
-        children: widget.children,
         collapsedIconColor: theme.colorScheme.onBackground,
-        onExpansionChanged: (val) {
+        onExpansionChanged: (bool val) {
           setState(() {
             isOpened = val;
           });
         },
+        children: widget.children,
         // maintainState: true,
       ),
     );
@@ -644,69 +635,69 @@ class MNavigatorObserver extends NavigatorObserver {
   InstiAppBloc bloc;
 
   static Map<String, int> routeToNavPos = {
-    "/notifications": -1,
-    "/feed": 0,
-    "/putentity/event": 0,
-    "/news": 1,
-    "/explore": 2,
-    "/mess": 3,
-    "/placeblog": 4,
-    "/trainblog": 5,
-    "/externalblog": 6,
-    "/calendar": 7,
-    "/map": 8,
-    "/achievements": 9,
-    "/achievements/add": 9,
-    "/complaints": 10,
-    "/newcomplaint": 10,
-    "/quicklinks": 11,
-    "/settings": 12,
-    "/query": 13,
-    "/messcalendar": 14,
-    "/messcalendar/qr": 14,
-    "/groups": 15,
-    "/InSeek": 16,
+    '/notifications': -1,
+    '/feed': 0,
+    '/putentity/event': 0,
+    '/news': 1,
+    '/explore': 2,
+    '/mess': 3,
+    '/placeblog': 4,
+    '/trainblog': 5,
+    '/externalblog': 6,
+    '/calendar': 7,
+    '/map': 8,
+    '/achievements': 9,
+    '/achievements/add': 9,
+    '/complaints': 10,
+    '/newcomplaint': 10,
+    '/quicklinks': 11,
+    '/settings': 12,
+    '/query': 13,
+    '/messcalendar': 14,
+    '/messcalendar/qr': 14,
+    '/groups': 15,
+    '/InSeek': 16,
   };
 
   static Map<String, String> routeToName = {
-    "/mess": "Mess",
-    "/placeblog": "Placement Blog",
-    "/trainblog": "Internship Blog",
-    "/feed": "Feed",
-    "/quicklinks": "Quick Links",
-    "/news": "News",
-    "/InSeek": "InSeek",
-    "/explore": "Explore",
-    "/calendar": "Calendar",
-    "/complaints": "Complaints",
-    "/newcomplaint": "New Complaint",
-    "/putentity/event": "New Event",
-    "/map": "Map",
-    "/settings": "Settings",
-    "/notifications": "Notifications",
-    "/achievements": "Achievements",
-    "/achievements/add": "New Achievement",
-    "/externalblog": "External Blog",
-    "/query": "Query",
-    "/messcalendar": "Mess Calendar",
-    "/messcalendar/qr": "Show Mess QR",
-    "/groups": "Groups",
-    "n/a": "",
+    '/mess': 'Mess',
+    '/placeblog': 'Placement Blog',
+    '/trainblog': 'Internship Blog',
+    '/feed': 'Feed',
+    '/quicklinks': 'Quick Links',
+    '/news': 'News',
+    '/InSeek': 'InSeek',
+    '/explore': 'Explore',
+    '/calendar': 'Calendar',
+    '/complaints': 'Complaints',
+    '/newcomplaint': 'New Complaint',
+    '/putentity/event': 'New Event',
+    '/map': 'Map',
+    '/settings': 'Settings',
+    '/notifications': 'Notifications',
+    '/achievements': 'Achievements',
+    '/achievements/add': 'New Achievement',
+    '/externalblog': 'External Blog',
+    '/query': 'Query',
+    '/messcalendar': 'Mess Calendar',
+    '/messcalendar/qr': 'Show Mess QR',
+    '/groups': 'Groups',
+    'n/a': '',
   };
 
   String startsWith(String routeName) {
-    if (routeName.startsWith("/event/")) {
-      return "Event";
-    } else if (routeName.startsWith("/body/")) {
-      return "Body";
-    } else if (routeName.startsWith("/user/")) {
-      return "User";
-    } else if (routeName.startsWith("/complaint/")) {
-      return "Complaint";
-    } else if (routeName.startsWith("/putentity/event/")) {
-      return "New Event";
+    if (routeName.startsWith('/event/')) {
+      return 'Event';
+    } else if (routeName.startsWith('/body/')) {
+      return 'Body';
+    } else if (routeName.startsWith('/user/')) {
+      return 'User';
+    } else if (routeName.startsWith('/complaint/')) {
+      return 'Complaint';
+    } else if (routeName.startsWith('/putentity/event/')) {
+      return 'New Event';
     }
-    return "";
+    return '';
   }
 
   Queue<String> navStack = Queue<String>();
@@ -714,20 +705,21 @@ class MNavigatorObserver extends NavigatorObserver {
 
   ValueStream<String?> get secondTopRouteName =>
       _secondTopRouteNameSubject.stream;
-  final _secondTopRouteNameSubject = BehaviorSubject<String?>();
+  final BehaviorSubject<String?> _secondTopRouteNameSubject =
+      BehaviorSubject<String?>();
 
   @override
   void didPush(Route route, Route? previousRoute) {
-    navStack.addLast(route.settings.name ?? "n/a");
+    navStack.addLast(route.settings.name ?? 'n/a');
     try {
-      var el = navStack.elementAt(navStack.length - 2);
+      String el = navStack.elementAt(navStack.length - 2);
       _secondTopRouteNameSubject.add(routeToName[el] ?? startsWith(el));
     } catch (e) {
-      _secondTopRouteNameSubject.add("");
+      _secondTopRouteNameSubject.add('');
     }
-    String newName = route.settings.name ?? "n/a";
-    if (newName.startsWith("/group/")) {
-      newName = "/groups";
+    String newName = route.settings.name ?? 'n/a';
+    if (newName.startsWith('/group/')) {
+      newName = '/groups';
     }
     int? pageIndex = routeToNavPos[newName];
 
@@ -740,14 +732,14 @@ class MNavigatorObserver extends NavigatorObserver {
       navStack.removeLast();
     } catch (e) {}
     try {
-      var el = navStack.elementAt(navStack.length - 2);
+      String el = navStack.elementAt(navStack.length - 2);
       _secondTopRouteNameSubject.add(routeToName[el] ?? startsWith(el));
     } catch (e) {
-      _secondTopRouteNameSubject.add("");
+      _secondTopRouteNameSubject.add('');
     }
-    String newName = previousRoute?.settings.name ?? "n/a";
-    if (newName.startsWith("/groups")) {
-      newName = "/groups";
+    String newName = previousRoute?.settings.name ?? 'n/a';
+    if (newName.startsWith('/groups')) {
+      newName = '/groups';
     }
     int? pageIndex = routeToNavPos[newName];
 
@@ -759,16 +751,16 @@ class MNavigatorObserver extends NavigatorObserver {
     try {
       navStack.removeLast();
     } catch (e) {}
-    navStack.addLast(newRoute?.settings.name ?? "n/a");
+    navStack.addLast(newRoute?.settings.name ?? 'n/a');
     try {
-      var el = navStack.elementAt(navStack.length - 2);
+      String el = navStack.elementAt(navStack.length - 2);
       _secondTopRouteNameSubject.add(routeToName[el] ?? startsWith(el));
     } catch (e) {
-      _secondTopRouteNameSubject.add("");
+      _secondTopRouteNameSubject.add('');
     }
-    String newName = newRoute?.settings.name ?? "n/a";
-    if (newName.startsWith("/groups")) {
-      newName = "/groups";
+    String newName = newRoute?.settings.name ?? 'n/a';
+    if (newName.startsWith('/groups')) {
+      newName = '/groups';
     }
     int? pageIndex = routeToNavPos[newName];
 
@@ -783,10 +775,10 @@ class MNavigatorObserver extends NavigatorObserver {
   @override
   void didStopUserGesture() {
     try {
-      var el = navStack.elementAt(navStack.length - 2);
+      String el = navStack.elementAt(navStack.length - 2);
       _secondTopRouteNameSubject.add(routeToName[el] ?? startsWith(el));
     } catch (e) {
-      _secondTopRouteNameSubject.add("");
+      _secondTopRouteNameSubject.add('');
     }
   }
 }

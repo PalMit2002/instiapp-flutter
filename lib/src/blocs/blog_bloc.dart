@@ -1,31 +1,36 @@
 import 'dart:async';
 import 'dart:collection';
-import 'package:InstiApp/src/api/model/post.dart';
-import 'package:InstiApp/src/api/request/chatbotlog_request.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/utils/demo_data.dart';
-import 'package:rxdart/rxdart.dart';
-import 'package:markdown/markdown.dart' as markdown;
 import 'dart:math';
+
+import 'package:markdown/markdown.dart' as markdown;
+import 'package:rxdart/rxdart.dart';
+
+import '../api/model/post.dart';
+import '../api/request/chatbotlog_request.dart';
+import '../api/response/chat_bot_response.dart';
+import '../utils/demo_data.dart';
+import 'ia_bloc.dart';
 
 enum PostType { Placement, Training, NewsArticle, External, Query, ChatBot }
 
 class PostBloc {
   // Streams
   ValueStream<UnmodifiableListView<Post>> get blog => _blogSubject.stream;
-  final _blogSubject = BehaviorSubject<UnmodifiableListView<Post>>();
+  final BehaviorSubject<UnmodifiableListView<Post>> _blogSubject =
+      BehaviorSubject<UnmodifiableListView<Post>>();
 
   ValueStream<UnmodifiableListView<Map<String, String>>> get categories =>
       _blogSubject1.stream;
-  final _blogSubject1 =
+  final BehaviorSubject<UnmodifiableListView<Map<String, String>>>
+      _blogSubject1 =
       BehaviorSubject<UnmodifiableListView<Map<String, String>>>();
 
   Sink<int> get inPostIndex => _indexController.sink;
   PublishSubject<int> _indexController = PublishSubject<int>();
 
   // Params
-  int _noOfPostsPerPage = 20;
-  String query = "";
+  final int _noOfPostsPerPage = 20;
+  String query = '';
 
   // parent bloc
   InstiAppBloc bloc;
@@ -34,7 +39,7 @@ class PostBloc {
   PostType postType;
 
   // For categories
-  String category = "";
+  String category = '';
 
   PostBloc(this.bloc, {required this.postType}) {
     // if (postType == PostType.Query) {
@@ -43,43 +48,51 @@ class PostBloc {
     _setIndexListener();
   }
 
-  get context => null;
+  void get context => null;
 
   void _setIndexListener() {
     _indexController.stream
-        .bufferTime(Duration(milliseconds: 500))
-        .where((batch) => batch.isNotEmpty)
+        .bufferTime(const Duration(milliseconds: 500))
+        .where((List<int> batch) => batch.isNotEmpty)
         .listen(_handleIndexes);
   }
 
-  final _fetchPages = <int, List<Post>>{};
-  final _pagesBeingFetched = Set<int>();
+  final Map<int, List<Post>> _fetchPages = <int, List<Post>>{};
+  final Set<int> _pagesBeingFetched = <int>{};
 
-  final _searchFetchPages = <int, List<Post>>{};
-  final _searchPagesBeingFetched = Set<int>();
+  final Map<int, List<Post>> _searchFetchPages = <int, List<Post>>{};
+  final Set<int> _searchPagesBeingFetched = <int>{};
 
-  static final month = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sept",
-    "Oct",
-    "Nov",
-    "Dec"
+  static final List<String> month = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sept',
+    'Oct',
+    'Nov',
+    'Dec'
   ];
-  static final week = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"];
+  static final List<String> week = [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thur',
+    'Fri',
+    'Sat',
+    'Sun'
+  ];
   String dateTimeFormatter(String pub) {
-    var dt = DateTime.parse(pub).toLocal();
-    return "${week[dt.weekday - 1]}, ${month[dt.month - 1]} ${dt.day.toString()}${dt.year == DateTime.now().year ? "" : (" " + dt.year.toString())}, ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}";
+    final DateTime dt = DateTime.parse(pub).toLocal();
+    return "${week[dt.weekday - 1]}, ${month[dt.month - 1]} ${dt.day.toString()}${dt.year == DateTime.now().year ? "" : (" ${dt.year}")}, ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}";
   }
 
   Future<List<Post>> getBlogPage(int page) async {
-    var httpGetFunc = {
+    final Function? httpGetFunc = <PostType, Function?>{
       PostType.Placement: bloc.client.getPlacementBlogFeed,
       PostType.External: bloc.client.getExternalBlogFeed,
       PostType.Training: bloc.client.getTrainingBlogFeed,
@@ -87,43 +100,63 @@ class PostBloc {
       PostType.Query: bloc.client.getQueries,
       PostType.ChatBot: bloc.clientChatBot.getAnswers,
     }[postType];
-    var posts;
+    List<Post> posts;
     if (bloc.currSession?.user != 'demouser') {
-      if (postType == PostType.Query)
-        posts = await httpGetFunc!(bloc.getSessionIdHeader(), query, category);
-      else if (postType == PostType.ChatBot) if (query.isEmpty)
-        posts = List<ChatBot>.generate(
-            1,
-            (index) => ChatBot(
-                "0", "0", null, "ChatBot", "Ask your queries here!", null,
-                body: "Ask your queries here!"));
-      else
-        posts = await httpGetFunc!(query);
-      else
+      if (postType == PostType.Query) {
+        posts = await httpGetFunc!(bloc.getSessionIdHeader(), query, category)
+            as List<Query>;
+      } else if (postType == PostType.ChatBot) {
+        if (query.isEmpty) {
+          posts = List<ChatBot>.generate(
+              1,
+              (int index) => ChatBot(
+                  '0', '0', null, 'ChatBot', 'Ask your queries here!', null,
+                  body: 'Ask your queries here!'));
+        } else {
+          ChatBotResponse res = await httpGetFunc!(query) as ChatBotResponse;
+          posts = List<ChatBot>.generate(
+              2,
+              (int index) => ChatBot(
+                  index.toString(),
+                  '',
+                  res.data?[2 * index + 1],
+                  'Answer $index',
+                  res.data?[2 * index],
+                  null,
+                  body: query));
+        }
+      } else {
         posts = await httpGetFunc!(bloc.getSessionIdHeader(),
-            page * _noOfPostsPerPage, _noOfPostsPerPage, query);
+            page * _noOfPostsPerPage, _noOfPostsPerPage, query) as List<Post>;
+      }
     } else {
       posts = await _getDemoPosts(page, httpGetFunc);
     }
-    var tableParse = markdown.TableSyntax();
-    if (postType == PostType.ChatBot && query.isNotEmpty)
-      posts = List<ChatBot>.generate(
-          2,
-          (index) => ChatBot(index.toString(), "", posts.data[2 * index + 1],
-              "Answer " + index.toString(), posts.data[2 * index], null,
-              body: query));
+    const markdown.TableSyntax tableParse = markdown.TableSyntax();
 
-    posts.forEach((p) {
-      if (postType == PostType.ChatBot)
+    posts.forEach((Post p) {
+      if (postType == PostType.ChatBot) {
         p.content = markdown.markdownToHtml(
-            p.content.split('\n').map((s) => s.trimRight()).toList().join('\n'),
+            p.content
+                    ?.split('\n')
+                    .map((String s) => s.trimRight())
+                    .toList()
+                    .join('\n') ??
+                '',
             blockSyntaxes: [tableParse]);
-      else
+      } else {
         p.content = markdown.markdownToHtml(
-            p.content.split('\n').map((s) => s.trimRight()).toList().join('\n'),
+            p.content
+                    ?.split('\n')
+                    .map((String s) => s.trimRight())
+                    .toList()
+                    .join('\n') ??
+                "",
             blockSyntaxes: [tableParse]);
-      if (postType != PostType.Query && postType != PostType.ChatBot)
-        p.published = dateTimeFormatter(p.published);
+      }
+      if (postType != PostType.Query && postType != PostType.ChatBot) {
+        p.published = dateTimeFormatter(p.published ?? '');
+      }
     });
     return posts;
   }
@@ -138,8 +171,11 @@ class PostBloc {
         posts = trainingPosts();
         break;
       case PostType.NewsArticle:
-        posts = posts = await httpGetFunc!(bloc.getSessionIdHeader(),
-            page * _noOfPostsPerPage, _noOfPostsPerPage, query);
+        posts = await httpGetFunc!(
+            bloc.getSessionIdHeader(),
+            page * _noOfPostsPerPage,
+            _noOfPostsPerPage,
+            query) as List<NewsArticle>;
         break;
       case PostType.External:
         posts = externalBlogPosts();
@@ -154,28 +190,28 @@ class PostBloc {
     return posts;
   }
 
-  void setCategories() async {
+  Future<void> setCategories() async {
     List<String?> listCategories;
     listCategories =
         await bloc.client.getQueryCategories(bloc.getSessionIdHeader());
 
     List<Map<String, String>> categories = [];
-    listCategories.forEach((val) {
+    for (final String? val in listCategories) {
       if (val != null) {
         categories.add({'value': val, 'name': val});
       }
-    });
+    }
     _blogSubject1.add(UnmodifiableListView<Map<String, String>>(categories));
   }
 
   void _handleIndexes(List<int> indexes) {
-    var pages =
+    final Map<int, List<Post>> pages =
         (query.isEmpty && category.isEmpty) ? _fetchPages : _searchFetchPages;
-    var pagesBeingFetched = (query.isEmpty && category.isEmpty)
+    final Set<int> pagesBeingFetched = (query.isEmpty && category.isEmpty)
         ? _pagesBeingFetched
         : _searchPagesBeingFetched;
-    indexes.forEach((int index) {
-      final int pageIndex = ((index + 1) ~/ _noOfPostsPerPage);
+    for (final int index in indexes) {
+      final int pageIndex = (index + 1) ~/ _noOfPostsPerPage;
 
       // check if the page has already been fetched
       if (!pages.containsKey(pageIndex)) {
@@ -190,7 +226,7 @@ class PostBloc {
               _handleFetchedPage(fetchedPage, pageIndex));
         }
       }
-    });
+    }
   }
 
   ///
@@ -199,9 +235,9 @@ class PostBloc {
   /// 2) notify everyone who might be interested in knowing it
   ///
   void _handleFetchedPage(List<Post> page, int pageIndex) {
-    var pages =
+    Map<int, List<Post>> pages =
         (query.isEmpty && category.isEmpty) ? _fetchPages : _searchFetchPages;
-    var pagesBeingFetched = (query.isEmpty && category.isEmpty)
+    final Set<int> pagesBeingFetched = (query.isEmpty && category.isEmpty)
         ? _pagesBeingFetched
         : _searchPagesBeingFetched;
 
@@ -230,7 +266,7 @@ class PostBloc {
           break;
         }
         // Add the list of fetched posts to the list
-        var temp = pages[i];
+        List<Post>? temp = pages[i];
         if (temp != null) {
           posts.addAll(temp);
         }
@@ -242,13 +278,13 @@ class PostBloc {
     }
 
     // Only notify when there are posts
-    if (posts.length > 0) {
+    if (posts.isNotEmpty) {
       _blogSubject.add(UnmodifiableListView<Post>(posts));
     }
   }
 
   Future refresh({bool force = false}) async {
-    _indexController.close();
+    await _indexController.close();
 
     _searchFetchPages.clear();
     _searchPagesBeingFetched.clear();
@@ -284,43 +320,43 @@ class PostBloc {
   }
 
   Future updateUserReaction(NewsArticle article, int reaction) async {
-    String sel = "$reaction";
+    String sel = '$reaction';
     int sendReaction = article.userReaction == reaction ? -1 : reaction;
     await bloc.client.updateUserNewsReaction(
         bloc.getSessionIdHeader(), article.id!, sendReaction);
     if (article.userReaction == -1) {
       article.userReaction = sendReaction;
-      var x = article.reactionCount![sel];
+      int? x = article.reactionCount![sel];
       if (x != null) {
         x += 1;
         article.reactionCount![sel] = x;
       }
     } else if (article.userReaction != reaction) {
-      var x = article.reactionCount!["${article.userReaction}"];
-      var y = article.reactionCount![sel];
+      int? x = article.reactionCount!['${article.userReaction}'];
+      int? y = article.reactionCount![sel];
       if (x != null && y != null) {
         x -= 1;
         y += 1;
-        article.reactionCount!["${article.userReaction}"] = x;
+        article.reactionCount!['${article.userReaction}'] = x;
         article.userReaction = sendReaction;
         article.reactionCount![sel] = y;
       }
     } else {
       article.userReaction = -1;
-      var x = article.reactionCount![sel];
+      int? x = article.reactionCount![sel];
       if (x != null) {
         x -= 1;
         article.reactionCount![sel] = x;
       }
     }
-    return Future.delayed(Duration(milliseconds: 0));
+    return Future.delayed(const Duration(milliseconds: 0));
   }
 
   Future updateUserReactionChatBot(ChatBot article, int reaction) async {
     // int sendReaction = article.userReaction == reaction ? -1 : reaction;
     await bloc.client.updateUserChatBotReaction(bloc.getSessionIdHeader(),
         ChatBotLogRequest(article.body!, article.content!, reaction));
-    return Future.delayed(Duration(milliseconds: 0));
+    return Future.delayed(const Duration(milliseconds: 0));
   }
 
   void setState(Null Function() param0) {}

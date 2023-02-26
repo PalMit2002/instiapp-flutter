@@ -1,26 +1,28 @@
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
-// import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/api/model/mess.dart';
-
 import 'dart:collection';
 
+// import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+import '../api/model/mess.dart';
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/title_with_backbutton.dart';
+
 class MessPage extends StatefulWidget {
-  MessPage({Key? key}) : super(key: key);
+  const MessPage({Key? key}) : super(key: key);
 
   @override
   _MessPageState createState() => _MessPageState();
 }
 
 class _MessPageState extends State<MessPage> {
-  String currHostel = "0";
+  String currHostel = '0';
 
   _MessPageState();
 
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   bool firstBuild = true;
 
@@ -31,8 +33,8 @@ class _MessPageState extends State<MessPage> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
 
     if (firstBuild) {
       bloc.updateHostels();
@@ -42,16 +44,16 @@ class _MessPageState extends State<MessPage> {
     return Scaffold(
       key: _scaffoldKey,
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show navigation drawer",
-              icon: Icon(
+              tooltip: 'Show navigation drawer',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show navigation drawer",
+                semanticLabel: 'Show navigation drawer',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -60,7 +62,7 @@ class _MessPageState extends State<MessPage> {
           ],
         ),
       ),
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => bloc.updateHostels(),
@@ -71,11 +73,11 @@ class _MessPageState extends State<MessPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Mess Menu",
+                      'Mess Menu',
                       style: theme.textTheme.displaySmall,
                     ),
                     Text(
-                      "If the menu is not accurate please contact your hostel council",
+                      'If the menu is not accurate please contact your hostel council',
                       style: theme.textTheme.titleMedium,
                     ),
                   ],
@@ -87,22 +89,24 @@ class _MessPageState extends State<MessPage> {
                   stream: bloc.hostels,
                   builder: (BuildContext context,
                       AsyncSnapshot<UnmodifiableListView<Hostel>> hostels) {
-                    if (currHostel == "0")
-                      currHostel = bloc.currSession?.profile?.hostel ?? "1";
+                    if (currHostel == '0') {
+                      currHostel = bloc.currSession?.profile?.hostel ?? '1';
+                    }
                     if (hostels.hasData) {
-                      var currMess = hostels.data!
-                          .firstWhere((h) => h.shortName == currHostel)
+                      List<HostelMess>? currMess = hostels.data!
+                          .firstWhere((Hostel h) => h.shortName == currHostel)
                           .mess
-                        ?..sort((h1, h2) => h1.compareTo(h2));
+                        ?..sort(
+                            (HostelMess h1, HostelMess h2) => h1.compareTo(h2));
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children:
                             currMess?.map(_buildSingleDayMess).toList() ?? [],
                       );
                     } else {
-                      return Center(
+                      return const Center(
                         child: CircularProgressIndicatorExtended(
-                          label: Text("Loading mess menu"),
+                          label: Text('Loading mess menu'),
                         ),
                       );
                     }
@@ -117,43 +121,45 @@ class _MessPageState extends State<MessPage> {
         elevation: 8.0,
         backgroundColor: theme.colorScheme.surface,
         foregroundColor: theme.colorScheme.secondary,
-        icon: Icon(
+        icon: const Icon(
           Icons.home_outlined,
           // color: theme.accentColor,
         ),
         label: buildDropdownButton(theme),
         onPressed: () {},
-        tooltip: "Change hostel",
+        tooltip: 'Change hostel',
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 
   Widget buildDropdownButton(ThemeData theme) {
-    var bloc = BlocProvider.of(context)!.bloc;
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
     return StreamBuilder<UnmodifiableListView<Hostel>>(
       stream: bloc.hostels,
-      builder: (context, snapshot) {
+      builder: (BuildContext context,
+          AsyncSnapshot<UnmodifiableListView<Hostel>> snapshot) {
         if (snapshot.hasData) {
-          var val = snapshot.data!.indexWhere((h) => h.shortName == currHostel);
+          int val = snapshot.data!
+              .indexWhere((Hostel h) => h.shortName == currHostel);
           return DropdownButton<int>(
-            hint: Text("Reload"),
+            hint: const Text('Reload'),
             value: val != -1 ? val : null,
             items: snapshot.data!
                 .asMap()
                 .entries
-                .map((entry) => DropdownMenuItem<int>(
-                      child: Text(
-                        entry.value.name ?? "",
-                      ),
+                .map((MapEntry<int, Hostel> entry) => DropdownMenuItem<int>(
                       value: entry.key,
+                      child: Text(
+                        entry.value.name ?? '',
+                      ),
                     ))
                 .toList(),
             style: theme.textTheme.titleMedium
                 ?.copyWith(color: theme.colorScheme.secondary),
-            onChanged: (h) {
+            onChanged: (int? h) {
               setState(() {
-                currHostel = snapshot.data![h ?? 0].shortName ?? "0";
+                currHostel = snapshot.data![h ?? 0].shortName ?? '0';
               });
             },
           );
@@ -162,8 +168,8 @@ class _MessPageState extends State<MessPage> {
             width: 18,
             height: 18,
             child: CircularProgressIndicator(
-              valueColor: new AlwaysStoppedAnimation<Color>(
-                  theme.colorScheme.secondary),
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(theme.colorScheme.secondary),
               strokeWidth: 2,
             ),
           );
@@ -173,8 +179,8 @@ class _MessPageState extends State<MessPage> {
   }
 
   Widget _buildSingleDayMess(HostelMess mess) {
-    var theme = Theme.of(context);
-    var localTheme = theme.textTheme;
+    ThemeData theme = Theme.of(context);
+    TextTheme localTheme = theme.textTheme;
     return Material(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,46 +190,46 @@ class _MessPageState extends State<MessPage> {
             style:
                 localTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
-          SizedBox(
+          const SizedBox(
             height: 8.0,
           ),
           Text(
-            "Breakfast",
+            'Breakfast',
             style: localTheme.titleLarge
                 ?.copyWith(color: theme.colorScheme.secondary),
           ),
-          ContentText(mess.breakfast ?? "", context),
-          SizedBox(
+          ContentText(mess.breakfast ?? '', context),
+          const SizedBox(
             height: 8.0,
           ),
           Text(
-            "Lunch",
+            'Lunch',
             style: localTheme.titleLarge
                 ?.copyWith(color: theme.colorScheme.secondary),
           ),
-          ContentText(mess.lunch ?? "", context),
-          SizedBox(
+          ContentText(mess.lunch ?? '', context),
+          const SizedBox(
             height: 8.0,
           ),
           Text(
-            "Snacks",
+            'Snacks',
             style: localTheme.titleLarge
                 ?.copyWith(color: theme.colorScheme.secondary),
           ),
-          ContentText(mess.snacks ?? "", context),
-          SizedBox(
+          ContentText(mess.snacks ?? '', context),
+          const SizedBox(
             height: 8.0,
           ),
           Text(
-            "Dinner",
+            'Dinner',
             style: localTheme.titleLarge
                 ?.copyWith(color: theme.colorScheme.secondary),
           ),
-          ContentText(mess.dinner ?? "", context),
-          SizedBox(
+          ContentText(mess.dinner ?? '', context),
+          const SizedBox(
             height: 8.0,
           ),
-          Divider(
+          const Divider(
             height: 16.0,
           ),
         ],
@@ -233,6 +239,6 @@ class _MessPageState extends State<MessPage> {
 }
 
 class ContentText extends Text {
-  ContentText(String data, BuildContext context)
-      : super(data, style: Theme.of(context).textTheme.titleMedium);
+  ContentText(String data, BuildContext context, {Key? key})
+      : super(data, key: key, style: Theme.of(context).textTheme.titleMedium);
 }

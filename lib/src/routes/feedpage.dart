@@ -1,23 +1,26 @@
 import 'dart:collection';
 
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/routes/eventpage.dart';
-import 'package:InstiApp/src/routes/explorepage.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../api/model/event.dart';
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/title_with_backbutton.dart';
+import 'eventpage.dart';
+import 'explorepage.dart';
+
 class FeedPage extends StatefulWidget {
+  const FeedPage({Key? key}) : super(key: key);
+
   @override
   _FeedPageState createState() => _FeedPageState();
 }
 
 class _FeedPageState extends State<FeedPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   bool firstBuild = true;
 
@@ -27,40 +30,40 @@ class _FeedPageState extends State<FeedPage> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
     if (firstBuild) {
       bloc.updateEvents();
       firstBuild = false;
     }
 
-    var fab;
+    FloatingActionButton? fab;
 
     if (bloc.currSession?.profile?.userRoles?.isNotEmpty ?? false) {
       // fab = FloatingActionButton(child: Icon(Icons.add_outlined), onPressed: () {},);
       fab = FloatingActionButton.extended(
-        icon: Icon(Icons.add_outlined),
-        label: Text("Add Event"),
+        icon: const Icon(Icons.add_outlined),
+        label: const Text('Add Event'),
         onPressed: () {
-          Navigator.of(context).pushNamed("/putentity/event");
+          Navigator.of(context).pushNamed('/putentity/event');
         },
       );
     }
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -83,7 +86,7 @@ class _FeedPageState extends State<FeedPage> {
                     children: <Widget>[
                       Expanded(
                         child: Text(
-                          "Feed",
+                          'Feed',
                           style: theme.textTheme.displaySmall,
                         ),
                       ),
@@ -95,10 +98,10 @@ class _FeedPageState extends State<FeedPage> {
                             shape: CircleBorder(
                                 side: BorderSide(color: theme.primaryColor))),
                         child: searchMode
-                            ? SizedBox()
+                            ? const SizedBox()
                             : IconButton(
                                 tooltip: "Search ${""}",
-                                padding: EdgeInsets.all(16.0),
+                                padding: const EdgeInsets.all(16.0),
                                 icon: Icon(
                                   actionIcon,
                                   color: theme.primaryColor,
@@ -118,35 +121,35 @@ class _FeedPageState extends State<FeedPage> {
               ),
               StreamBuilder(
                 stream: bloc.events,
-                builder: (context,
+                builder: (BuildContext context,
                     AsyncSnapshot<UnmodifiableListView<Event>> snapshot) {
                   if (snapshot.hasData) {
-                    if (snapshot.data!.length > 0) {
+                    if (snapshot.data!.isNotEmpty) {
                       return SliverList(
                         delegate: SliverChildBuilderDelegate(
-                            (context, index) =>
+                            (BuildContext context, int index) =>
                                 _buildEvent(theme, bloc, snapshot.data![index]),
                             childCount: snapshot.data!.length),
                       );
                     } else {
-                      return SliverToBoxAdapter(
+                      return const SliverToBoxAdapter(
                         child: Center(
-                          child: Text("No upcoming events"),
+                          child: Text('No upcoming events'),
                         ),
                       );
                     }
                   } else {
-                    return SliverToBoxAdapter(
+                    return const SliverToBoxAdapter(
                       child: Center(
                         child: CircularProgressIndicatorExtended(
-                          label: Text("Getting the latest events"),
+                          label: Text('Getting the latest events'),
                         ),
                       ),
                     );
                   }
                 },
               ),
-              SliverToBoxAdapter(
+              const SliverToBoxAdapter(
                 child: SizedBox(
                   height: 32,
                 ),
@@ -170,26 +173,26 @@ class _FeedPageState extends State<FeedPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Hero(
-              tag: event.eventID ?? "",
+              tag: event.eventID ?? '',
               child: Material(
                 type: MaterialType.transparency,
                 child: Ink.image(
-                  child: Container(),
                   image: CachedNetworkImageProvider(
                     event.eventImageURL ??
                         event.eventBodies?[0].bodyImageURL ??
-                        "",
+                        '',
                   ),
                   height: MediaQuery.of(context).size.width * 0.6,
                   fit: BoxFit.cover,
+                  child: Container(),
                 ),
               ),
             ),
             ListTile(
               contentPadding:
-                  EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
               title: Text(
-                event.eventName ?? "",
+                event.eventName ?? '',
                 style: theme.textTheme.titleLarge,
               ),
               enabled: true,
@@ -201,14 +204,14 @@ class _FeedPageState extends State<FeedPage> {
     } else {
       return ListTile(
         title: Text(
-          event.eventName ?? "",
+          event.eventName ?? '',
           style: theme.textTheme.titleLarge,
         ),
         enabled: true,
         leading: NullableCircleAvatar(
-          event.eventImageURL ?? event.eventBodies?[0].bodyImageURL ?? "",
+          event.eventImageURL ?? event.eventBodies?[0].bodyImageURL ?? '',
           Icons.event_outlined,
-          heroTag: event.eventID ?? "",
+          heroTag: event.eventID ?? '',
         ),
         subtitle: Text(event.getSubTitle()),
         onTap: () {

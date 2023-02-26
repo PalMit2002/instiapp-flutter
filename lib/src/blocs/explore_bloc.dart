@@ -2,28 +2,31 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/api/response/explore_response.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../api/model/body.dart';
+import '../api/response/explore_response.dart';
+import 'ia_bloc.dart';
+
 class ExploreBloc {
   // Unique ID for use in SharedPrefs
-  static String storageID = "explore";
+  static String storageID = 'explore';
 
   // parent bloc
   InstiAppBloc bloc;
 
   // Streams
   ValueStream<ExploreResponse> get explore => _exploreSubject.stream;
-  final _exploreSubject = BehaviorSubject<ExploreResponse>();
+  final BehaviorSubject<ExploreResponse> _exploreSubject =
+      BehaviorSubject<ExploreResponse>();
 
   ValueStream<UnmodifiableListView<Body>> get bodies => _bodiesSubject.stream;
-  final _bodiesSubject = BehaviorSubject<UnmodifiableListView<Body>>();
+  final BehaviorSubject<UnmodifiableListView<Body>> _bodiesSubject =
+      BehaviorSubject<UnmodifiableListView<Body>>();
 
   // Params
-  String query = "";
+  String query = '';
 
   // State
   List<Body> allBodies = <Body>[];
@@ -37,19 +40,24 @@ class ExploreBloc {
   }
 
   Future saveToCache({SharedPreferences? sharedPrefs}) async {
-    var prefs = sharedPrefs ?? await SharedPreferences.getInstance();
+    SharedPreferences prefs =
+        sharedPrefs ?? await SharedPreferences.getInstance();
     if (allBodies.isNotEmpty) {
-      prefs.setString(
-          storageID, json.encode(allBodies.map((e) => e.toJson()).toList()));
+      await prefs.setString(storageID,
+          json.encode(allBodies.map((Body e) => e.toJson()).toList()));
     }
   }
 
   Future restoreFromCache({SharedPreferences? sharedPrefs}) async {
-    var prefs = sharedPrefs ?? await SharedPreferences.getInstance();
+    final SharedPreferences prefs =
+        sharedPrefs ?? await SharedPreferences.getInstance();
     if (prefs.getKeys().contains(storageID)) {
-      var x = prefs.getString(storageID);
+      String? x = prefs.getString(storageID);
       if (x != null) {
-        allBodies = json.decode(x).map((e) => Body.fromJson(e)).toList().cast<Body>();
+        allBodies = (json.decode(x) as List<Map<String, dynamic>>)
+            .map(Body.fromJson)
+            .toList()
+            .cast<Body>();
         _push(ExploreResponse(bodies: allBodies));
       }
     }
@@ -57,7 +65,7 @@ class ExploreBloc {
   }
 
   Future refresh() async {
-    if (query == "") {
+    if (query == '') {
       if (allBodies.isEmpty) {
         allBodies = await bloc.client.getAllBodies(bloc.getSessionIdHeader());
       }

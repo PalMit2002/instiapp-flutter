@@ -3,9 +3,9 @@ part 'image_upload_response.g.dart';
 
 @JsonSerializable()
 class ImageUploadResponse {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? pictureID;
-  @JsonKey(name: "picture")
+  @JsonKey(name: 'picture')
   String? pictureURL;
 
   ImageUploadResponse({this.pictureID, this.pictureURL});

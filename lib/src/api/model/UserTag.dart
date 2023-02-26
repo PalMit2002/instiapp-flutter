@@ -5,10 +5,10 @@ part 'UserTag.g.dart';
 
 @JsonSerializable()
 class UserTag {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   int? tagID;
 
-  @JsonKey(name: "name")
+  @JsonKey(name: 'name')
   String? tagName;
 
 
@@ -26,13 +26,13 @@ class UserTag {
 
 @JsonSerializable()
 class UserTagHolder {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   int? holderID;
 
-  @JsonKey(name: "name")
+  @JsonKey(name: 'name')
   String? holderName;
 
-  @JsonKey(name: "tags")
+  @JsonKey(name: 'tags')
   List<UserTag>? holderTags;
 
 

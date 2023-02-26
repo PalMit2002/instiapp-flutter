@@ -1,8 +1,9 @@
-import 'package:InstiApp/src/api/model/communityPost.dart';
-import 'package:InstiApp/src/api/request/action_community_post_request.dart';
-import 'package:InstiApp/src/api/request/update_community_post_request.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
 import 'package:rxdart/rxdart.dart';
+
+import '../api/model/communityPost.dart';
+import '../api/request/action_community_post_request.dart';
+import '../api/request/update_community_post_request.dart';
+import 'ia_bloc.dart';
 
 enum CPType {
   All,
@@ -13,7 +14,7 @@ enum CPType {
 }
 
 class CommunityPostBloc {
-  final String storageID = "communityPost";
+  final String storageID = 'communityPost';
 
   InstiAppBloc bloc;
 
@@ -21,9 +22,9 @@ class CommunityPostBloc {
 
   ValueStream<List<CommunityPost>> get communityposts =>
       _communitySubject.stream;
-  final _communitySubject = BehaviorSubject<List<CommunityPost>>();
+  final BehaviorSubject<List<CommunityPost>> _communitySubject = BehaviorSubject<List<CommunityPost>>();
 
-  String query = "";
+  String query = '';
 
   CommunityPostBloc(this.bloc);
 
@@ -75,7 +76,7 @@ class CommunityPostBloc {
       await bloc.client.updateCommunityPostStatus(bloc.getSessionIdHeader(), id,
           UpdateCommunityPostRequest(status: status));
 
-      _communityPosts.removeWhere((element) => element.id == id);
+      _communityPosts.removeWhere((CommunityPost element) => element.id == id);
       _communitySubject.add(_communityPosts);
     } catch (e) {
       _communitySubject.add(_communityPosts);
@@ -87,7 +88,7 @@ class CommunityPostBloc {
     bool isFeatured,
   ) async {
     await bloc.client.updateCommunityPostAction(bloc.getSessionIdHeader(), id,
-        "feature", ActionCommunityPostRequest(isFeatured: isFeatured));
+        'feature', ActionCommunityPostRequest(isFeatured: isFeatured));
   }
 
   Future<void> updateCommunityPost(CommunityPost post) async {
@@ -101,11 +102,11 @@ class CommunityPostBloc {
 
   Future<void> deleteCommunityPost(String id) async {
     await bloc.client.updateCommunityPostAction(
-        bloc.getSessionIdHeader(), id, "delete", ActionCommunityPostRequest());
+        bloc.getSessionIdHeader(), id, 'delete', ActionCommunityPostRequest());
   }
 
   Future<void> reportCommunityPost(String id) async {
     await bloc.client.updateCommunityPostAction(
-        bloc.getSessionIdHeader(), id, "report", ActionCommunityPostRequest());
+        bloc.getSessionIdHeader(), id, 'report', ActionCommunityPostRequest());
   }
 }

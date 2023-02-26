@@ -4,13 +4,13 @@ part 'chatbotlog_request.g.dart';
 
 @JsonSerializable()
 class ChatBotLogRequest {
-  @JsonKey(name: "question")
+  @JsonKey(name: 'question')
   String? question;
 
-  @JsonKey(name: "answer")
+  @JsonKey(name: 'answer')
   String? answer;
 
-  @JsonKey(name: "reaction")
+  @JsonKey(name: 'reaction')
   int? reaction;
 
   ChatBotLogRequest(

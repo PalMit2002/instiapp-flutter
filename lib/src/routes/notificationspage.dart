@@ -1,17 +1,20 @@
 import 'dart:math';
 
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/routes/eventpage.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:InstiApp/src/api/model/notification.dart' as ntf;
+
+import '../api/model/notification.dart' as ntf;
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/title_with_backbutton.dart';
+import 'eventpage.dart';
 
 class NotificationsPage extends StatefulWidget {
-  final String title = "Notifications";
+  final String title = 'Notifications';
+
+  const NotificationsPage({Key? key}) : super(key: key);
 
   @override
   _NotificationsPageState createState() => _NotificationsPageState();
@@ -26,25 +29,25 @@ class _NotificationsPageState extends State<NotificationsPage> {
   bool shouldMarkAsRead = true;
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
 
     bloc.updateNotifications();
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -81,7 +84,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton.extended(
-        tooltip: "Clear all notifications",
+        tooltip: 'Clear all notifications',
         onPressed: () async {
           setState(() {
             clearAllLoading = true;
@@ -101,8 +104,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       theme.colorScheme.onPrimary),
                 ),
               )
-            : Icon(Icons.clear_all_outlined),
-        label: Text("Clear All"),
+            : const Icon(Icons.clear_all_outlined),
+        label: const Text('Clear All'),
       ),
     );
   }
@@ -113,19 +116,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
       InstiAppBloc bloc) {
     if (snapshot.hasData && snapshot.data!.isNotEmpty) {
       return snapshot.data!
-          .map((n) => _buildNotificationTile(theme, bloc, n))
+          .map((ntf.Notification n) => _buildNotificationTile(theme, bloc, n))
           .toList();
     } else {
       return [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 28.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 8.0),
           child:
-              Text.rich(TextSpan(style: theme.textTheme.titleLarge, children: [
-            TextSpan(text: "No new "),
+              Text.rich(TextSpan(style: theme.textTheme.titleLarge, children: const [
+            TextSpan(text: 'No new '),
             TextSpan(
-                text: "notifications",
+                text: 'notifications',
                 style: TextStyle(fontWeight: FontWeight.bold)),
-            TextSpan(text: "."),
+            TextSpan(text: '.'),
           ])),
         )
       ];
@@ -135,16 +138,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget _buildNotificationTile(
       ThemeData theme, InstiAppBloc bloc, ntf.Notification notification) {
     return Dismissible(
-      key: Key("${notification.notificationId}" +
-          Random().nextInt(10000).toString()),
+      key: Key('${notification.notificationId}${Random().nextInt(10000)}'),
       background: Container(
         color: Colors.red,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
+          children: const <Widget>[
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.0),
               child: Icon(Icons.delete_outlined, color: Colors.white),
             ),
           ],
@@ -155,20 +157,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
+          children: const <Widget>[
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.0),
               child: Icon(Icons.delete_outlined, color: Colors.white),
             ),
           ],
         ),
       ),
-      onDismissed: (direction) async {
+      onDismissed: (DismissDirection direction) async {
         await ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(
-              content: Text("Marked \"${notification.getTitle()}\" as read "),
+              content: Text('Marked "${notification.getTitle()}" as read '),
               action: SnackBarAction(
-                label: "Undo",
+                label: 'Undo',
                 onPressed: () {
                   shouldMarkAsRead = false;
                 },
@@ -182,31 +184,31 @@ class _NotificationsPageState extends State<NotificationsPage> {
         setState(() {});
       },
       child: ListTile(
-        title: Text(notification.getTitle() ?? ""),
-        subtitle: Text(notification.getSubtitle() ?? ""),
+        title: Text(notification.getTitle() ?? ''),
+        subtitle: Text(notification.getSubtitle() ?? ''),
         leading: NullableCircleAvatar(
-          notification.getAvatarUrl() ?? "",
+          notification.getAvatarUrl() ?? '',
           Icons.notifications_outlined,
-          heroTag: notification.getID() ?? "",
+          heroTag: notification.getID() ?? '',
         ),
         onTap: () {
           if (notification.isBlogPost) {
             Navigator.of(context).pushNamed(
-                (notification.getBlogPost().link?.contains("internship") ??
+                (notification.getBlogPost().link?.contains('internship') ??
                         false)
-                    ? "/trainblog"
-                    : "/placeblog");
+                    ? '/trainblog'
+                    : '/placeblog');
           } else if (notification.isEvent) {
             EventPage.navigateWith(context, bloc, notification.getEvent());
           } else if (notification.isNews) {
-            Navigator.of(context).pushNamed("/news");
+            Navigator.of(context).pushNamed('/news');
           } else if (notification.isComplaintComment) {
             Navigator.of(context).pushNamed(
-                "/complaint/${notification.getComment().complaintID}?reload=true");
+                '/complaint/${notification.getComment().complaintID}?reload=true');
           }
 
           bloc.client.markNotificationRead(
-              bloc.getSessionIdHeader(), "${notification.notificationId}");
+              bloc.getSessionIdHeader(), '${notification.notificationId}');
         },
       ),
     );

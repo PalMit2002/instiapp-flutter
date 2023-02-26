@@ -1,5 +1,7 @@
-import 'package:json_annotation/json_annotation.dart';
 import 'dart:core';
+
+import 'package:json_annotation/json_annotation.dart';
+
 part 'mess.g.dart';
 
 @JsonSerializable()
@@ -17,13 +19,13 @@ class Hostel {
   List<HostelMess>? mess;
 
   int compareTo(Hostel h) {
-    int? x = int.tryParse(this.shortName!);
+    int? x = int.tryParse(shortName!);
     if (x == null) {
-      return this.shortName!.compareTo(h.shortName!);
+      return shortName!.compareTo(h.shortName!);
     }
     int? y = int.tryParse(h.shortName!);
     if (y == null) {
-      return this.shortName!.compareTo(h.shortName!);
+      return shortName!.compareTo(h.shortName!);
     }
     return x.compareTo(y);
   }
@@ -46,38 +48,38 @@ class HostelMess {
   String? hostel;
 
   int compareTo(HostelMess h) {
-    final now = DateTime.now();
+    final DateTime now = DateTime.now();
     int today = now.weekday;
 
-    int x = (this.day! - today) + (this.day! - today < 0 ? 7 : 0);
+    int x = (day! - today) + (day! - today < 0 ? 7 : 0);
     int y = (h.day! - today) + (h.day! - today < 0 ? 7 : 0);
 
     return x.compareTo(y);
   }
 
   static Map<int, String> dayToName = {
-    1: "Monday",
-    2: "Tuesday",
-    3: "Wednesday",
-    4: "Thursday",
-    5: "Friday",
-    6: "Saturday",
-    7: "Sunday",
+    1: 'Monday',
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+    6: 'Saturday',
+    7: 'Sunday',
   };
 
-  HostelMess({
-    this.id,
-    this.breakfast,
-    this.day,
-    this.lunch,
-    this.snacks,
-    this.dinner,
-    this.hostel
-  });
+  HostelMess(
+      {this.id,
+      this.breakfast,
+      this.day,
+      this.lunch,
+      this.snacks,
+      this.dinner,
+      this.hostel});
 
-  factory HostelMess.fromJson(Map<String, dynamic> json) => _$HostelMessFromJson(json);
+  factory HostelMess.fromJson(Map<String, dynamic> json) =>
+      _$HostelMessFromJson(json);
 
   Map<String, dynamic> toJson() => _$HostelMessToJson(this);
 
-  getDayName() => dayToName[this.day];
+  String getDayName() => dayToName[day] ?? '';
 }

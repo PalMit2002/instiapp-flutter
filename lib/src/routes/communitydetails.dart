@@ -1,25 +1,29 @@
 import 'dart:async';
 
-import 'package:InstiApp/src/api/model/community.dart';
-import 'package:InstiApp/src/api/model/user.dart';
-import 'package:InstiApp/src/blocs/community_bloc.dart';
-import 'package:InstiApp/src/blocs/community_post_bloc.dart';
-import 'package:InstiApp/src/api/model/communityPost.dart';
-import 'package:InstiApp/src/routes/createpost_form.dart';
-import 'package:InstiApp/src/utils/customappbar.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 
+import '../api/model/community.dart';
+import '../api/model/communityPost.dart';
+import '../api/model/role.dart';
+import '../api/model/user.dart';
 import '../bloc_provider.dart';
+import '../blocs/community_bloc.dart';
+import '../blocs/community_post_bloc.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/customappbar.dart';
+import 'createpost_form.dart';
 
 class CommunityDetails extends StatefulWidget {
   final Community? initialCommunity;
   final Future<Community?> communityFuture;
 
-  CommunityDetails({required this.communityFuture, this.initialCommunity});
+  const CommunityDetails(
+      {Key? key, required this.communityFuture, this.initialCommunity})
+      : super(key: key);
 
   static void navigateWith(
       BuildContext context, CommunityBloc bloc, Community community) {
@@ -29,9 +33,9 @@ class CommunityDetails extends StatefulWidget {
         settings: RouteSettings(
           name: "/group/${community.id ?? ""}",
         ),
-        builder: (context) => CommunityDetails(
+        builder: (BuildContext context) => CommunityDetails(
           initialCommunity: community,
-          communityFuture: bloc.getCommunity(community.id ?? ""),
+          communityFuture: bloc.getCommunity(community.id ?? ''),
         ),
       ),
     );
@@ -53,8 +57,8 @@ class _CommunityDetailsState extends State<CommunityDetails> {
   void initState() {
     super.initState();
     community = widget.initialCommunity;
-    widget.communityFuture.then((community) {
-      if (this.mounted) {
+    widget.communityFuture.then((Community? community) {
+      if (mounted) {
         setState(() {
           this.community = community;
         });
@@ -66,8 +70,8 @@ class _CommunityDetailsState extends State<CommunityDetails> {
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
 
-    var bloc = BlocProvider.of(context)!.bloc;
-    double _avatarRadius = 50;
+    final InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    double avatarRadius = 50;
     bool isLoggedIn = bloc.currSession != null;
     // print(community?.isUserFollowing);
     return Scaffold(
@@ -77,7 +81,7 @@ class _CommunityDetailsState extends State<CommunityDetails> {
         transparentBackground: true,
         searchIcon: true,
         appBarSearchStyle:
-            AppBarSearchStyle(hintText: "Search " + (community?.name ?? "")),
+            AppBarSearchStyle(hintText: "Search ${community?.name ?? ""}"),
         //TODO: Uncomment leading style
         // leadingStyle: LeadingStyle(
         //     icon: Icons.arrow_back,
@@ -85,18 +89,18 @@ class _CommunityDetailsState extends State<CommunityDetails> {
         //       Navigator.of(context).pop();
         //     }),
       ),
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -108,8 +112,9 @@ class _CommunityDetailsState extends State<CommunityDetails> {
       body: !isLoggedIn
           ? Container(
               alignment: Alignment.center,
-              padding: EdgeInsets.all(50),
+              padding: const EdgeInsets.all(50),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.cloud,
@@ -117,46 +122,47 @@ class _CommunityDetailsState extends State<CommunityDetails> {
                     color: Colors.grey[600],
                   ),
                   Text(
-                    "Login To Continue",
+                    'Login To Continue',
                     style: theme.textTheme.headlineSmall,
                     textAlign: TextAlign.center,
                   )
                 ],
-                crossAxisAlignment: CrossAxisAlignment.center,
               ),
             )
           : RefreshIndicator(
               onRefresh: () async {
-                bloc.communityBloc
+                await bloc.communityBloc
                     .getCommunity(community!.id!)
-                    .then((community) {
+                    .then((Community? community) {
                   setState(() {
                     this.community = community;
                   });
                 });
               },
-              child: StreamBuilder<Object>(builder: (context, snapshot) {
+              child: StreamBuilder<Object>(builder:
+                  (BuildContext context, AsyncSnapshot<Object> snapshot) {
                 return SingleChildScrollView(
                   child: Stack(
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          community?.coverImg != null
-                              ? Material(
-                                  type: MaterialType.transparency,
-                                  child: Ink.image(
-                                    child: Container(),
-                                    image: CachedNetworkImageProvider(
-                                      community?.coverImg ?? "",
-                                    ),
-                                    height: 200,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : SizedBox(height: 200),
+                          if (community?.coverImg != null)
+                            Material(
+                              type: MaterialType.transparency,
+                              child: Ink.image(
+                                image: CachedNetworkImageProvider(
+                                  community?.coverImg ?? '',
+                                ),
+                                height: 200,
+                                fit: BoxFit.cover,
+                                child: Container(),
+                              ),
+                            )
+                          else
+                            const SizedBox(height: 200),
                           SizedBox(
-                            height: _avatarRadius + 5,
+                            height: avatarRadius + 5,
                           ),
                           _buildInfo(theme),
                           CommunityAboutSection(community: community),
@@ -164,7 +170,7 @@ class _CommunityDetailsState extends State<CommunityDetails> {
                         ],
                       ),
                       Positioned(
-                        top: 200 - _avatarRadius,
+                        top: 200 - avatarRadius,
                         left: 20,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -182,27 +188,18 @@ class _CommunityDetailsState extends State<CommunityDetails> {
                                     blurRadius: 10,
                                     color: Colors.black.withOpacity(0.25),
                                     spreadRadius: -2,
-                                    offset: Offset(0, 1),
+                                    offset: const Offset(0, 1),
                                   ),
                                 ],
                               ),
                               child: NullableCircleAvatar(
-                                community?.logoImg ?? "",
+                                community?.logoImg ?? '',
                                 Icons.person,
-                                radius: _avatarRadius,
+                                radius: avatarRadius,
                               ),
                             ),
-                            SizedBox(width: 20),
+                            const SizedBox(width: 20),
                             TextButton(
-                              child: Text(
-                                (community?.isUserFollowing ?? false)
-                                    ? "Joined"
-                                    : "Join",
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: Colors.white,
-                                  letterSpacing: 1.25,
-                                ),
-                              ),
                               onPressed: () async {
                                 if (bloc.currSession == null) {
                                   return;
@@ -210,8 +207,9 @@ class _CommunityDetailsState extends State<CommunityDetails> {
                                 setState(() {
                                   loadingFollow = true;
                                 });
-                                if (community != null)
+                                if (community != null) {
                                   await bloc.updateFollowCommunity(community!);
+                                }
                                 setState(() {
                                   loadingFollow = false;
                                   // event has changes
@@ -219,19 +217,28 @@ class _CommunityDetailsState extends State<CommunityDetails> {
                               },
                               style: ButtonStyle(
                                   padding: MaterialStateProperty.all<EdgeInsets>(
-                                      EdgeInsets.symmetric(
+                                      const EdgeInsets.symmetric(
                                           horizontal: 24, vertical: 1)),
                                   foregroundColor: MaterialStateProperty.all<Color>(
                                       Colors.white),
-                                  backgroundColor: MaterialStateProperty.all<Color>(
-                                      (community?.isUserFollowing ?? false)
-                                          ? theme.colorScheme.primary
-                                          : theme.colorScheme.secondary),
+                                  backgroundColor:
+                                      MaterialStateProperty.all<Color>(
+                                          (community?.isUserFollowing ?? false)
+                                              ? theme.colorScheme.primary
+                                              : theme.colorScheme.secondary),
                                   shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                                       RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(100.0),
-                                          side: BorderSide(color: Colors.transparent)))),
+                                          borderRadius: BorderRadius.circular(100.0),
+                                          side: const BorderSide(color: Colors.transparent)))),
+                              child: Text(
+                                (community?.isUserFollowing ?? false)
+                                    ? 'Joined'
+                                    : 'Join',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: Colors.white,
+                                  letterSpacing: 1.25,
+                                ),
+                              ),
                             )
                           ],
                         ),
@@ -242,14 +249,14 @@ class _CommunityDetailsState extends State<CommunityDetails> {
               }),
             ),
       floatingActionButton: FloatingActionButton(
-          child: Icon(
-            Icons.mode_edit,
-          ),
-          backgroundColor: Color.fromARGB(255, 33, 89, 243),
+          backgroundColor: const Color.fromARGB(255, 33, 89, 243),
           onPressed: () {
-            Navigator.of(context).pushNamed("/posts/add",
+            Navigator.of(context).pushNamed('/posts/add',
                 arguments: NavigateArguments(community: community!));
-          }),
+          },
+          child: const Icon(
+            Icons.mode_edit,
+          )),
     );
   }
 
@@ -260,11 +267,11 @@ class _CommunityDetailsState extends State<CommunityDetails> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            community?.name ?? "",
+            community?.name ?? '',
             style: theme.textTheme.headlineSmall,
           ),
-          Text((community?.followersCount ?? 0).toString() + " followers"),
-          SizedBox(height: 10)
+          Text('${community?.followersCount ?? 0} followers'),
+          const SizedBox(height: 10)
         ],
       ),
     );
@@ -300,18 +307,18 @@ class CommunityAboutSectionState extends State<CommunityAboutSection> {
               tabs: [
                 Tab(
                   child: Text(
-                    "About",
+                    'About',
                     style: theme.textTheme.bodyLarge,
                   ),
                 ),
                 Tab(
                   child: Text(
-                    "Members",
+                    'Members',
                     style: theme.textTheme.bodyLarge,
                   ),
                 )
               ],
-              onTap: (index) {
+              onTap: (int index) {
                 setState(() {
                   _selectedIndex = index;
                 });
@@ -319,11 +326,11 @@ class CommunityAboutSectionState extends State<CommunityAboutSection> {
             ),
           ),
           IndexedStack(
+            index: _selectedIndex,
             children: [
               _buildAbout(theme),
               _buildMembers(theme),
             ],
-            index: _selectedIndex,
           ),
           _buildFeaturedPosts(theme, widget.community?.featuredPosts),
         ],
@@ -332,22 +339,22 @@ class CommunityAboutSectionState extends State<CommunityAboutSection> {
   }
 
   Widget _buildAbout(ThemeData theme) {
-    String about = widget.community?.description ?? "";
+    String about = widget.community?.description ?? '';
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Text.rich(
-        new TextSpan(
+        TextSpan(
           text: about.length > 210 && !aboutExpanded
-              ? about.substring(0, 200) + (aboutExpanded ? "" : "...")
+              ? about.substring(0, 200) + (aboutExpanded ? '' : '...')
               : about,
           children: !aboutExpanded && about.length > 210
               ? [
-                  new TextSpan(
+                  TextSpan(
                     text: 'Read More.',
                     style: theme.textTheme.titleSmall
                         ?.copyWith(color: theme.colorScheme.primary),
-                    recognizer: new TapGestureRecognizer()
+                    recognizer: TapGestureRecognizer()
                       ..onTap = () => setState(() {
                             aboutExpanded = true;
                           }),
@@ -364,12 +371,20 @@ class CommunityAboutSectionState extends State<CommunityAboutSection> {
       padding: const EdgeInsets.all(5.0),
 
       child: ConstrainedBox(
-        constraints: new BoxConstraints(
+        constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height / 6,
         ),
         child: SingleChildScrollView(
           child: Column(
             children: [
+              ...?widget.community?.roles?.expand<User>((Role r) {
+                if (r.roleUsersDetail != null) {
+                  return r.roleUsersDetail!
+                      .map((User u) => u..currentRole = r.roleName)
+                      .toList();
+                }
+                return [];
+              }).map((User u) => _buildUserTile(theme, u))
               // ElevatedButton(
               //   child: Text(
               //     'SEE ALL',
@@ -382,17 +397,7 @@ class CommunityAboutSectionState extends State<CommunityAboutSection> {
               //   ),
               //   onPressed: () {},
               // ),
-            ]..addAll(
-                widget.community?.roles?.expand((r) {
-                      if (r.roleUsersDetail != null) {
-                        return r.roleUsersDetail!
-                            .map((u) => u..currentRole = r.roleName)
-                            .toList();
-                      }
-                      return [];
-                    }).map((u) => _buildUserTile(theme, u)) ??
-                    [],
-              ),
+            ],
           ),
         ),
       ),
@@ -403,19 +408,19 @@ class CommunityAboutSectionState extends State<CommunityAboutSection> {
   Widget _buildUserTile(ThemeData theme, User u) {
     return ListTile(
       leading: NullableCircleAvatar(
-        u.userProfilePictureUrl ?? "",
+        u.userProfilePictureUrl ?? '',
         Icons.person_outline_outlined,
         // heroTag: u.userID ?? "",
       ),
       title: Text(
-        u.userName ?? "",
+        u.userName ?? '',
         style: theme.textTheme.titleLarge,
       ),
       subtitle: Text(
-        u.getSubTitle() ?? "",
+        u.getSubTitle() ?? '',
         style: theme.textTheme.bodySmall,
       ),
-      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
       minVerticalPadding: 0,
       dense: true,
       horizontalTitleGap: 4,
@@ -448,7 +453,7 @@ class CommunityAboutSectionState extends State<CommunityAboutSection> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: posts
                   .map(
-                    (e) => CommunityPostWidget(
+                    (CommunityPost e) => CommunityPostWidget(
                       communityPost: e,
                       postType: CPType.Featured,
                     ),
@@ -490,12 +495,12 @@ class _CommunityPostSectionState extends State<CommunityPostSection> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
-    var communityPostBloc = bloc.communityPostBloc;
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    CommunityPostBloc communityPostBloc = bloc.communityPostBloc;
 
     if (firstBuild) {
-      communityPostBloc.query = "";
+      communityPostBloc.query = '';
       communityPostBloc.refresh();
       firstBuild = false;
     }
@@ -503,7 +508,7 @@ class _CommunityPostSectionState extends State<CommunityPostSection> {
     Community? community = widget.community;
 
     return community == null
-        ? CircularProgressIndicatorExtended()
+        ? const CircularProgressIndicatorExtended()
         : Container(
             child: Column(
               children: [
@@ -516,12 +521,8 @@ class _CommunityPostSectionState extends State<CommunityPostSection> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        SizedBox(width: 20),
+                        const SizedBox(width: 20),
                         TextButton(
-                          child: Text(
-                            "All",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
                           onPressed: () async {
                             setState(() {
                               loading = true;
@@ -533,13 +534,13 @@ class _CommunityPostSectionState extends State<CommunityPostSection> {
                             });
                           },
                           style: _getButtonStyle(cpType == CPType.All, theme),
-                        ),
-                        SizedBox(width: 10),
-                        TextButton(
-                          child: Text(
-                            "Your Posts",
+                          child: const Text(
+                            'All',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
+                        ),
+                        const SizedBox(width: 10),
+                        TextButton(
                           onPressed: () async {
                             setState(() {
                               loading = true;
@@ -553,52 +554,58 @@ class _CommunityPostSectionState extends State<CommunityPostSection> {
                           },
                           style: _getButtonStyle(
                               cpType == CPType.YourPosts, theme),
+                          child: const Text(
+                            'Your Posts',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
-                        SizedBox(width: 10),
-                        bloc.hasPermission(community.body!, "AppP")
-                            ? TextButton(
-                                child: Text(
-                                  "Pending posts",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                onPressed: () async {
-                                  setState(() {
-                                    loading = true;
-                                    cpType = CPType.PendingPosts;
-                                  });
-                                  await communityPostBloc.refresh(
-                                      type: CPType.PendingPosts);
-                                  setState(() {
-                                    loading = false;
-                                  });
-                                },
-                                style: _getButtonStyle(
-                                    cpType == CPType.PendingPosts, theme),
-                              )
-                            : Container(),
-                        SizedBox(width: 10),
-                        bloc.hasPermission(community.body!, "ModC")
-                            ? TextButton(
-                                child: Text(
-                                  "Reported Content",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                onPressed: () async {
-                                  setState(() {
-                                    loading = true;
-                                    cpType = CPType.ReportedContent;
-                                  });
-                                  await communityPostBloc.refresh(
-                                    type: CPType.ReportedContent,
-                                  );
-                                  setState(() {
-                                    loading = false;
-                                  });
-                                },
-                                style: _getButtonStyle(
-                                    cpType == CPType.ReportedContent, theme),
-                              )
-                            : Container(),
+                        const SizedBox(width: 10),
+                        if (bloc.hasPermission(community.body!, 'AppP'))
+                          TextButton(
+                            onPressed: () async {
+                              setState(() {
+                                loading = true;
+                                cpType = CPType.PendingPosts;
+                              });
+                              await communityPostBloc.refresh(
+                                  type: CPType.PendingPosts);
+                              setState(() {
+                                loading = false;
+                              });
+                            },
+                            style: _getButtonStyle(
+                                cpType == CPType.PendingPosts, theme),
+                            child: const Text(
+                              'Pending posts',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        else
+                          Container(),
+                        const SizedBox(width: 10),
+                        if (bloc.hasPermission(community.body!, 'ModC'))
+                          TextButton(
+                            onPressed: () async {
+                              setState(() {
+                                loading = true;
+                                cpType = CPType.ReportedContent;
+                              });
+                              await communityPostBloc.refresh(
+                                type: CPType.ReportedContent,
+                              );
+                              setState(() {
+                                loading = false;
+                              });
+                            },
+                            style: _getButtonStyle(
+                                cpType == CPType.ReportedContent, theme),
+                            child: const Text(
+                              'Reported Content',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        else
+                          Container(),
                       ],
                     ),
                   ),
@@ -607,22 +614,23 @@ class _CommunityPostSectionState extends State<CommunityPostSection> {
                   color: theme.colorScheme.onSurfaceVariant,
                   height: 0,
                 ),
-                loading
-                    ? CircularProgressIndicator()
-                    : Container(
-                        decoration: BoxDecoration(
-                            color: theme.colorScheme.surfaceVariant),
-                        child: StreamBuilder<List<CommunityPost>>(
-                          stream: communityPostBloc.communityposts,
-                          builder: (BuildContext context,
-                              AsyncSnapshot<List<CommunityPost>> snapshot) {
-                            return Column(
-                              children: _buildPostList(snapshot, theme,
-                                  communityPostBloc, community.id),
-                            );
-                          },
-                        ),
-                      )
+                if (loading)
+                  const CircularProgressIndicator()
+                else
+                  Container(
+                    decoration:
+                        BoxDecoration(color: theme.colorScheme.surfaceVariant),
+                    child: StreamBuilder<List<CommunityPost>>(
+                      stream: communityPostBloc.communityposts,
+                      builder: (BuildContext context,
+                          AsyncSnapshot<List<CommunityPost>> snapshot) {
+                        return Column(
+                          children: _buildPostList(
+                              snapshot, theme, communityPostBloc, community.id),
+                        );
+                      },
+                    ),
+                  )
               ],
             ),
           );
@@ -631,7 +639,7 @@ class _CommunityPostSectionState extends State<CommunityPostSection> {
   ButtonStyle _getButtonStyle(bool selected, ThemeData theme) {
     return ButtonStyle(
       padding: MaterialStateProperty.all<EdgeInsets>(
-          EdgeInsets.symmetric(horizontal: 15, vertical: 0)),
+          const EdgeInsets.symmetric(horizontal: 15, vertical: 0)),
       foregroundColor: MaterialStateProperty.all<Color>(
         selected
             ? theme.colorScheme.primary
@@ -659,15 +667,16 @@ class _CommunityPostSectionState extends State<CommunityPostSection> {
       String? communityId) {
     if (snapshot.hasData) {
       // print(snapshot.data ?? "hii");
-      var communityPosts = snapshot.data!;
+      List<CommunityPost> communityPosts = snapshot.data!;
 
       if (communityPosts.isEmpty == true) {
         return [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 28.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 28.0, vertical: 8.0),
             child: Text.rich(
-                TextSpan(style: theme.textTheme.titleLarge, children: [
-              TextSpan(text: "Nothing here yet!"),
+                TextSpan(style: theme.textTheme.titleLarge, children: const [
+              TextSpan(text: 'Nothing here yet!'),
               // TextSpan(
               //     text: "\"${communityPostBloc.query}\"",
               //     style: TextStyle(fontWeight: FontWeight.bold)),
@@ -677,19 +686,19 @@ class _CommunityPostSectionState extends State<CommunityPostSection> {
         ];
       }
       //print("a");
-      return (communityPosts
+      return communityPosts
           .map(
-            (c) => CommunityPostWidget(
+            (CommunityPost c) => CommunityPostWidget(
               communityPost: c,
               postType: cpType,
             ),
           )
-          .toList());
+          .toList();
     } else {
       return [
-        Center(
+        const Center(
             child: CircularProgressIndicatorExtended(
-          label: Text("Loading..."),
+          label: Text('Loading...'),
         ))
       ];
     }

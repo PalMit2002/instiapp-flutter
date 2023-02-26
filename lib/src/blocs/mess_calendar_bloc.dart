@@ -1,21 +1,22 @@
 import 'dart:async';
+import 'dart:convert';
 
-import 'package:InstiApp/src/api/model/messCalEvent.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
+import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:date_format/date_format.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+
+import '../api/model/messCalEvent.dart';
+import 'ia_bloc.dart';
 
 class MessCalendarBloc {
   // monthToEventMap StorageID
-  static String mteKeysStorageID = "monthToMessEventsKeys";
-  static String mteValuesStorageID = "monthToMessEventsValues";
+  static String mteKeysStorageID = 'monthToMessEventsKeys';
+  static String mteValuesStorageID = 'monthToMessEventsValues';
 
   // eventsMap StorageID
-  static String eventsMapKeysStorageID = "MessEventsMapKeys";
-  static String eventsMapValuesStorageID = "MessEventsMapValues";
+  static String eventsMapKeysStorageID = 'MessEventsMapKeys';
+  static String eventsMapValuesStorageID = 'MessEventsMapValues';
 
   // parent bloc
   InstiAppBloc bloc;
@@ -23,10 +24,11 @@ class MessCalendarBloc {
   // Streams
   ValueStream<Map<DateTime, List<MessCalEvent>>> get events =>
       _eventsSubject.stream;
-  final _eventsSubject = BehaviorSubject<Map<DateTime, List<MessCalEvent>>>();
+  final BehaviorSubject<Map<DateTime, List<MessCalEvent>>> _eventsSubject =
+      BehaviorSubject<Map<DateTime, List<MessCalEvent>>>();
 
   ValueStream<bool> get loading => _loadingSubject.stream;
-  final _loadingSubject = BehaviorSubject<bool>();
+  final BehaviorSubject<bool> _loadingSubject = BehaviorSubject<bool>();
 
   // State
   Map<DateTime, List<MessCalEvent>> monthToEvents = {};
@@ -43,24 +45,36 @@ class MessCalendarBloc {
   }
 
   List<MessCalEvent> _getEventsOfMonth(List<MessCalEvent> evs, DateTime month) {
-    return evs.where((e) {
+    return evs.where((MessCalEvent e) {
       return e.date.year == month.year && e.date.month == month.month;
     }).toList();
   }
 
-  void fetchEvents(DateTime currMonth, Widget icon) async {
+  Future<void> fetchEvents(DateTime currMonth, Widget icon) async {
     if (!_loading) {
       _loading = true;
       _loadingSubject.add(_loading);
     }
-    var isoFormat = [yyyy, "-", mm, "-", dd, " ", HH, ":", mm, ":", ss];
+    final List<String> isoFormat = [
+      yyyy,
+      '-',
+      mm,
+      '-',
+      dd,
+      ' ',
+      HH,
+      ':',
+      mm,
+      ':',
+      ss
+    ];
 
-    var currMonthStart = _getMonthStart(currMonth);
-    var prevMonthStart =
+    DateTime currMonthStart = _getMonthStart(currMonth);
+    final DateTime prevMonthStart =
         DateTime(currMonthStart.year, currMonthStart.month - 1);
-    var nextMonthStart =
+    final DateTime nextMonthStart =
         DateTime(currMonthStart.year, currMonthStart.month + 1);
-    var nextNextMonthStart =
+    DateTime nextNextMonthStart =
         DateTime(currMonthStart.year, currMonthStart.month + 2);
 
     receivingMonths.add(prevMonthStart);
@@ -72,11 +86,11 @@ class MessCalendarBloc {
             bloc.getSessionIdHeader(),
             formatDate(prevMonthStart, isoFormat),
             formatDate(nextNextMonthStart, isoFormat));
-    var evs = newsFeedResp;
-    evs.forEach((e) {
-      var time = DateTime.parse(e.dateTime!);
+    List<MessCalEvent> evs = newsFeedResp;
+    for (final MessCalEvent e in evs) {
+      final DateTime time = DateTime.parse(e.dateTime!);
       e.eventStartDate = DateTime(time.year, time.month, time.day);
-    });
+    }
 
     monthToEvents[prevMonthStart] = _getEventsOfMonth(evs, prevMonthStart);
     receivingMonths.remove(prevMonthStart);
@@ -84,9 +98,10 @@ class MessCalendarBloc {
     receivingMonths.remove(currMonthStart);
     monthToEvents[nextMonthStart] = _getEventsOfMonth(evs, nextMonthStart);
     receivingMonths.remove(nextMonthStart);
-    for (MessCalEvent e in evs) {
-      var dateList = eventsMap.putIfAbsent(e.eventStartDate!, () => []);
-      dateList.removeWhere((e1) => e1.eid == e.eid);
+    for (final MessCalEvent e in evs) {
+      final List<MessCalEvent> dateList =
+          eventsMap.putIfAbsent(e.eventStartDate!, () => []);
+      dateList.removeWhere((MessCalEvent e1) => e1.eid == e.eid);
       dateList.add(e);
     }
     _eventsSubject.add(eventsMap);
@@ -97,51 +112,53 @@ class MessCalendarBloc {
   }
 
   Future saveToCache({SharedPreferences? sharedPrefs}) async {
-    var prefs = sharedPrefs ?? await SharedPreferences.getInstance();
+    SharedPreferences prefs =
+        sharedPrefs ?? await SharedPreferences.getInstance();
     if (monthToEvents.isNotEmpty) {
       List<String> keys = [];
-      for (DateTime i in monthToEvents.keys) {
+      for (final DateTime i in monthToEvents.keys) {
         keys.add(i.toIso8601String());
       }
-      prefs.setString(mteKeysStorageID, json.encode(keys));
-      prefs.setString(
+      await prefs.setString(mteKeysStorageID, json.encode(keys));
+      await prefs.setString(
           mteValuesStorageID,
           json.encode(monthToEvents.values
-              .map((e) => e.map((k) => k.toJson()).toList())
+              .map((List<MessCalEvent> e) =>
+                  e.map((MessCalEvent k) => k.toJson()).toList())
               .toList()));
     }
 
     if (eventsMap.isNotEmpty) {
       List<String> keys = [];
-      for (DateTime i in eventsMap.keys) {
+      for (final DateTime i in eventsMap.keys) {
         keys.add(i.toIso8601String());
       }
-      prefs.setString(eventsMapKeysStorageID, json.encode(keys));
-      prefs.setString(
+      await prefs.setString(eventsMapKeysStorageID, json.encode(keys));
+      await prefs.setString(
           eventsMapValuesStorageID,
           json.encode(eventsMap.values
-              .map((e) => e.map((k) => k.toJson()).toList())
+              .map((List<MessCalEvent> e) =>
+                  e.map((MessCalEvent k) => k.toJson()).toList())
               .toList()));
     }
   }
 
   Future restoreFromCache({SharedPreferences? sharedPrefs}) async {
-    var prefs = sharedPrefs ?? await SharedPreferences.getInstance();
+    SharedPreferences prefs =
+        sharedPrefs ?? await SharedPreferences.getInstance();
     if (prefs.getKeys().contains(mteKeysStorageID) &&
         prefs.getKeys().contains(mteValuesStorageID)) {
       if (prefs.getString(mteKeysStorageID) != null &&
           prefs.getString(mteValuesStorageID) != null) {
-        var keys =
+        Iterable<DateTime> keys =
             (json.decode(prefs.getString(mteKeysStorageID) ?? '') as List)
                 .map((e) => DateTime.parse(e as String));
-        var values =
-            (json.decode(prefs.getString(mteValuesStorageID) ?? '') as List)
-                .map((evs) => evs
-                    .map((e) => MessCalEvent.fromJson(e))
-                    .toList()
-                    .cast<MessCalEvent>())
-                .toList()
-                .cast<List<MessCalEvent>>();
+        List<List<MessCalEvent>> values = (json
+                .decode(prefs.getString(mteValuesStorageID) ?? '') as List)
+            .map((evs) =>
+                evs.map(MessCalEvent.fromJson).toList().cast<MessCalEvent>())
+            .toList()
+            .cast<List<MessCalEvent>>();
         monthToEvents = Map.fromIterables(keys, values);
       }
     }
@@ -150,16 +167,16 @@ class MessCalendarBloc {
         prefs.getKeys().contains(eventsMapValuesStorageID)) {
       if (prefs.getString(mteKeysStorageID) != null &&
           prefs.getString(mteValuesStorageID) != null) {
-        var keys =
+        Iterable<DateTime> keys =
             (json.decode(prefs.getString(mteKeysStorageID) ?? '') as List)
                 .map((e) => DateTime.parse(e as String));
-        Iterable<List<MessCalEvent>> values =
-            (json.decode(prefs.getString(mteValuesStorageID) ?? '') as List)
-                .map((evs) => evs
-                    .map((e) => MessCalEvent.fromJson(e))
-                    .toList()
-                    .cast<MessCalEvent>());
-        eventsMap = Map.fromIterables(keys, values);
+        Iterable<List<MessCalEvent>> values = (json
+                    .decode(prefs.getString(mteValuesStorageID) ?? '')
+                as List<List<Map<String, dynamic>>>)
+            .map((List<Map<String, dynamic>> evs) =>
+                evs.map(MessCalEvent.fromJson).toList().cast<MessCalEvent>());
+        eventsMap =
+            Map<DateTime, List<MessCalEvent>>.fromIterables(keys, values);
         _eventsSubject.add(eventsMap);
       }
     }

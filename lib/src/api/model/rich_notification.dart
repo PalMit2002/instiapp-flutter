@@ -4,23 +4,23 @@ part 'rich_notification.g.dart';
 
 @JsonSerializable()
 class RichNotification {
-  @JsonKey(name: "type")
+  @JsonKey(name: 'type')
   String? notificationType;
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? notificationObjectID;
-  @JsonKey(name: "extra")
+  @JsonKey(name: 'extra')
   String? notificationExtra;
-  @JsonKey(name: "notification_id")
+  @JsonKey(name: 'notification_id')
   String? notificationID;
-  @JsonKey(name: "title")
+  @JsonKey(name: 'title')
   String? notificationTitle;
-  @JsonKey(name: "verb")
+  @JsonKey(name: 'verb')
   String? notificationVerb;
-  @JsonKey(name:"large_icon")
+  @JsonKey(name:'large_icon')
   String? notificationLargeIcon;
-  @JsonKey(name: "large_content")
+  @JsonKey(name: 'large_content')
   String? notificationLargeContent;
-  @JsonKey(name: "image_url")
+  @JsonKey(name: 'image_url')
   String? notificationImage;
 
   RichNotification(

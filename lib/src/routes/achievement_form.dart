@@ -1,19 +1,26 @@
 import 'dart:developer';
-import 'package:InstiApp/src/api/model/user.dart';
-import 'package:InstiApp/src/api/response/secret_response.dart';
+
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/api/request/achievement_create_request.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:dropdown_search/dropdown_search.dart';
-import 'package:InstiApp/src/api/model/event.dart';
+import '../api/model/body.dart';
+import '../api/model/event.dart';
+import '../api/model/user.dart';
+import '../api/request/achievement_create_request.dart';
+import '../api/response/achievement_create_response.dart';
+import '../api/response/secret_response.dart';
 import '../bloc_provider.dart';
+import '../blocs/achievementform_bloc.dart';
+import '../blocs/ia_bloc.dart';
 import '../drawer.dart';
+import '../utils/common_widgets.dart';
 
 class Home extends StatefulWidget {
+  const Home({Key? key}) : super(key: key);
+
   // initiate widgetstate Form
+  @override
   _CreateAchievementPage createState() => _CreateAchievementPage();
 }
 
@@ -22,9 +29,9 @@ class _CreateAchievementPage extends State<Home> {
   bool selectedE = false;
   bool selectedB = false;
   bool selectedS = false;
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-  final _formKey1 = GlobalKey<FormState>();
-  final _formKey2 = GlobalKey<FormState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<FormState> _formKey1 = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey2 = GlobalKey<FormState>();
   Event? _selectedEvent;
   Body? _selectedBody;
   Skill? _selectedSkill;
@@ -37,7 +44,7 @@ class _CreateAchievementPage extends State<Home> {
     if (event == null) {
       return Container(
         child: Text(
-          "Search for an InstiApp Event",
+          'Search for an InstiApp Event',
           style: Theme.of(context).textTheme.bodyLarge,
         ),
       );
@@ -52,7 +59,7 @@ class _CreateAchievementPage extends State<Home> {
   Widget _customPopupItemBuilderEvent(
       BuildContext context, Event event, bool isSelected) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: !isSelected
           ? null
           : BoxDecoration(
@@ -72,7 +79,7 @@ class _CreateAchievementPage extends State<Home> {
     if (body == null) {
       return Container(
         child: Text(
-          "Search for an organisation",
+          'Search for an organisation',
           style: Theme.of(context).textTheme.bodyLarge,
         ),
       );
@@ -88,7 +95,7 @@ class _CreateAchievementPage extends State<Home> {
   Widget _customPopupItemBuilderBody(
       BuildContext context, Body body, bool isSelected) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: !isSelected
           ? null
           : BoxDecoration(
@@ -108,7 +115,7 @@ class _CreateAchievementPage extends State<Home> {
     if (body == null) {
       return Container(
         child: Text(
-          "Search for a skill",
+          'Search for a skill',
           style: Theme.of(context).textTheme.bodyLarge,
         ),
       );
@@ -124,7 +131,7 @@ class _CreateAchievementPage extends State<Home> {
   Widget _customPopupItemBuilderSkill(
       BuildContext context, Skill body, bool isSelected) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: !isSelected
           ? null
           : BoxDecoration(
@@ -176,19 +183,19 @@ class _CreateAchievementPage extends State<Home> {
   @override
   Widget build(BuildContext context) {
     // print(_selectedBody);
-    var bloc = BlocProvider.of(context)!.bloc;
-    var theme = Theme.of(context);
-    final achievementsBloc = bloc.achievementBloc;
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    ThemeData theme = Theme.of(context);
+    final Bloc achievementsBloc = bloc.achievementBloc;
     if (firstBuild) {
       firstBuild = false;
     }
-    var fab;
+    FloatingActionButton fab;
     fab = FloatingActionButton.extended(
-      icon: Icon(Icons.qr_code),
-      label: Text("Scan QR Code"),
+      icon: const Icon(Icons.qr_code),
+      label: const Text('Scan QR Code'),
       onPressed: () {
         Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => QRViewExample(),
+          builder: (BuildContext context) => const QRViewExample(),
         ));
       },
     );
@@ -198,18 +205,18 @@ class _CreateAchievementPage extends State<Home> {
         length: 2,
         child: Scaffold(
           key: _scaffoldKey,
-          drawer: NavDrawer(),
+          drawer: const NavDrawer(),
           bottomNavigationBar: MyBottomAppBar(
-            shape: RoundedNotchedRectangle(),
-            child: new Row(
+            shape: const RoundedNotchedRectangle(),
+            child: Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 IconButton(
-                  tooltip: "Show bottom sheet",
-                  icon: Icon(
+                  tooltip: 'Show bottom sheet',
+                  icon: const Icon(
                     Icons.menu_outlined,
-                    semanticLabel: "Show bottom sheet",
+                    semanticLabel: 'Show bottom sheet',
                   ),
                   onPressed: () {
                     _scaffoldKey.currentState!.openDrawer();
@@ -222,8 +229,9 @@ class _CreateAchievementPage extends State<Home> {
             child: bloc.currSession == null
                 ? Container(
                     alignment: Alignment.center,
-                    padding: EdgeInsets.all(50),
+                    padding: const EdgeInsets.all(50),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.cloud,
@@ -231,12 +239,11 @@ class _CreateAchievementPage extends State<Home> {
                           color: Colors.grey[600],
                         ),
                         Text(
-                          "Login To View Achievements",
+                          'Login To View Achievements',
                           style: theme.textTheme.headlineSmall,
                           textAlign: TextAlign.center,
                         )
                       ],
-                      crossAxisAlignment: CrossAxisAlignment.center,
                     ),
                   )
                 : NestedScrollView(
@@ -248,19 +255,19 @@ class _CreateAchievementPage extends State<Home> {
                           pinned: true,
                           delegate: _SliverTabBarDelegate(
                             child: PreferredSize(
-                              preferredSize: Size.fromHeight(72),
+                              preferredSize: const Size.fromHeight(72),
                               child: Material(
                                 elevation: 4.0,
                                 child: TabBar(
                                   labelColor: theme.colorScheme.secondary,
                                   unselectedLabelColor: theme.disabledColor,
-                                  tabs: [
+                                  tabs: const [
                                     Tab(
-                                        text: "Associations",
+                                        text: 'Associations',
                                         icon:
                                             Icon(Icons.work_outline_outlined)),
                                     Tab(
-                                        text: "Events",
+                                        text: 'Events',
                                         icon: Icon(Icons.event_outlined)),
                                   ],
                                 ),
@@ -272,7 +279,7 @@ class _CreateAchievementPage extends State<Home> {
                     },
                     body: TabBarView(
                       // These are the contents of the tab views, below the tabs.
-                      children: ["Associations", "Skills"].map((name) {
+                      children: ['Associations', 'Skills'].map((String name) {
                         return SafeArea(
                           top: false,
                           bottom: false,
@@ -281,8 +288,8 @@ class _CreateAchievementPage extends State<Home> {
                             // the NestedScrollView, so that sliverOverlapAbsorberHandleFor() can
                             // find the NestedScrollView.
                             builder: (BuildContext context) {
-                              var delegates = {
-                                "Associations": RefreshIndicator(
+                              Map<String, RefreshIndicator> delegates = {
+                                'Associations': RefreshIndicator(
                                   onRefresh: () => bloc.updateEvents(),
                                   child: Padding(
                                     padding: const EdgeInsets.all(7.0),
@@ -296,34 +303,34 @@ class _CreateAchievementPage extends State<Home> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Container(
-                                                  margin: EdgeInsets.fromLTRB(
+                                                  margin: const EdgeInsets.fromLTRB(
                                                       15.0, 15.0, 10.0, 5.0),
                                                   child: Text(
                                                     'Verification Request',
                                                     style: theme.textTheme
                                                         .headlineMedium,
                                                   )),
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 40,
                                               ),
                                               Container(
-                                                  margin: EdgeInsets.fromLTRB(
+                                                  margin: const EdgeInsets.fromLTRB(
                                                       15.0, 5.0, 15.0, 10.0),
                                                   child: TextFormField(
                                                     maxLength: 50,
-                                                    decoration: InputDecoration(
+                                                    decoration: const InputDecoration(
                                                       border:
                                                           OutlineInputBorder(),
-                                                      labelText: "Title",
+                                                      labelText: 'Title',
                                                     ),
                                                     autocorrect: true,
-                                                    onChanged: (value) {
+                                                    onChanged: (String value) {
                                                       setState(() {
                                                         currRequest1.title =
                                                             value;
                                                       });
                                                     },
-                                                    validator: (value) {
+                                                    validator: (String? value) {
                                                       if (value == null ||
                                                           value.isEmpty) {
                                                         return 'Title should not be empty';
@@ -332,23 +339,23 @@ class _CreateAchievementPage extends State<Home> {
                                                     },
                                                   )),
                                               Container(
-                                                  margin: EdgeInsets.fromLTRB(
+                                                  margin: const EdgeInsets.fromLTRB(
                                                       15.0, 5.0, 15.0, 10.0),
                                                   child: TextFormField(
-                                                    decoration: InputDecoration(
+                                                    decoration: const InputDecoration(
                                                       border:
                                                           OutlineInputBorder(),
-                                                      labelText: "Description",
+                                                      labelText: 'Description',
                                                     ),
                                                     autocorrect: true,
-                                                    onChanged: (value) {
+                                                    onChanged: (String value) {
                                                       setState(() {
                                                         currRequest1
                                                                 .description =
                                                             value;
                                                       });
                                                     },
-                                                    validator: (value) {
+                                                    validator: (String? value) {
                                                       if (value == null ||
                                                           value.isEmpty) {
                                                         return 'Description should not be empty';
@@ -357,22 +364,22 @@ class _CreateAchievementPage extends State<Home> {
                                                     },
                                                   )),
                                               Container(
-                                                  margin: EdgeInsets.fromLTRB(
+                                                  margin: const EdgeInsets.fromLTRB(
                                                       15.0, 5.0, 15.0, 10.0),
                                                   child: TextFormField(
-                                                    decoration: InputDecoration(
+                                                    decoration: const InputDecoration(
                                                       border:
                                                           OutlineInputBorder(),
-                                                      labelText: "Admin Note",
+                                                      labelText: 'Admin Note',
                                                     ),
                                                     autocorrect: true,
-                                                    onChanged: (value) {
+                                                    onChanged: (String value) {
                                                       setState(() {
                                                         currRequest1.adminNote =
                                                             value;
                                                       });
                                                     },
-                                                    validator: (value) {
+                                                    validator: (String? value) {
                                                       if (value == null ||
                                                           value.isEmpty) {
                                                         return 'Admin Note should not be empty';
@@ -381,7 +388,7 @@ class _CreateAchievementPage extends State<Home> {
                                                     },
                                                   )),
                                               Container(
-                                                  margin: EdgeInsets.fromLTRB(
+                                                  margin: const EdgeInsets.fromLTRB(
                                                       15.0, 5.0, 15.0, 0.0),
                                                   child: Column(
                                                       crossAxisAlignment:
@@ -391,18 +398,18 @@ class _CreateAchievementPage extends State<Home> {
                                                           MainAxisAlignment
                                                               .center,
                                                       children: <Widget>[
-                                                        SizedBox(
+                                                        const SizedBox(
                                                           height: 20.0,
                                                         ),
                                                         DropdownSearch<Event>(
                                                           dropdownDecoratorProps:
-                                                              DropDownDecoratorProps(
+                                                              const DropDownDecoratorProps(
                                                             dropdownSearchDecoration:
                                                                 InputDecoration(
                                                               labelText:
-                                                                  "Event (Optional)",
+                                                                  'Event (Optional)',
                                                               hintText:
-                                                                  "Event (Optional)",
+                                                                  'Event (Optional)',
                                                             ),
                                                           ),
                                                           onChanged:
@@ -417,7 +424,7 @@ class _CreateAchievementPage extends State<Home> {
                                                             itemBuilder:
                                                                 _customPopupItemBuilderEvent,
                                                             scrollbarProps:
-                                                                ScrollbarProps(
+                                                                const ScrollbarProps(
                                                               thickness: 7,
                                                             ),
                                                             isFilterOnline:
@@ -432,11 +439,11 @@ class _CreateAchievementPage extends State<Home> {
                                                                     Alignment
                                                                         .center,
                                                                 padding:
-                                                                    EdgeInsets
+                                                                    const EdgeInsets
                                                                         .all(
                                                                             20),
                                                                 child: Text(
-                                                                  "No events found. Refine your search!",
+                                                                  'No events found. Refine your search!',
                                                                   style: theme
                                                                       .textTheme
                                                                       .titleMedium,
@@ -446,21 +453,17 @@ class _CreateAchievementPage extends State<Home> {
                                                           ),
                                                         ),
                                                         SizedBox(
-                                                          height: this.selectedE
+                                                          height: selectedE
                                                               ? 20.0
                                                               : 0,
                                                         ),
-                                                        _selectedEvent != null
-                                                            ? VerifyCard(
-                                                                thing: this
-                                                                    ._selectedEvent!,
-                                                                selected: this
-                                                                    .selectedE)
-                                                            : SizedBox(),
+                                                        if (_selectedEvent != null) VerifyCard(
+                                                                thing: _selectedEvent!,
+                                                                selected: selectedE) else const SizedBox(),
                                                       ])),
                                               Container(
                                                   // width: double.infinity,
-                                                  margin: EdgeInsets.fromLTRB(
+                                                  margin: const EdgeInsets.fromLTRB(
                                                       15.0, 0.0, 15.0, 10.0),
                                                   child: Column(
                                                       crossAxisAlignment:
@@ -470,7 +473,7 @@ class _CreateAchievementPage extends State<Home> {
                                                           MainAxisAlignment
                                                               .center,
                                                       children: <Widget>[
-                                                        SizedBox(
+                                                        const SizedBox(
                                                           height: 20.0,
                                                         ),
 
@@ -483,7 +486,7 @@ class _CreateAchievementPage extends State<Home> {
                                                             itemBuilder:
                                                                 _customPopupItemBuilderBody,
                                                             scrollbarProps:
-                                                                ScrollbarProps(
+                                                                const ScrollbarProps(
                                                               thickness: 7,
                                                             ),
                                                             emptyBuilder:
@@ -495,11 +498,11 @@ class _CreateAchievementPage extends State<Home> {
                                                                     Alignment
                                                                         .center,
                                                                 padding:
-                                                                    EdgeInsets
+                                                                    const EdgeInsets
                                                                         .all(
                                                                             20),
                                                                 child: Text(
-                                                                  "No verifying authorities found. Refine your search!",
+                                                                  'No verifying authorities found. Refine your search!',
                                                                   style: theme
                                                                       .textTheme
                                                                       .titleMedium,
@@ -512,16 +515,16 @@ class _CreateAchievementPage extends State<Home> {
                                                           ),
 
                                                           dropdownDecoratorProps:
-                                                              DropDownDecoratorProps(
+                                                              const DropDownDecoratorProps(
                                                             dropdownSearchDecoration:
                                                                 InputDecoration(
                                                                     labelText:
-                                                                        "Verifying Authority",
+                                                                        'Verifying Authority',
                                                                     hintText:
-                                                                        "Verifying Authority"),
+                                                                        'Verifying Authority'),
                                                           ),
 
-                                                          validator: (value) {
+                                                          validator: (Body? value) {
                                                             if (value == null) {
                                                               return 'Please select a organization';
                                                             }
@@ -544,22 +547,18 @@ class _CreateAchievementPage extends State<Home> {
                                                               _selectedBody,
                                                         ),
                                                         SizedBox(
-                                                          height: this.selectedB
+                                                          height: selectedB
                                                               ? 20.0
                                                               : 0,
                                                         ),
-                                                        _selectedBody != null
-                                                            ? BodyCard(
-                                                                thing: this
-                                                                    ._selectedBody!,
-                                                                selected: this
-                                                                    .selectedB)
-                                                            : SizedBox(),
+                                                        if (_selectedBody != null) BodyCard(
+                                                                thing: _selectedBody!,
+                                                                selected: selectedB) else const SizedBox(),
                                                         //_buildEvent(theme, bloc, snapshot.data[0]);//verify_card(thing: this._selectedCompany, selected: this.selected);
                                                       ])),
                                               Container(
                                                 width: double.infinity,
-                                                margin: EdgeInsets.symmetric(
+                                                margin: const EdgeInsets.symmetric(
                                                     vertical: 10.0,
                                                     horizontal: 15.0),
                                                 child: TextButton(
@@ -568,24 +567,24 @@ class _CreateAchievementPage extends State<Home> {
                                                         .validate()) {
                                                       currRequest1.isSkill =
                                                           false;
-                                                      var resp =
+                                                      AchievementCreateResponse? resp =
                                                           await achievementsBloc
                                                               .postForm(
                                                                   currRequest1);
                                                       if (resp!.result ==
-                                                          "success") {
-                                                        Navigator.of(context)
+                                                          'success') {
+                                                        await Navigator.of(context)
                                                             .pushNamed(
-                                                                "/achievements");
+                                                                '/achievements');
                                                       } else {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
-                                                                SnackBar(
+                                                                const SnackBar(
                                                           content:
-                                                              new Text('Error'),
+                                                              Text('Error'),
                                                           duration:
-                                                              new Duration(
+                                                              Duration(
                                                                   seconds: 10),
                                                         ));
                                                       }
@@ -593,17 +592,17 @@ class _CreateAchievementPage extends State<Home> {
 
                                                     //log(currRequest.description);
                                                   },
-                                                  child: Text(
-                                                      'Request Verification'),
                                                   style: TextButton.styleFrom(
                                                     foregroundColor:
                                                         Colors.black,
                                                     backgroundColor:
-                                                        Color(0xffffd740),
+                                                        const Color(0xffffd740),
                                                     disabledForegroundColor:
                                                         Colors.grey,
                                                     elevation: 5.0,
                                                   ),
+                                                  child: const Text(
+                                                      'Request Verification'),
                                                 ),
                                               ),
                                             ]),
@@ -611,7 +610,7 @@ class _CreateAchievementPage extends State<Home> {
                                     ),
                                   ),
                                 ),
-                                "Skills": RefreshIndicator(
+                                'Skills': RefreshIndicator(
                                   onRefresh: () => bloc.updateEvents(),
                                   child: Padding(
                                     padding: const EdgeInsets.all(7.0),
@@ -626,7 +625,7 @@ class _CreateAchievementPage extends State<Home> {
                                             children: [
                                               Container(
                                                   // width: double.infinity,
-                                                  margin: EdgeInsets.fromLTRB(
+                                                  margin: const EdgeInsets.fromLTRB(
                                                       15.0, 0.0, 15.0, 10.0),
                                                   child: Column(
                                                       crossAxisAlignment:
@@ -636,7 +635,7 @@ class _CreateAchievementPage extends State<Home> {
                                                           MainAxisAlignment
                                                               .center,
                                                       children: <Widget>[
-                                                        SizedBox(
+                                                        const SizedBox(
                                                           height: 20.0,
                                                         ),
 
@@ -649,7 +648,7 @@ class _CreateAchievementPage extends State<Home> {
                                                             itemBuilder:
                                                                 _customPopupItemBuilderSkill,
                                                             scrollbarProps:
-                                                                ScrollbarProps(
+                                                                const ScrollbarProps(
                                                               thickness: 7,
                                                             ),
                                                             emptyBuilder:
@@ -661,11 +660,11 @@ class _CreateAchievementPage extends State<Home> {
                                                                     Alignment
                                                                         .center,
                                                                 padding:
-                                                                    EdgeInsets
+                                                                    const EdgeInsets
                                                                         .all(
                                                                             20),
                                                                 child: Text(
-                                                                  "No skills found. Refine your search!",
+                                                                  'No skills found. Refine your search!',
                                                                   style: theme
                                                                       .textTheme
                                                                       .titleMedium,
@@ -677,15 +676,15 @@ class _CreateAchievementPage extends State<Home> {
                                                             },
                                                           ),
                                                           dropdownDecoratorProps:
-                                                              DropDownDecoratorProps(
+                                                              const DropDownDecoratorProps(
                                                             dropdownSearchDecoration:
                                                                 InputDecoration(
                                                                     labelText:
-                                                                        "Title",
+                                                                        'Title',
                                                                     hintText:
-                                                                        "Titile"),
+                                                                        'Titile'),
                                                           ),
-                                                          validator: (value) {
+                                                          validator: (Skill? value) {
                                                             if (value == null) {
                                                               return 'Please select a Skill';
                                                             }
@@ -707,24 +706,20 @@ class _CreateAchievementPage extends State<Home> {
                                                               _selectedSkill,
                                                         ),
                                                         SizedBox(
-                                                          height: this.selectedB
+                                                          height: selectedB
                                                               ? 20.0
                                                               : 0,
                                                         ),
-                                                        _selectedSkill?.body !=
-                                                                null
-                                                            ? BodyCard(
-                                                                thing: this
-                                                                    ._selectedSkill
+                                                        if (_selectedSkill?.body !=
+                                                                null) BodyCard(
+                                                                thing: _selectedSkill
                                                                     ?.body,
-                                                                selected: this
-                                                                    .selectedS)
-                                                            : SizedBox(),
+                                                                selected: selectedS) else const SizedBox(),
                                                         //_buildEvent(theme, bloc, snapshot.data[0]);//verify_card(thing: this._selectedCompany, selected: this.selected);
                                                       ])),
                                               Container(
                                                 width: double.infinity,
-                                                margin: EdgeInsets.symmetric(
+                                                margin: const EdgeInsets.symmetric(
                                                     vertical: 10.0,
                                                     horizontal: 15.0),
                                                 child: TextButton(
@@ -734,24 +729,24 @@ class _CreateAchievementPage extends State<Home> {
                                                       currRequest2.isSkill =
                                                           true;
                                                       // print(currRequest2.title);
-                                                      var resp =
+                                                      AchievementCreateResponse? resp =
                                                           await achievementsBloc
                                                               .postForm(
                                                                   currRequest2);
                                                       if (resp?.result ==
-                                                          "success") {
-                                                        Navigator.of(context)
+                                                          'success') {
+                                                        await Navigator.of(context)
                                                             .pushNamed(
-                                                                "/achievements");
+                                                                '/achievements');
                                                       } else {
                                                         ScaffoldMessenger.of(
                                                                 context)
                                                             .showSnackBar(
-                                                                SnackBar(
+                                                                const SnackBar(
                                                           content:
-                                                              new Text('Error'),
+                                                              Text('Error'),
                                                           duration:
-                                                              new Duration(
+                                                              Duration(
                                                                   seconds: 10),
                                                         ));
                                                       }
@@ -759,16 +754,16 @@ class _CreateAchievementPage extends State<Home> {
 
                                                     //log(currRequest.description);
                                                   },
-                                                  child: Text(
-                                                      'Request Verification'),
                                                   style: TextButton.styleFrom(
                                                       foregroundColor:
                                                           Colors.black,
                                                       backgroundColor:
-                                                          Color(0xffffd740),
+                                                          const Color(0xffffd740),
                                                       disabledForegroundColor:
                                                           Colors.grey,
                                                       elevation: 5.0),
+                                                  child: const Text(
+                                                      'Request Verification'),
                                                 ),
                                               ),
                                             ]),
@@ -1091,14 +1086,16 @@ class VerifyCard extends StatefulWidget {
   final Event thing;
   final bool selected;
 
-  VerifyCard({required this.thing, required this.selected});
+  const VerifyCard({Key? key, required this.thing, required this.selected}) : super(key: key);
 
+  @override
   Card createState() => Card();
 }
 
 class Card extends State<VerifyCard> {
+  @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
+    ThemeData theme = Theme.of(context);
     if (widget.selected) {
       return ListTile(
         title: Text(
@@ -1115,7 +1112,7 @@ class Card extends State<VerifyCard> {
         subtitle: Text(widget.thing.getSubTitle()),
       );
     } else {
-      return SizedBox(height: 10);
+      return const SizedBox(height: 10);
     }
   }
 }
@@ -1124,35 +1121,39 @@ class BodyCard extends StatefulWidget {
   final Body? thing;
   final bool selected;
 
-  BodyCard({required this.thing, required this.selected});
+  const BodyCard({Key? key, required this.thing, required this.selected}) : super(key: key);
 
+  @override
   BodyCardState createState() => BodyCardState();
 }
 
 class BodyCardState extends State<BodyCard> {
+  @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
+    ThemeData theme = Theme.of(context);
     if (widget.selected) {
       return ListTile(
         title: Text(
-          widget.thing?.bodyName ?? "",
+          widget.thing?.bodyName ?? '',
           style: theme.textTheme.titleLarge,
         ),
         enabled: true,
         leading: NullableCircleAvatar(
-          widget.thing?.bodyImageURL ?? widget.thing?.bodyImageURL ?? "",
+          widget.thing?.bodyImageURL ?? widget.thing?.bodyImageURL ?? '',
           Icons.event_outlined,
           heroTag: widget.thing?.bodyID,
         ),
-        subtitle: Text(widget.thing?.bodyShortDescription ?? ""),
+        subtitle: Text(widget.thing?.bodyShortDescription ?? ''),
       );
     } else {
-      return SizedBox(height: 10);
+      return const SizedBox(height: 10);
     }
   }
 }
 
 class QRViewExample extends StatefulWidget {
+  const QRViewExample({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _QRViewExampleState();
 }
@@ -1186,29 +1187,29 @@ class _QRViewExampleState extends State<QRViewExample> {
   }
 
   Widget _buildQrView(BuildContext context) {
-    var bloc = BlocProvider.of(context)?.bloc;
+    InstiAppBloc? bloc = BlocProvider.of(context)?.bloc;
 
     // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
-    var scanArea = (MediaQuery.of(context).size.width < 400 ||
+    double scanArea = (MediaQuery.of(context).size.width < 400 ||
             MediaQuery.of(context).size.height < 400)
         ? 250.0
         : 300.0;
 
-    void getOfferedAchievements(String url) async {
-      if (url.contains("https://www.insti.app/achievement-new/")) {
-        var uri = url.substring(url.lastIndexOf("/") + 1);
+    Future<void> getOfferedAchievements(String url) async {
+      if (url.contains('https://www.insti.app/achievement-new/')) {
+        final String uri = url.substring(url.lastIndexOf('/') + 1);
 
-        var offerid = uri.substring(0, uri.indexOf("s=") - 1);
-        var secret = uri.substring(uri.lastIndexOf("s=") + 2);
+        String offerid = uri.substring(0, uri.indexOf('s=') - 1);
+        String secret = uri.substring(uri.lastIndexOf('s=') + 2);
         // if offerid is null return or scan again
         if (offerid == '' || secret == '') {
           bool? addToCal = await showDialog(
               context: context,
-              builder: (context) => AlertDialog(
-                    title: Text("Invalid Achievement Code"),
+              builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Invalid Achievement Code'),
                     actions: <Widget>[
                       TextButton(
-                        child: Text("Scan Again"),
+                        child: const Text('Scan Again'),
                         onPressed: () {
                           Navigator.of(context).pop(true);
                           controller.resumeCamera();
@@ -1216,7 +1217,7 @@ class _QRViewExampleState extends State<QRViewExample> {
                         },
                       ),
                       TextButton(
-                        child: Text("Return"),
+                        child: const Text('Return'),
                         onPressed: () {
                           controller.dispose();
                           processing = false;
@@ -1232,12 +1233,12 @@ class _QRViewExampleState extends State<QRViewExample> {
         }
         // check for a secret if offerid exists
         else {
-          var achievements = bloc?.achievementBloc;
+          Bloc? achievements = bloc?.achievementBloc;
           SecretResponse? offer =
               await achievements?.postAchievementOffer(offerid, secret);
-          log(offer?.message ?? "");
+          log(offer?.message ?? '');
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(offer?.message ?? "")),
+            SnackBar(content: Text(offer?.message ?? '')),
           );
           controller.dispose();
           processing = false;
@@ -1247,11 +1248,11 @@ class _QRViewExampleState extends State<QRViewExample> {
         log('1');
         bool? addToCal = await showDialog(
             context: context,
-            builder: (context) => AlertDialog(
-                  title: Text("Invalid Qr Code"),
+            builder: (BuildContext context) => AlertDialog(
+                  title: const Text('Invalid Qr Code'),
                   actions: <Widget>[
                     TextButton(
-                      child: Text("Scan Again"),
+                      child: const Text('Scan Again'),
                       onPressed: () {
                         Navigator.of(context).pop(true);
                         controller.resumeCamera();
@@ -1259,7 +1260,7 @@ class _QRViewExampleState extends State<QRViewExample> {
                       },
                     ),
                     TextButton(
-                      child: Text("Return"),
+                      child: const Text('Return'),
                       onPressed: () {
                         controller.dispose();
                         processing = false;
@@ -1284,7 +1285,7 @@ class _QRViewExampleState extends State<QRViewExample> {
         setState(() {
           this.controller = controller;
         });
-        controller.scannedDataStream.listen((scanData) {
+        controller.scannedDataStream.listen((Barcode scanData) {
           setState(() {
             result = scanData;
             log(result.code!);
@@ -1302,7 +1303,7 @@ class _QRViewExampleState extends State<QRViewExample> {
           borderLength: 30,
           borderWidth: 10,
           cutOutSize: scanArea),
-      onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
+      onPermissionSet: (QRViewController ctrl, bool p) => _onPermissionSet(context, ctrl, p),
     );
   }
 
@@ -1310,7 +1311,7 @@ class _QRViewExampleState extends State<QRViewExample> {
     log('${DateTime.now().toIso8601String()}_onPermissionSet $p');
     if (!p) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('no Permission')),
+        const SnackBar(content: Text('no Permission')),
       );
     }
   }

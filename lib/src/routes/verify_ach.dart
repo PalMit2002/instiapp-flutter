@@ -1,12 +1,13 @@
 import 'dart:collection';
 
-import 'package:InstiApp/src/api/model/achievements.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/ach_to_vefiry_bloc.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
 import 'package:flutter/material.dart';
 
+import '../api/model/achievements.dart';
+import '../bloc_provider.dart';
+import '../blocs/ach_to_vefiry_bloc.dart';
+import '../blocs/ia_bloc.dart';
 import '../drawer.dart';
+import '../utils/common_widgets.dart';
 
 class VerifyAchPage extends StatefulWidget {
   final String? bodyId;
@@ -17,15 +18,15 @@ class VerifyAchPage extends StatefulWidget {
 }
 
 class _VerifyAchPageState extends State<VerifyAchPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   bool firstBuild = true;
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
-    var bloc = BlocProvider.of(context)!.bloc;
-    var verifyBloc = bloc.bodyAchBloc;
+    ThemeData theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    VerifyBloc verifyBloc = bloc.bodyAchBloc;
     // print("Body id:" + (widget.bodyId ?? ""));
 
     if (bloc.currSession == null) {
@@ -33,31 +34,31 @@ class _VerifyAchPageState extends State<VerifyAchPage> {
     }
 
     if (firstBuild) {
-      verifyBloc.updateAchievements(widget.bodyId ?? "");
+      verifyBloc.updateAchievements(widget.bodyId ?? '');
     }
 
-    var fab = FloatingActionButton.extended(
-      icon: Icon(Icons.add_outlined),
-      label: Text("Add Acheivement"),
+    FloatingActionButton fab = FloatingActionButton.extended(
+      icon: const Icon(Icons.add_outlined),
+      label: const Text('Add Acheivement'),
       onPressed: () {
-        Navigator.of(context).pushNamed("/achievements/add");
+        Navigator.of(context).pushNamed('/achievements/add');
       },
     );
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -69,36 +70,36 @@ class _VerifyAchPageState extends State<VerifyAchPage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () {
-            return verifyBloc.updateAchievements(widget.bodyId ?? "");
+            return verifyBloc.updateAchievements(widget.bodyId ?? '');
           },
           child: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
                   child: Text(
-                    "Verify",
+                    'Verify',
                     style: theme.textTheme.displaySmall,
                   ),
                 ),
-                SliverToBoxAdapter(
+                const SliverToBoxAdapter(
                   child: SizedBox(
                     height: 10,
                   ),
                 ),
                 StreamBuilder(
                   stream: verifyBloc.achievements,
-                  builder: (context,
+                  builder: (BuildContext context,
                       AsyncSnapshot<UnmodifiableListView<Achievement>>
                           snapshot) {
                     if (snapshot.hasData) {
-                      if (snapshot.data!.length > 0) {
+                      if (snapshot.data!.isNotEmpty) {
                         // print(snapshot.data);
                         return SliverList(
                           delegate: SliverChildBuilderDelegate(
-                            (context, index) {
+                            (BuildContext context, int index) {
                               // print(index);
-                              var data = snapshot.data![index];
+                              Achievement data = snapshot.data![index];
                               // print("Data " +
                               //     index.toString() +
                               //     ": " +
@@ -123,7 +124,7 @@ class _VerifyAchPageState extends State<VerifyAchPage> {
                                 color: Colors.grey[500],
                                 size: 200.0,
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 15.0,
                               ),
                               Text(
@@ -138,10 +139,10 @@ class _VerifyAchPageState extends State<VerifyAchPage> {
                         ));
                       }
                     } else {
-                      return SliverToBoxAdapter(
+                      return const SliverToBoxAdapter(
                         child: Center(
                           child: CircularProgressIndicatorExtended(
-                            label: Text("Getting achievements to verify"),
+                            label: Text('Getting achievements to verify'),
                           ),
                         ),
                       );
@@ -172,28 +173,28 @@ class _VerifyListItemState extends State<VerifyListItem> {
   bool isVerified = false;
   bool isDismissed = false;
 
-  String verifyText = "Verify";
+  String verifyText = 'Verify';
 
   void showAlertDialog(BuildContext context, VerifyBloc verifyBloc) {
     // set up the buttons
     Widget cancelButton = ElevatedButton(
-      child: Text("No"),
+      child: const Text('No'),
       onPressed: () {
         Navigator.of(context).pop();
       },
     );
     Widget continueButton = ElevatedButton(
-      child: Text("Yes"),
+      child: const Text('Yes'),
       onPressed: () {
         verifyBloc.deleteAchievement(
-            widget.achievement.id ?? "", widget.achievement.body?.bodyID ?? "");
+            widget.achievement.id ?? '', widget.achievement.body?.bodyID ?? '');
         Navigator.of(context).pop();
       },
     );
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
-      title: Text("AlertDialog"),
-      content: Text("Are you sure you want to delete achievement forever?"),
+      title: const Text('AlertDialog'),
+      content: const Text('Are you sure you want to delete achievement forever?'),
       actions: [
         cancelButton,
         continueButton,
@@ -210,17 +211,17 @@ class _VerifyListItemState extends State<VerifyListItem> {
 
   @override
   Widget build(BuildContext context) {
-    var verifyBloc = BlocProvider.of(context)!.bloc.bodyAchBloc;
+    VerifyBloc verifyBloc = BlocProvider.of(context)!.bloc.bodyAchBloc;
     return Column(
       children: [
         DefListItem(
-          title: widget.achievement.title ?? "No title",
-          company: widget.achievement.user?.userName ?? "Anonymous",
+          title: widget.achievement.title ?? 'No title',
+          company: widget.achievement.user?.userName ?? 'Anonymous',
           forText: widget.achievement.event != null
-              ? widget.achievement.event!.eventName ?? ""
-              : "",
-          importance: widget.achievement.description ?? "",
-          adminNote: widget.achievement.adminNote ?? "",
+              ? widget.achievement.event!.eventName ?? ''
+              : '',
+          importance: widget.achievement.description ?? '',
+          adminNote: widget.achievement.adminNote ?? '',
           isVerified: isVerified,
           isDismissed: isDismissed,
         ),
@@ -234,18 +235,18 @@ class _VerifyListItemState extends State<VerifyListItem> {
                 setState(() {
                   isVerified = !isVerified;
                   if (isVerified) {
-                    verifyText = "Unverify";
+                    verifyText = 'Unverify';
                     isDismissed = false;
                   } else {
-                    verifyText = "Verify";
+                    verifyText = 'Verify';
                     isDismissed = true;
                   }
                 });
               },
-              child: Text(verifyText),
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all(Colors.deepPurple),
               ),
+              child: Text(verifyText),
             ),
             ElevatedButton(
               onPressed: isVerified || isDismissed
@@ -256,26 +257,26 @@ class _VerifyListItemState extends State<VerifyListItem> {
                         isDismissed = true;
                       });
                     },
-              child: Text(
-                "Dismiss",
-                style: TextStyle(color: Colors.black),
-              ),
               style: ButtonStyle(
                 backgroundColor: isVerified || isDismissed
                     ? MaterialStateProperty.all(Colors.grey)
                     : MaterialStateProperty.all(Colors.yellow),
+              ),
+              child: const Text(
+                'Dismiss',
+                style: TextStyle(color: Colors.black),
               ),
             ),
             TextButton(
               onPressed: () {
                 showAlertDialog(context, verifyBloc);
               },
-              child: Text(
-                "Delete",
-                style: TextStyle(color: Colors.red),
-              ),
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all(Colors.transparent),
+              ),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
               ),
             ),
           ],

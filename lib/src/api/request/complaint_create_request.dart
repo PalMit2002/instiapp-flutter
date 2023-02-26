@@ -4,21 +4,21 @@ part 'complaint_create_request.g.dart';
 
 @JsonSerializable()
 class ComplaintCreateRequest {
-  @JsonKey(name: "description")
+  @JsonKey(name: 'description')
   String? complaintDescription;
-  @JsonKey(name: "suggestions")
+  @JsonKey(name: 'suggestions')
   String? complaintSuggestions;
-  @JsonKey(name: "location_details")
+  @JsonKey(name: 'location_details')
   String? complaintLocationDetails;
-  @JsonKey(name: "location_description")
+  @JsonKey(name: 'location_description')
   String? complaintLocation;
-  @JsonKey(name: "latitude")
+  @JsonKey(name: 'latitude')
   double? complaintLatitude;
-  @JsonKey(name: "longitude")
+  @JsonKey(name: 'longitude')
   double? complaintLongitude;
-  @JsonKey(name: "tags")
+  @JsonKey(name: 'tags')
   List<String>? tags;
-  @JsonKey(name: "images")
+  @JsonKey(name: 'images')
   List<String>? images;
 
   ComplaintCreateRequest(

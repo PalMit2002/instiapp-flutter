@@ -1,38 +1,39 @@
-import 'package:InstiApp/src/api/model/user.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'user.dart';
 
 part 'offeredAchievements.g.dart';
 
 @JsonSerializable()
 class OfferedAchievements {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? achievementID;
 
-  @JsonKey(name: "title")
+  @JsonKey(name: 'title')
   String? title;
 
-  @JsonKey(name: "description")
+  @JsonKey(name: 'description')
   String? desc;
 
-  @JsonKey(name: "body")
+  @JsonKey(name: 'body')
   String? body;
 
-  @JsonKey(name: "event")
+  @JsonKey(name: 'event')
   String? event;
 
-  @JsonKey(name: "priority")
+  @JsonKey(name: 'priority')
   int? priority;
 
-  @JsonKey(name: "secret")
+  @JsonKey(name: 'secret')
   String? secret;
 
-  @JsonKey(name: "generic")
+  @JsonKey(name: 'generic')
   String? generic;
 
-  @JsonKey(name: "users")
+  @JsonKey(name: 'users')
   List<User>? users;
 
-  @JsonKey(name: "stat")
+  @JsonKey(name: 'stat')
   int? stat;
 
   OfferedAchievements(

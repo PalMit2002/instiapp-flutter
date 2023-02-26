@@ -5,7 +5,7 @@ class DatePickerField extends StatefulWidget {
   final String labelText;
   final Function onSaved;
   final Future<DateTime>? loadDate;
-  DatePickerField({required this.labelText,this.loadDate, required this.onSaved});
+  const DatePickerField({Key? key, required this.labelText,this.loadDate, required this.onSaved}) : super(key: key);
 
   @override
   _DatePickerFieldState createState() => _DatePickerFieldState();
@@ -32,7 +32,7 @@ class _DatePickerFieldState extends State<DatePickerField> {
   @override
   void initState() {
     if(widget.loadDate!=null){
-      widget.loadDate!.then((value){
+      widget.loadDate!.then((DateTime value){
         setState(() {
           setDate = value;
         });
@@ -94,7 +94,7 @@ class _DatePickerFieldState extends State<DatePickerField> {
               ),
             ),
             suffix: TextButton(
-              child: Icon(
+              child: const Icon(
                 Icons.calendar_today,
                 color: Colors.grey,
               ),
@@ -126,7 +126,7 @@ class TimePickerField extends StatefulWidget {
   final String labelText;
   final Function onSaved;
   final Future<DateTime>? loadTime;
-  TimePickerField({required this.labelText, this.loadTime,required this.onSaved});
+  const TimePickerField({Key? key, required this.labelText, this.loadTime,required this.onSaved}) : super(key: key);
 
   @override
   _TimePickerFieldState createState() => _TimePickerFieldState();
@@ -139,20 +139,20 @@ class _TimePickerFieldState extends State<TimePickerField> {
   TextEditingController textEditingController = TextEditingController();
   Color labelColor = Colors.grey;
   static TimeOfDay parseTime(String s){
-    TimeOfDay d = TimeOfDay(hour:0,minute: 0);
+    TimeOfDay d = const TimeOfDay(hour:0,minute: 0);
     try{d = TimeOfDay(hour: int.parse(s.split(':')[0]),minute: int.parse(s.split(':')[1]));}
     catch(e){return d;}
     return d;
   }
   String formatTime(TimeOfDay d) {
-    final Function pad = (int s)=>(s.toString().length)>1?s.toString():'0'+s.toString();
+    String pad(int s)=>(s.toString().length)>1?s.toString():'0$s';
     return '${pad(d.hour)}:${pad(d.minute)}';
   }
 
   @override
   void initState() {
     if(widget.loadTime!=null){
-      widget.loadTime!.then((value){
+      widget.loadTime!.then((DateTime value){
         setState(() {
           setTime = TimeOfDay.fromDateTime(value);
         });
@@ -175,7 +175,7 @@ class _TimePickerFieldState extends State<TimePickerField> {
         controller: textEditingController,
         onChanged: (String s) {
           try{
-            List<int> nums = s.split(':').map((e) => int.parse(e)).toList();
+            List<int> nums = s.split(':').map(int.parse).toList();
             if(nums[0]>=0&&nums[0]<24&&nums[1]>=0&&nums[1]<60){
               setState(() {
                 labelColor = Colors.grey;
@@ -218,7 +218,7 @@ class _TimePickerFieldState extends State<TimePickerField> {
               ),
             ),
             suffix: TextButton(
-              child: Icon(
+              child: const Icon(
                 Icons.watch_later_outlined,
                 color: Colors.grey,
               ),

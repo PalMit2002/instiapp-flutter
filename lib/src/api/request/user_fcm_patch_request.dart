@@ -4,10 +4,10 @@ part 'user_fcm_patch_request.g.dart';
 
 @JsonSerializable()
 class UserFCMPatchRequest {
-  @JsonKey(name: "fcm_id")
+  @JsonKey(name: 'fcm_id')
   String? userFCMId;
 
-  @JsonKey(name: "android_version")
+  @JsonKey(name: 'android_version')
   int? userAndroidVersion;
 
   UserFCMPatchRequest({this.userFCMId, this.userAndroidVersion});

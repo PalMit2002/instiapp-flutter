@@ -1,5 +1,6 @@
-import 'package:InstiApp/src/api/model/communityPost.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import '../model/communityPost.dart';
 
 part 'community_post_list_response.g.dart';
 

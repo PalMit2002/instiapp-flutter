@@ -3,7 +3,7 @@ import 'package:rxdart/rxdart.dart';
 
 class DrawerBloc {
   ValueStream<int> get highlightPageIndex => _pageIndexSubject.stream;
-  final _pageIndexSubject = BehaviorSubject<int>();
+  final BehaviorSubject<int> _pageIndexSubject = BehaviorSubject<int>();
 
   String currentRoute;
   late int _highlightPageIndex;

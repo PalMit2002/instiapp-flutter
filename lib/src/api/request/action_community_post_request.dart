@@ -4,7 +4,7 @@ part 'action_community_post_request.g.dart';
 
 @JsonSerializable()
 class ActionCommunityPostRequest {
-  @JsonKey(name: "is_featured")
+  @JsonKey(name: 'is_featured')
   bool? isFeatured;
 
   ActionCommunityPostRequest({this.isFeatured});

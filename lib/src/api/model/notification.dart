@@ -1,30 +1,31 @@
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/api/model/post.dart';
-import 'package:InstiApp/src/api/model/venter.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'event.dart';
+import 'post.dart';
+import 'venter.dart';
 
 part 'notification.g.dart';
 
-const String TYPE_EVENT = "event";
-const String TYPE_NEWSENTRY = "newsentry";
-const String TYPE_BLOG = "blogentry";
-const String TYPE_COMPLAINT_COMMENT = "complaintcomment";
+const String TYPE_EVENT = 'event';
+const String TYPE_NEWSENTRY = 'newsentry';
+const String TYPE_BLOG = 'blogentry';
+const String TYPE_COMPLAINT_COMMENT = 'complaintcomment';
 
 @JsonSerializable()
 class Notification {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   int? notificationId;
 
-  @JsonKey(name: "verb")
+  @JsonKey(name: 'verb')
   String? notificationVerb;
 
-  @JsonKey(name: "unread")
+  @JsonKey(name: 'unread')
   bool? notificationUnread;
 
-  @JsonKey(name: "actor_type")
+  @JsonKey(name: 'actor_type')
   String? notificationActorType;
 
-  @JsonKey(name: "actor")
+  @JsonKey(name: 'actor')
   Map<String, dynamic>? notificationActor;
 
   String? getTitle() {
@@ -35,10 +36,10 @@ class Notification {
     } else if (isBlogPost) {
       return getBlogPost().title;
     } else if (isComplaintComment) {
-      var comment = getComment();
-      return "\"${comment.text}\" by ${comment.commentedBy!.userName}";
+      final Comment comment = getComment();
+      return '"${comment.text}" by ${comment.commentedBy!.userName}';
     }
-    return "Notification";
+    return 'Notification';
   }
 
   String? getSubtitle() {
@@ -47,7 +48,7 @@ class Notification {
 
   String? getAvatarUrl() {
     if (isEvent) {
-      var ev = getEvent();
+      final Event ev = getEvent();
       return ev.eventImageURL ?? ev.eventBodies![0].bodyImageURL;
     } else if (isNews) {
       return getNews().body!.bodyImageURL;
@@ -92,7 +93,7 @@ class Notification {
     } else if (isComplaintComment) {
       return getComment().id;
     }
-    return "";
+    return '';
   }
 
   Notification({

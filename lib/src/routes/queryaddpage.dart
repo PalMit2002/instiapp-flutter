@@ -1,23 +1,28 @@
-import 'package:InstiApp/src/api/request/postFAQ_request.dart';
-import 'package:InstiApp/src/api/response/secret_response.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:dropdown_search/dropdown_search.dart';
-import 'package:InstiApp/src/api/model/event.dart';
+import '../api/model/body.dart';
+import '../api/model/event.dart';
+import '../api/request/postFAQ_request.dart';
+import '../api/response/secret_response.dart';
 import '../bloc_provider.dart';
+import '../blocs/achievementform_bloc.dart';
+import '../blocs/ia_bloc.dart';
 import '../drawer.dart';
+import '../utils/common_widgets.dart';
 
 class QueryAddPage extends StatefulWidget {
+  const QueryAddPage({Key? key}) : super(key: key);
+
   // initiate widgetstate Form
+  @override
   _QueryAddPageState createState() => _QueryAddPageState();
 }
 
 class _QueryAddPageState extends State<QueryAddPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   // String? _selectedCategory;
   PostFAQRequest currRequest = PostFAQRequest();
@@ -45,7 +50,7 @@ class _QueryAddPageState extends State<QueryAddPage> {
     if (category == null) {
       return Container(
         child: Text(
-          "Select a Category",
+          'Select a Category',
           style: Theme.of(context).textTheme.bodyLarge,
         ),
       );
@@ -60,7 +65,7 @@ class _QueryAddPageState extends State<QueryAddPage> {
   Widget _customPopupItemBuilderCategory(
       BuildContext context, String category, bool isSelected) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: !isSelected
           ? null
           : BoxDecoration(
@@ -91,26 +96,26 @@ class _QueryAddPageState extends State<QueryAddPage> {
 
   @override
   Widget build(BuildContext context) {
-    var bloc = BlocProvider.of(context)!.bloc;
-    var theme = Theme.of(context);
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    ThemeData theme = Theme.of(context);
     if (firstBuild) {
       firstBuild = false;
     }
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       bottomNavigationBar: MyBottomAppBar(
-        shape: RoundedNotchedRectangle(),
-        child: new Row(
+        shape: const RoundedNotchedRectangle(),
+        child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              tooltip: "Show bottom sheet",
-              icon: Icon(
+              tooltip: 'Show bottom sheet',
+              icon: const Icon(
                 Icons.menu_outlined,
-                semanticLabel: "Show bottom sheet",
+                semanticLabel: 'Show bottom sheet',
               ),
               onPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
@@ -123,8 +128,9 @@ class _QueryAddPageState extends State<QueryAddPage> {
           child: bloc.currSession == null
               ? Container(
                   alignment: Alignment.center,
-                  padding: EdgeInsets.all(50),
+                  padding: const EdgeInsets.all(50),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Icon(
                         Icons.cloud,
@@ -132,12 +138,11 @@ class _QueryAddPageState extends State<QueryAddPage> {
                         color: Colors.grey[600],
                       ),
                       Text(
-                        "Login To Ask a Question",
+                        'Login To Ask a Question',
                         style: theme.textTheme.headlineSmall,
                         textAlign: TextAlign.center,
                       )
                     ],
-                    crossAxisAlignment: CrossAxisAlignment.center,
                   ),
                 )
               : Padding(
@@ -151,30 +156,30 @@ class _QueryAddPageState extends State<QueryAddPage> {
                           children: [
                             Container(
                                 margin:
-                                    EdgeInsets.fromLTRB(15.0, 15.0, 10.0, 5.0),
+                                    const EdgeInsets.fromLTRB(15.0, 15.0, 10.0, 5.0),
                                 child: Text(
                                   "Couldn't find what you're looking for?",
                                   style: theme.textTheme.headlineMedium,
                                 )),
-                            SizedBox(
+                            const SizedBox(
                               height: 40,
                             ),
                             Container(
                                 margin:
-                                    EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 10.0),
+                                    const EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 10.0),
                                 child: TextFormField(
                                   maxLength: 200,
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     border: OutlineInputBorder(),
-                                    labelText: "Question",
+                                    labelText: 'Question',
                                   ),
                                   autocorrect: true,
-                                  onChanged: (value) {
+                                  onChanged: (String value) {
                                     setState(() {
                                       currRequest.question = value;
                                     });
                                   },
-                                  validator: (value) {
+                                  validator: (String? value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Question should not be empty';
                                     }
@@ -183,13 +188,13 @@ class _QueryAddPageState extends State<QueryAddPage> {
                                 )),
                             Container(
                                 margin:
-                                    EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 0.0),
+                                    const EdgeInsets.fromLTRB(15.0, 5.0, 15.0, 0.0),
                                 child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
-                                      SizedBox(
+                                      const SizedBox(
                                         height: 20.0,
                                       ),
                                       DropdownSearch<String>(
@@ -198,16 +203,16 @@ class _QueryAddPageState extends State<QueryAddPage> {
                                           showSearchBox: true,
                                           itemBuilder:
                                               _customPopupItemBuilderCategory,
-                                          scrollbarProps: ScrollbarProps(
+                                          scrollbarProps: const ScrollbarProps(
                                             thickness: 7,
                                           ),
                                           emptyBuilder: (BuildContext context,
                                               String? _) {
                                             return Container(
                                               alignment: Alignment.center,
-                                              padding: EdgeInsets.all(20),
+                                              padding: const EdgeInsets.all(20),
                                               child: Text(
-                                                "No events found. Refine your search!",
+                                                'No events found. Refine your search!',
                                                 style:
                                                     theme.textTheme.titleMedium,
                                               ),
@@ -215,11 +220,11 @@ class _QueryAddPageState extends State<QueryAddPage> {
                                           },
                                         ),
                                         dropdownDecoratorProps:
-                                            DropDownDecoratorProps(
+                                            const DropDownDecoratorProps(
                                           dropdownSearchDecoration:
                                               InputDecoration(
-                                            labelText: "Category",
-                                            hintText: "Category",
+                                            labelText: 'Category',
+                                            hintText: 'Category',
                                           ),
                                         ),
                                         items: categories,
@@ -230,7 +235,7 @@ class _QueryAddPageState extends State<QueryAddPage> {
                                     ])),
                             Container(
                               width: double.infinity,
-                              margin: EdgeInsets.symmetric(
+                              margin: const EdgeInsets.symmetric(
                                   vertical: 10.0, horizontal: 15.0),
                               child: TextButton(
                                 onPressed: () async {
@@ -238,36 +243,34 @@ class _QueryAddPageState extends State<QueryAddPage> {
                                       false) {
                                     try {
                                       await bloc.postFAQ(currRequest);
-                                      Navigator.of(context)
+                                      await Navigator.of(context)
                                           .pushNamedAndRemoveUntil<void>(
-                                              "/query", (_) => false);
+                                              '/query', (_) => false);
                                       // } else {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(SnackBar(
-                                        content: new Text(
-                                            (currRequest.question ?? "") +
-                                                ":" +
-                                                (currRequest.category ?? "")),
-                                        duration: new Duration(seconds: 10),
+                                        content: Text(
+                                            "${currRequest.question ?? ""}:${currRequest.category ?? ""}"),
+                                        duration: const Duration(seconds: 10),
                                       ));
                                     } catch (e) {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(SnackBar(
                                         content:
-                                            new Text("Error: " + e.toString()),
-                                        duration: new Duration(seconds: 10),
+                                            Text('Error: $e'),
+                                        duration: const Duration(seconds: 10),
                                       ));
                                     }
                                   }
 
                                   //log(currRequest.description);
                                 },
-                                child: Text('Submit Question'),
                                 style: TextButton.styleFrom(
                                     foregroundColor: Colors.black,
                                     backgroundColor: Colors.amber,
                                     disabledForegroundColor: Colors.grey,
                                     elevation: 5.0),
+                                child: const Text('Submit Question'),
                               ),
                             ),
                           ]),
@@ -282,32 +285,34 @@ class VerifyCard extends StatefulWidget {
   final Event? thing;
   final bool? selected;
 
-  VerifyCard({this.thing, this.selected});
+  const VerifyCard({Key? key, this.thing, this.selected}) : super(key: key);
 
+  @override
   Card createState() => Card();
 }
 
 class Card extends State<VerifyCard> {
+  @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
+    ThemeData theme = Theme.of(context);
     if (widget.selected ?? false) {
       return ListTile(
         title: Text(
-          widget.thing?.eventName ?? "",
+          widget.thing?.eventName ?? '',
           style: theme.textTheme.titleLarge,
         ),
         enabled: true,
         leading: NullableCircleAvatar(
           widget.thing?.eventImageURL ??
               widget.thing?.eventBodies?[0].bodyImageURL ??
-              "",
+              '',
           Icons.event_outlined,
-          heroTag: widget.thing?.eventID ?? "",
+          heroTag: widget.thing?.eventID ?? '',
         ),
-        subtitle: Text(widget.thing?.getSubTitle() ?? ""),
+        subtitle: Text(widget.thing?.getSubTitle() ?? ''),
       );
     } else {
-      return SizedBox(height: 10);
+      return const SizedBox(height: 10);
     }
   }
 }
@@ -316,35 +321,39 @@ class BodyCard extends StatefulWidget {
   final Body? thing;
   final bool? selected;
 
-  BodyCard({this.thing, this.selected});
+  const BodyCard({Key? key, this.thing, this.selected}) : super(key: key);
 
+  @override
   BodyCardState createState() => BodyCardState();
 }
 
 class BodyCardState extends State<BodyCard> {
+  @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
+    ThemeData theme = Theme.of(context);
     if (widget.selected ?? false) {
       return ListTile(
         title: Text(
-          widget.thing?.bodyName ?? "",
+          widget.thing?.bodyName ?? '',
           style: theme.textTheme.titleLarge,
         ),
         enabled: true,
         leading: NullableCircleAvatar(
-          widget.thing?.bodyImageURL ?? widget.thing?.bodyImageURL ?? "",
+          widget.thing?.bodyImageURL ?? widget.thing?.bodyImageURL ?? '',
           Icons.event_outlined,
-          heroTag: widget.thing?.bodyID ?? "",
+          heroTag: widget.thing?.bodyID ?? '',
         ),
-        subtitle: Text(widget.thing?.bodyShortDescription ?? ""),
+        subtitle: Text(widget.thing?.bodyShortDescription ?? ''),
       );
     } else {
-      return SizedBox(height: 10);
+      return const SizedBox(height: 10);
     }
   }
 }
 
 class QRViewExample extends StatefulWidget {
+  const QRViewExample({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _QRViewExampleState();
 }
@@ -378,29 +387,29 @@ class _QRViewExampleState extends State<QRViewExample> {
   }
 
   Widget _buildQrView(BuildContext context) {
-    var bloc = BlocProvider.of(context)!.bloc;
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
 
     // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
-    var scanArea = (MediaQuery.of(context).size.width < 400 ||
+    double scanArea = (MediaQuery.of(context).size.width < 400 ||
             MediaQuery.of(context).size.height < 400)
         ? 250.0
         : 300.0;
 
-    void getOfferedAchievements(String url) async {
-      if (url.contains("https://www.insti.app/achievement-new/")) {
-        var uri = url.substring(url.lastIndexOf("/") + 1);
+    Future<void> getOfferedAchievements(String url) async {
+      if (url.contains('https://www.insti.app/achievement-new/')) {
+        String uri = url.substring(url.lastIndexOf('/') + 1);
 
-        var offerid = uri.substring(0, uri.indexOf("s=") - 1);
-        var secret = uri.substring(uri.lastIndexOf("s=") + 2);
+        String offerid = uri.substring(0, uri.indexOf('s=') - 1);
+        String secret = uri.substring(uri.lastIndexOf('s=') + 2);
         // if offerid is null return or scan again
         if (offerid == '' || secret == '') {
           bool? addToCal = await showDialog(
               context: context,
-              builder: (context) => AlertDialog(
-                    title: Text("Invalid Achievement Code"),
+              builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Invalid Achievement Code'),
                     actions: <Widget>[
                       TextButton(
-                        child: Text("Scan Again"),
+                        child: const Text('Scan Again'),
                         onPressed: () {
                           Navigator.of(context).pop(true);
                           controller?.resumeCamera();
@@ -408,7 +417,7 @@ class _QRViewExampleState extends State<QRViewExample> {
                         },
                       ),
                       TextButton(
-                        child: Text("Return"),
+                        child: const Text('Return'),
                         onPressed: () {
                           controller?.dispose();
                           processing = false;
@@ -424,12 +433,12 @@ class _QRViewExampleState extends State<QRViewExample> {
         }
         // check for a secret if offerid exists
         else {
-          var achievements = bloc.achievementBloc;
+          Bloc achievements = bloc.achievementBloc;
           SecretResponse? offer =
               await achievements.postAchievementOffer(offerid, secret);
           if (offer != null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(offer.message ?? "")),
+              SnackBar(content: Text(offer.message ?? '')),
             );
             controller?.dispose();
             processing = false;
@@ -439,11 +448,11 @@ class _QRViewExampleState extends State<QRViewExample> {
       } else {
         bool? addToCal = await showDialog(
             context: context,
-            builder: (context) => AlertDialog(
-                  title: Text("Invalid Qr Code"),
+            builder: (BuildContext context) => AlertDialog(
+                  title: const Text('Invalid Qr Code'),
                   actions: <Widget>[
                     TextButton(
-                      child: Text("Scan Again"),
+                      child: const Text('Scan Again'),
                       onPressed: () {
                         Navigator.of(context).pop(true);
                         controller?.resumeCamera();
@@ -451,7 +460,7 @@ class _QRViewExampleState extends State<QRViewExample> {
                       },
                     ),
                     TextButton(
-                      child: Text("Return"),
+                      child: const Text('Return'),
                       onPressed: () {
                         controller?.dispose();
                         processing = false;
@@ -476,11 +485,11 @@ class _QRViewExampleState extends State<QRViewExample> {
         setState(() {
           this.controller = controller;
         });
-        controller.scannedDataStream.listen((scanData) {
+        controller.scannedDataStream.listen((Barcode scanData) {
           setState(() {
             result = scanData;
             if (!processing) {
-              getOfferedAchievements(result!.code ?? "");
+              getOfferedAchievements(result!.code ?? '');
               processing = true;
               controller.pauseCamera();
             }
@@ -493,14 +502,14 @@ class _QRViewExampleState extends State<QRViewExample> {
           borderLength: 30,
           borderWidth: 10,
           cutOutSize: scanArea),
-      onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
+      onPermissionSet: (QRViewController ctrl, bool p) => _onPermissionSet(context, ctrl, p),
     );
   }
 
   void _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
     if (!p) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('no Permission')),
+        const SnackBar(content: Text('no Permission')),
       );
     }
   }

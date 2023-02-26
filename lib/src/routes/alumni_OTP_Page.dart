@@ -1,7 +1,8 @@
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
 import 'package:flutter/material.dart';
+
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
 
 class AlumniOTPPage extends StatefulWidget {
   const AlumniOTPPage({Key? key}) : super(key: key);
@@ -12,7 +13,7 @@ class AlumniOTPPage extends StatefulWidget {
 
 class _AlumniOTPPageState extends State<AlumniOTPPage> {
   InstiAppBloc? _bloc;
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   dynamic routedData = {};
 
   @override
@@ -20,44 +21,45 @@ class _AlumniOTPPageState extends State<AlumniOTPPage> {
     routedData = ModalRoute.of(context)!.settings.arguments;
     // print(routedData);
     _bloc = BlocProvider.of(context)!.bloc;
-    _bloc!.setAlumniID(routedData["ldap"]);
+    _bloc!.setAlumniID(routedData['ldap'].toString());
     // print(_bloc!.alumniID);
 
     return Scaffold(
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
         backgroundColor: Colors.blue[900],
-        title: Text('Alumni Login -OTP'),
+        title: const Text('Alumni Login -OTP'),
         centerTitle: true,
         elevation: 0,
       ),
       body: Container(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(children: <Widget>[
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
             TextFormField(
-              validator: (valueEnt) {
+              validator: (String? valueEnt) {
                 /*||_bloc!.alumniKey.length != _bloc!.alumniPassword.length*/
 
                 if (valueEnt == null ||
                     valueEnt.isEmpty ||
                     _bloc!.alumniOTP.isEmpty) {
-                  return "Please enter the correct OTP";
+                  return 'Please enter the correct OTP';
                 }
                 return null;
               },
-              initialValue: "",
-              decoration: InputDecoration(labelText: "Enter the OTP here."),
-              onChanged: (value) => {
+              initialValue: '',
+              decoration:
+                  const InputDecoration(labelText: 'Enter the OTP here.'),
+              onChanged: (String value) => {
                 setState(() => {_bloc!.setAlumniOTP(value)})
               },
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             ElevatedButton(
@@ -71,14 +73,14 @@ class _AlumniOTPPageState extends State<AlumniOTPPage> {
 
                 if (_formKey.currentState!.validate() && _bloc!.isAlumni) {
                   // await _bloc!.reloadCurrentUser();
-                  Navigator.pushNamedAndRemoveUntil(
-                      context, _bloc!.homepageName, (r) => false);
+                  await Navigator.pushNamedAndRemoveUntil(
+                      context, _bloc!.homepageName, (Route r) => false);
                 }
 
                 // print(_bloc!.alumniOTP.length);
               },
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             ElevatedButton(

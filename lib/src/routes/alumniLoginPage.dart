@@ -1,7 +1,8 @@
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
 import 'package:flutter/material.dart';
+
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
 
 class AlumniLoginPage extends StatefulWidget {
   const AlumniLoginPage({Key? key}) : super(key: key);
@@ -11,45 +12,45 @@ class AlumniLoginPage extends StatefulWidget {
 }
 
 class _AlumniLoginPageState extends State<AlumniLoginPage> {
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   InstiAppBloc? _bloc;
 
   @override
   Widget build(BuildContext context) {
     _bloc = BlocProvider.of(context)!.bloc;
     return Scaffold(
-      drawer: NavDrawer(),
+      drawer: const NavDrawer(),
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
         backgroundColor: Colors.blue[900],
-        title: Text('Alumni Login'),
+        title: const Text('Alumni Login'),
         centerTitle: true,
         elevation: 0,
       ),
       body: Container(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(children: <Widget>[
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
             TextFormField(
-              validator: (valueEnt) {
+              validator: (String? valueEnt) {
                 if (valueEnt == null || valueEnt.isEmpty
                     // || !valueEnt.contains("@")
                     ) {
-                  return "Please enter the correct LDAP";
+                  return 'Please enter the correct LDAP';
                 }
                 return null;
               },
-              initialValue: "",
-              decoration: InputDecoration(labelText: "Enter your LDAP here."),
-              onChanged: (value) => {
+              initialValue: '',
+              decoration: const InputDecoration(labelText: 'Enter your LDAP here.'),
+              onChanged: (String value) => {
                 setState(() => {_bloc!.setAlumniID(value)})
               },
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             ElevatedButton(
@@ -62,9 +63,9 @@ class _AlumniLoginPageState extends State<AlumniLoginPage> {
                 ));
 
                 if (_formKey.currentState!.validate() && _bloc!.isAlumni) {
-                  Navigator.popAndPushNamed(context, '/alumni-OTP-Page',
+                  await Navigator.popAndPushNamed(context, '/alumni-OTP-Page',
                       arguments: {
-                        "ldap": _bloc!.alumniID,
+                        'ldap': _bloc!.alumniID,
                         // "isAlumni": _bloc!.isAlumni,
                         // "msg": _bloc!.msg
                       });

@@ -4,7 +4,7 @@ part 'comment_create_request.g.dart';
 
 @JsonSerializable()
 class CommentCreateRequest {
-  @JsonKey(name: "text")
+  @JsonKey(name: 'text')
   String? text;
 
   CommentCreateRequest({this.text});

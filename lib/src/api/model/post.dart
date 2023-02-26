@@ -1,26 +1,27 @@
-import 'package:InstiApp/src/api/model/body.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'body.dart';
 
 part 'post.g.dart';
 
 @JsonSerializable()
 class Post {
-  @JsonKey(name: "id")
+  @JsonKey(name: 'id')
   String? id;
 
-  @JsonKey(name: "guid")
+  @JsonKey(name: 'guid')
   String? guid;
 
-  @JsonKey(name: "link")
+  @JsonKey(name: 'link')
   String? link;
 
-  @JsonKey(name: "title")
+  @JsonKey(name: 'title')
   String? title;
 
-  @JsonKey(name: "content")
+  @JsonKey(name: 'content')
   String? content;
 
-  @JsonKey(name: "published")
+  @JsonKey(name: 'published')
   String? published;
 
   Post(
@@ -51,12 +52,13 @@ class PlacementBlogPost extends Post {
   factory PlacementBlogPost.fromJson(Map<String, dynamic> json) =>
       _$PlacementBlogPostFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$PlacementBlogPostToJson(this);
 }
 
 @JsonSerializable()
 class ExternalBlogPost extends Post {
-  @JsonKey(name: "body")
+  @JsonKey(name: 'body')
   String? body;
 
   ExternalBlogPost(String? id, String? guid, String? link, String? title,
@@ -70,6 +72,7 @@ class ExternalBlogPost extends Post {
             published: published);
   factory ExternalBlogPost.fromJson(Map<String, dynamic> json) =>
       _$ExternalBlogPostFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$ExternalBlogPostToJson(this);
 }
 
@@ -86,18 +89,19 @@ class TrainingBlogPost extends Post {
             published: published);
   factory TrainingBlogPost.fromJson(Map<String, dynamic> json) =>
       _$TrainingBlogPostFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$TrainingBlogPostToJson(this);
 }
 
 @JsonSerializable()
 class NewsArticle extends Post {
-  @JsonKey(name: "body")
+  @JsonKey(name: 'body')
   Body? body;
 
-  @JsonKey(name: "reactions_count")
+  @JsonKey(name: 'reactions_count')
   Map<String, int>? reactionCount;
 
-  @JsonKey(name: "user_reaction")
+  @JsonKey(name: 'user_reaction')
   int? userReaction;
 
   NewsArticle(String? id, String? guid, String? link, String? title,
@@ -114,12 +118,13 @@ class NewsArticle extends Post {
   factory NewsArticle.fromJson(Map<String, dynamic> json) =>
       _$NewsArticleFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$NewsArticleToJson(this);
 }
 
 @JsonSerializable()
 class ChatBot extends Post {
-  @JsonKey(name: "data")
+  @JsonKey(name: 'data')
   String? body;
 
   ChatBot(String? id, String? guid, String? link, String? title,
@@ -135,29 +140,35 @@ class ChatBot extends Post {
   factory ChatBot.fromJson(Map<String, dynamic> json) =>
       _$ChatBotFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$ChatBotToJson(this);
 }
 
 @JsonSerializable()
 class Query extends Post {
-  @JsonKey(name: "question")
+  @override
+  @JsonKey(name: 'question')
   String? title;
 
-  @JsonKey(name: "answer")
+  @override
+  @JsonKey(name: 'answer')
   String? content;
 
-  @JsonKey(name: "category")
+  @override
+  @JsonKey(name: 'category')
   String? published;
 
-  @JsonKey(name: "sub_category")
+  @JsonKey(name: 'sub_category')
   String? subCategory;
 
-  @JsonKey(name: "sub_sub_category")
+  @JsonKey(name: 'sub_sub_category')
   String? subSubCategory;
 
+  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   String? guid;
 
+  @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   String? link;
 
@@ -172,5 +183,6 @@ class Query extends Post {
 
   factory Query.fromJson(Map<String, dynamic> json) => _$QueryFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$QueryToJson(this);
 }

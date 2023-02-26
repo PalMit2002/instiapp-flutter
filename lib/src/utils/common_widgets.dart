@@ -1,32 +1,31 @@
 import 'dart:async';
+import 'dart:math' as math;
+// ignore: unnecessary_import
+import 'dart:ui' show Brightness;
 
-// import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:flutter_linkify/flutter_linkify.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/routes/communitypostpage.dart';
-import 'package:InstiApp/src/blocs/community_post_bloc.dart';
-import 'package:InstiApp/src/api/model/communityPost.dart';
-import 'package:InstiApp/src/routes/createpost_form.dart';
-import 'package:InstiApp/src/routes/userpage.dart';
-import 'package:InstiApp/src/utils/share_url_maker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+// import 'package:InstiApp/src/blocs/ia_bloc.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:fwfh_selectable_text/fwfh_selectable_text.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:math' as math;
-import 'package:cached_network_image/cached_network_image.dart';
 
-// ignore: unnecessary_import
-import 'dart:ui' show Brightness;
-
+import '../api/model/communityPost.dart';
 import '../bloc_provider.dart';
+import '../blocs/community_post_bloc.dart';
+import '../blocs/ia_bloc.dart';
+import '../routes/communitypostpage.dart';
+import '../routes/createpost_form.dart';
+import '../routes/userpage.dart';
+import 'share_url_maker.dart';
 
-String defUrl = "https://devcom-iitb.org/images/logos/DC_footer.png";
+String defUrl = 'https://devcom-iitb.org/images/logos/DC_footer.png';
 
 String capitalize(String name) {
   if (name.isNotEmpty) {
@@ -49,22 +48,24 @@ class NullableCircleAvatar extends StatelessWidget {
   final String? heroTag;
   final bool photoViewable;
   final Color? backgroundColor;
-  NullableCircleAvatar(this.url, this.fallbackIcon,
-      {this.radius = 24,
+  const NullableCircleAvatar(this.url, this.fallbackIcon,
+      {Key? key,
+      this.radius = 24,
       this.heroTag,
       this.photoViewable = false,
-      this.backgroundColor});
+      this.backgroundColor})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return url != ""
+    return url != ''
         ? (photoViewable
             ? InkWell(
                 onTap: () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => HeroPhotoViewWrapper(
+                        builder: (BuildContext context) => HeroPhotoViewWrapper(
                           imageProvider: CachedNetworkImageProvider(url),
                           heroTag: heroTag!,
                           minScale: PhotoViewComputedScale.contained * 0.9,
@@ -118,26 +119,28 @@ class NullableCircleAvatar extends StatelessWidget {
                 tag: heroTag!,
                 child: CircleAvatar(
                   radius: radius,
-                  child: Icon(fallbackIcon, size: radius),
                   backgroundColor: backgroundColor,
+                  child: Icon(fallbackIcon, size: radius),
                 ))
             : CircleAvatar(
                 radius: radius,
-                child: Icon(fallbackIcon, size: radius),
                 backgroundColor: backgroundColor,
+                child: Icon(fallbackIcon, size: radius),
               );
   }
 }
 
 class HeroPhotoViewWrapper extends StatefulWidget {
   const HeroPhotoViewWrapper(
-      {required this.imageProvider,
+      {Key? key,
+      required this.imageProvider,
       this.loadingChild,
       this.backgroundDecoration,
       this.minScale,
       this.maxScale,
       required this.heroTag,
-      this.theme});
+      this.theme})
+      : super(key: key);
 
   final ImageProvider imageProvider;
   final Widget? loadingChild;
@@ -149,7 +152,7 @@ class HeroPhotoViewWrapper extends StatefulWidget {
 
   @override
   HeroPhotoViewWrapperState createState() {
-    return new HeroPhotoViewWrapperState();
+    return HeroPhotoViewWrapperState();
   }
 }
 
@@ -201,24 +204,26 @@ class PhotoViewableImage extends StatelessWidget {
   // final double height;
   // final double width;
 
-  PhotoViewableImage({
+  const PhotoViewableImage({
+    Key? key,
     this.url,
     this.imageProvider,
     required this.heroTag,
     this.fit,
     this.customBorder,
-  }) : assert(url != null || imageProvider != null);
+  })  : assert(url != null || imageProvider != null),
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
+    final ThemeData theme = Theme.of(context);
     return InkWell(
         customBorder: customBorder,
         onTap: () {
           Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => HeroPhotoViewWrapper(
+                builder: (BuildContext context) => HeroPhotoViewWrapper(
                   imageProvider: imageProvider ??
                       CachedNetworkImageProvider(url ?? defUrl),
                   heroTag: heroTag,
@@ -236,37 +241,39 @@ class PhotoViewableImage extends StatelessWidget {
                   fit: fit,
                 )
               : CachedNetworkImage(
-                  imageUrl: url ?? "",
-                  placeholder: (context, url) => CachedNetworkImage(
+                  imageUrl: url ?? '',
+                  placeholder: (BuildContext context, String url) =>
+                      CachedNetworkImage(
                     imageUrl: thumbnailUrl(url),
                     fit: fit,
-                    placeholder: (context, url) =>
-                        CircularProgressIndicatorExtended(),
-                    errorWidget: (context, url, error) =>
-                        new Icon(Icons.error_outline_outlined),
+                    placeholder: (BuildContext context, String url) =>
+                        const CircularProgressIndicatorExtended(),
+                    errorWidget: (BuildContext context, String url, error) =>
+                        const Icon(Icons.error_outline_outlined),
                   ),
-                  errorWidget: (context, url, error) =>
-                      new Icon(Icons.error_outline_outlined),
+                  errorWidget: (BuildContext context, String url, error) =>
+                      const Icon(Icons.error_outline_outlined),
                   fit: fit,
-                  fadeInDuration: Duration(milliseconds: 0),
-                  fadeOutDuration: Duration(milliseconds: 0),
+                  fadeInDuration: const Duration(milliseconds: 0),
+                  fadeOutDuration: const Duration(milliseconds: 0),
                 ),
         ));
   }
 }
 
 String refineText(String text) {
-  text = text.replaceAll("<br>", "\n");
-  text = text.replaceAll("<strong>", " ");
-  text = text.replaceAll("</strong>", " ");
-  text = text.replaceAll("&nbsp;", "  ");
-  text = text.replaceAll("&amp;", "&");
-  return text;
+  String refinedText = text.replaceAll('<br>', '\n');
+  refinedText = refinedText.replaceAll('<strong>', ' ');
+  refinedText = refinedText.replaceAll('</strong>', ' ');
+  refinedText = refinedText.replaceAll('&nbsp;', '  ');
+  refinedText = refinedText.replaceAll('&amp;', '&');
+  return refinedText;
 }
 
 class SelectableWidgetFactory extends WidgetFactory with SelectableTextFactory {
   @override
-  SelectionChangedCallback? get selectableTextOnChanged => (selection, cause) {
+  SelectionChangedCallback? get selectableTextOnChanged =>
+      (TextSelection selection, SelectionChangedCause? cause) {
         // do something when the selection changes
       };
 }
@@ -275,15 +282,16 @@ class CommonHtml extends StatelessWidget {
   final String? data;
   final TextStyle defaultTextStyle;
 
-  CommonHtml({this.data, required this.defaultTextStyle});
+  const CommonHtml({Key? key, this.data, required this.defaultTextStyle})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return data != null
         ? HtmlWidget(
-            data ?? "",
-            factoryBuilder: () => SelectableWidgetFactory(),
-            onTapUrl: (link) async {
+            data ?? '',
+            factoryBuilder: SelectableWidgetFactory.new,
+            onTapUrl: (String link) async {
               if (await canLaunchUrl(Uri.parse(link))) {
                 await launchUrl(
                   Uri.parse(link),
@@ -295,8 +303,8 @@ class CommonHtml extends StatelessWidget {
               }
             },
           )
-        : CircularProgressIndicatorExtended(
-            label: Text("Loading content"),
+        : const CircularProgressIndicatorExtended(
+            label: Text('Loading content'),
           );
   }
 }
@@ -606,7 +614,9 @@ class RoundedNotchedRectangle implements NotchedShape {
     p.add(Offset(-1.0 * p[6].dx, p[6].dy));
 
     // translate all points back to the absolute coordinate system.
-    for (int i = 0; i < p.length; i += 1) p[i] += guest.center;
+    for (int i = 0; i < p.length; i += 1) {
+      p[i] += guest.center;
+    }
 
     return Path()
       ..moveTo(host.left, host.top)
@@ -715,7 +725,7 @@ class MyBottomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
+    ThemeData theme = Theme.of(context);
 
     return BottomAppBar(
       clipBehavior: clipBehavior,
@@ -735,7 +745,7 @@ class MyBottomAppBar extends StatelessWidget {
 }
 
 class CircularProgressIndicatorExtended extends StatelessWidget {
-  CircularProgressIndicatorExtended({
+  const CircularProgressIndicatorExtended({
     Key? key,
     this.label,
     this.size = 18,
@@ -746,7 +756,7 @@ class CircularProgressIndicatorExtended extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
+    final ThemeData theme = Theme.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -756,24 +766,23 @@ class CircularProgressIndicatorExtended extends StatelessWidget {
           width: size,
           child: CircularProgressIndicator(
             valueColor:
-                new AlwaysStoppedAnimation<Color>(theme.colorScheme.secondary),
+                AlwaysStoppedAnimation<Color>(theme.colorScheme.secondary),
             strokeWidth: 2,
           ),
         ),
-      ]..addAll(label != null
-          ? [
-              SizedBox(
-                width: 12.0,
-              ),
-              label!
-            ]
-          : []),
+        if (label != null) ...[
+          const SizedBox(
+            width: 12.0,
+          ),
+          label!
+        ],
+      ],
     );
   }
 }
 
 class EditableChipList extends StatefulWidget {
-  EditableChipList({
+  const EditableChipList({
     Key? key,
     this.editable = false,
     required this.tags,
@@ -801,7 +810,7 @@ class EditableChipList extends StatefulWidget {
 }
 
 class EditableChipListState extends State<EditableChipList> {
-  Set<String> tags = Set<String>();
+  Set<String> tags = <String>{};
 
   @override
   void initState() {
@@ -814,7 +823,7 @@ class EditableChipListState extends State<EditableChipList> {
     }
   }
 
-  void _onCreate() async {
+  Future<void> _onCreate() async {
     String newTag;
     if ((widget.preDefinedTags is List<String> &&
             (widget.preDefinedTags as List<String>)
@@ -824,7 +833,7 @@ class EditableChipListState extends State<EditableChipList> {
                 .contains(widget.controller?.text))) {
       newTag = widget.controller!.text;
     } else {
-      newTag = "${widget.controller?.text} (U)";
+      newTag = '${widget.controller?.text} (U)';
     }
     setState(() {
       tags.add(newTag);
@@ -839,13 +848,13 @@ class EditableChipListState extends State<EditableChipList> {
 
   @override
   Widget build(BuildContext context) {
-    var theme = Theme.of(context);
+    ThemeData theme = Theme.of(context);
     return ChipTheme(
       data: theme.chipTheme,
       child: Wrap(
           children: tags.map<Widget>((String name) {
-        var chipColor = _nameToColor(name);
-        var contentColor =
+        Color chipColor = _nameToColor(name);
+        Color contentColor =
             ThemeData.estimateBrightnessForColor(chipColor) == Brightness.dark
                 ? Colors.white
                 : Colors.black;
@@ -939,24 +948,24 @@ class DefListItem extends StatelessWidget {
 
   Widget verifiedText() {
     if (isVerified!) {
-      return Text(
-        "Verified",
+      return const Text(
+        'Verified',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           color: Colors.green,
         ),
       );
     } else if (isDismissed!) {
-      return Text(
-        "Dismissed",
+      return const Text(
+        'Dismissed',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           color: Colors.red,
         ),
       );
     } else {
-      return Text(
-        "Verification Pending",
+      return const Text(
+        'Verification Pending',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           color: Colors.grey,
@@ -979,31 +988,33 @@ class DefListItem extends StatelessWidget {
           title: Text(title!),
           subtitle: Text(company!),
         ),
-        forText == null
-            ? SizedBox()
-            : Row(
-                children: [
-                  Text("For: "),
-                  Text(
-                    forText!,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
+        if (forText == null)
+          const SizedBox()
+        else
+          Row(
+            children: [
+              const Text('For: '),
+              Text(
+                forText!,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-        importance == null ? SizedBox() : Text(importance!),
-        adminNote == null
-            ? SizedBox()
-            : Row(
-                children: [
-                  Text("Admin Note: "),
-                  Text(
-                    adminNote!,
-                  ),
-                ],
+            ],
+          ),
+        if (importance == null) const SizedBox() else Text(importance!),
+        if (adminNote == null)
+          const SizedBox()
+        else
+          Row(
+            children: [
+              const Text('Admin Note: '),
+              Text(
+                adminNote!,
               ),
+            ],
+          ),
         Row(
           children: [
-            Text("Status: "),
+            const Text('Status: '),
             verifiedText(),
           ],
         ),
@@ -1056,7 +1067,7 @@ class _ImageGalleryState extends State<ImageGallery>
   void initState() {
     super.initState();
 
-    if (widget.images.length == 0 || widget.images.length == 1) {
+    if (widget.images.isEmpty || widget.images.length == 1) {
       return;
     }
     galleryImages = widget.images
@@ -1069,7 +1080,7 @@ class _ImageGalleryState extends State<ImageGallery>
     );
 
     animation = Tween<double>(begin: 0, end: 1).animate(controller)
-      ..addStatusListener((status) {
+      ..addStatusListener((AnimationStatus status) {
         if ((status == AnimationStatus.completed && !_isRight) ||
             (status == AnimationStatus.dismissed && _isRight)) {
           _swapUptoInd(_isRight);
@@ -1089,7 +1100,7 @@ class _ImageGalleryState extends State<ImageGallery>
       firstBuild = false;
     }
 
-    if (widget.images.length == 0) {
+    if (widget.images.isEmpty) {
       return Container();
     }
 
@@ -1099,7 +1110,7 @@ class _ImageGalleryState extends State<ImageGallery>
         type: MaterialType.transparency,
         child: Container(
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-          padding: EdgeInsets.all(10),
+          padding: const EdgeInsets.all(10),
           child: Ink(
             // width: 100,
             width: screenWidth * scale,
@@ -1119,11 +1130,11 @@ class _ImageGalleryState extends State<ImageGallery>
       );
     }
 
-    return Container(
+    return SizedBox(
       width: screenWidth,
       height: (screenWidth + 40) * scale,
       child: GestureDetector(
-        onHorizontalDragEnd: (details) {
+        onHorizontalDragEnd: (DragEndDetails details) {
           // Swiping in right direction.
           if (details.primaryVelocity! > 0) {
             _startAnimation(true);
@@ -1142,7 +1153,7 @@ class _ImageGalleryState extends State<ImageGallery>
           children: galleryImages
               .asMap()
               .entries
-              .map<Widget>((e) {
+              .map<Widget>((MapEntry<int, String> e) {
                 bool useAnim =
                     !((controller.status == AnimationStatus.completed &&
                             !_isRight) ||
@@ -1249,12 +1260,13 @@ class CommunityPostWidget extends StatefulWidget {
   final bool shouldTap;
   final CPType postType;
 
-  CommunityPostWidget({
+  const CommunityPostWidget({
+    Key? key,
     required this.communityPost,
     this.onPressedComment,
     this.shouldTap = true,
     this.postType = CPType.All,
-  });
+  }) : super(key: key);
   @override
   State<CommunityPostWidget> createState() =>
       _CommunityPostWidgetState(communityPost: communityPost);
@@ -1280,9 +1292,9 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
     ThemeData theme = Theme.of(context);
     InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
     CommunityPostBloc communityPostBloc = bloc.communityPostBloc;
-    String content = communityPost.content ?? "";
+    String content = communityPost.content ?? '';
     int contentChars = widget.postType == CPType.Featured
-        ? communityPost.imageUrl == null || communityPost.imageUrl!.length == 0
+        ? communityPost.imageUrl == null || communityPost.imageUrl!.isEmpty
             ? 310
             : 30
         : 310;
@@ -1310,8 +1322,8 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
     return Container(
       width: CPType.Featured == widget.postType ? 300 : null,
       margin: widget.shouldTap
-          ? EdgeInsets.all(10)
-          : EdgeInsets.symmetric(horizontal: 10),
+          ? const EdgeInsets.all(10)
+          : const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: theme.colorScheme.surface,
@@ -1327,72 +1339,74 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
             child: ListTile(
               leading: NullableCircleAvatar(
                 isAnon
-                    ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSM9q9XJKxlskry5gXTz1OXUyem5Ap59lcEGg&usqp=CAU"
-                    : communityPost.postedBy?.userProfilePictureUrl ?? "",
+                    ? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSM9q9XJKxlskry5gXTz1OXUyem5Ap59lcEGg&usqp=CAU'
+                    : communityPost.postedBy?.userProfilePictureUrl ?? '',
                 Icons.person,
                 radius: 18,
               ),
               title: Text(
                 isAnon
-                    ? "Anonymous User"
-                    : (communityPost.postedBy?.userName ?? "Anonymous user") +
-                        ((communityPost.anonymous ?? false) ? " (Anon)" : ""),
+                    ? 'Anonymous User'
+                    : (communityPost.postedBy?.userName ?? 'Anonymous user') +
+                        ((communityPost.anonymous ?? false) ? ' (Anon)' : ''),
                 style: theme.textTheme.bodyMedium,
               ),
               subtitle: Text(
-                DateFormat("dd MMM, yyyy")
+                DateFormat('dd MMM, yyyy')
                     .format(DateTime.parse(communityPost.timeOfCreation!)),
                 style: theme.textTheme.bodySmall,
               ),
-              trailing: Container(
+              trailing: SizedBox(
                 width: widget.postType == CPType.Featured
                     ? 100
                     : MediaQuery.of(context).size.width / 3,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    communityPost.status != 1 || communityPost.deleted == true
-                        ? Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                width: 1,
-                                color: communityPost.deleted == true
-                                    ? Color(0xFFF24822)
-                                    : communityPost.status == 0
-                                        ? Color(0xFFFFCD29)
-                                        : Color(0xFFF24822),
-                              ),
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            child: Text(
-                              communityPost.deleted == true
-                                  ? "Deleted"
-                                  : communityPost.status == 0
-                                      ? "Pending"
-                                      : communityPost.status == 2
-                                          ? "Rejected"
-                                          : "Reported",
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: communityPost.deleted == true
-                                    ? Color(0xFFF24822)
-                                    : communityPost.status == 0
-                                        ? Color(0xFFFFCD29)
-                                        : Color(0xFFF24822),
-                              ),
-                            ),
-                          )
-                        : Container(),
+                    if (communityPost.status != 1 ||
+                        communityPost.deleted == true)
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            width: 1,
+                            color: communityPost.deleted == true
+                                ? const Color(0xFFF24822)
+                                : communityPost.status == 0
+                                    ? const Color(0xFFFFCD29)
+                                    : const Color(0xFFF24822),
+                          ),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        child: Text(
+                          communityPost.deleted == true
+                              ? 'Deleted'
+                              : communityPost.status == 0
+                                  ? 'Pending'
+                                  : communityPost.status == 2
+                                      ? 'Rejected'
+                                      : 'Reported',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: communityPost.deleted == true
+                                ? const Color(0xFFF24822)
+                                : communityPost.status == 0
+                                    ? const Color(0xFFFFCD29)
+                                    : const Color(0xFFF24822),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(),
                     PopupMenuButton<int>(
-                      itemBuilder: (context) {
+                      itemBuilder: (BuildContext context) {
                         List<PopupMenuItem<int>> items = [];
 
                         bool isAuthor = communityPost.postedBy?.userID ==
                             bloc.currSession!.profile!.userID;
 
                         bool isAdmin = bloc.hasPermission(
-                            communityPost.community?.body ?? "", "AppP");
+                            communityPost.community?.body ?? '', 'AppP');
 
                         if (isAuthor) {
                           items.add(
@@ -1400,19 +1414,19 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                               value: 1,
                               // row has two child icon and text.
                               child: Row(
-                                children: [
+                                children: const [
                                   Icon(Icons.edit),
                                   SizedBox(
                                     // sized box with width 10
                                     width: 10,
                                   ),
-                                  Text("Edit")
+                                  Text('Edit')
                                 ],
                               ),
                               onTap: () => Future(() async {
                                 CommunityPost? post =
                                     (await Navigator.of(context).pushNamed(
-                                  "/posts/add",
+                                  '/posts/add',
                                   arguments:
                                       NavigateArguments(post: communityPost),
                                 )) as CommunityPost?;
@@ -1433,18 +1447,18 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                               value: 2,
                               // row has two child icon and text
                               child: Row(
-                                children: [
+                                children: const [
                                   Icon(Icons.delete),
                                   SizedBox(
                                     // sized box with width 10
                                     width: 10,
                                   ),
-                                  Text("Delete")
+                                  Text('Delete')
                                 ],
                               ),
                               onTap: () async {
                                 await communityPostBloc.deleteCommunityPost(
-                                    communityPost.id ?? "");
+                                    communityPost.id ?? '');
                                 setState(() {
                                   communityPost.deleted = true;
                                 });
@@ -1462,13 +1476,13 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                                   Icon((communityPost.featured ?? false)
                                       ? Icons.published_with_changes_sharp
                                       : Icons.push_pin_outlined),
-                                  SizedBox(
+                                  const SizedBox(
                                     // sized box with width 10
                                     width: 10,
                                   ),
                                   Text((communityPost.featured ?? false)
-                                      ? "Unpin from featured"
-                                      : "Pin to featured")
+                                      ? 'Unpin from featured'
+                                      : 'Pin to featured')
                                 ],
                               ),
                               onTap: () async {
@@ -1492,18 +1506,18 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                             value: 4,
                             // row has two child icon and text
                             child: Row(
-                              children: [
+                              children: const [
                                 Icon(Icons.share),
                                 SizedBox(
                                   // sized box with width 10
                                   width: 10,
                                 ),
-                                Text("Share")
+                                Text('Share')
                               ],
                             ),
                             onTap: () async {
                               await Share.share(
-                                  "Check this post: ${ShareURLMaker.getCommunityPostURL(communityPost)}");
+                                  'Check this post: ${ShareURLMaker.getCommunityPostURL(communityPost)}');
                             },
                           ),
                         );
@@ -1511,15 +1525,16 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                       },
                       // offset: Offset(0, 100),
                       elevation: 2,
-                      tooltip: "More",
-                      icon: Icon(
+                      tooltip: 'More',
+                      icon: const Icon(
                         Icons.more_vert,
                       ),
                     ),
                   ],
                 ),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
               minVerticalPadding: 0,
               dense: true,
               horizontalTitleGap: 4,
@@ -1542,16 +1557,17 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                       contentExpanded = true;
                     }),
             child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SelectableLinkify(
                       text: content.length > contentChars && !contentExpanded
                           ? content.substring(0, contentChars - 10) +
-                              (contentExpanded ? "" : "...")
+                              (contentExpanded ? '' : '...')
                           : content,
-                      onOpen: (link) async {
+                      onOpen: (LinkableElement link) async {
                         if (await canLaunchUrl(Uri.parse(link.url))) {
                           await launchUrl(
                             Uri.parse(link.url),
@@ -1562,11 +1578,11 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                       onTap: postOnTap,
                     ),
                     Text.rich(
-                      new TextSpan(
+                      TextSpan(
                         children: !contentExpanded &&
                                 content.length > contentChars
                             ? [
-                                new TextSpan(
+                                TextSpan(
                                   text: 'Read More.',
                                   style: theme.textTheme.titleSmall?.copyWith(
                                       color: theme.colorScheme.primary),
@@ -1586,22 +1602,23 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                 // ),
                 ),
           ),
-          communityPost.imageUrl != null
-              ? GestureDetector(
-                  onTap: widget.postType == CPType.Featured
-                      ? () => CommunityPostPage.navigateWith(
-                          context, bloc.communityPostBloc, communityPost)
-                      : null,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: ImageGallery(
-                      images: (widget.postType == CPType.Featured
-                          ? [communityPost.imageUrl![0]]
-                          : communityPost.imageUrl)!,
-                    ),
-                  ),
-                )
-              : Container(),
+          if (communityPost.imageUrl != null)
+            GestureDetector(
+              onTap: widget.postType == CPType.Featured
+                  ? () => CommunityPostPage.navigateWith(
+                      context, bloc.communityPostBloc, communityPost)
+                  : null,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: ImageGallery(
+                  images: (widget.postType == CPType.Featured
+                      ? [communityPost.imageUrl![0]]
+                      : communityPost.imageUrl)!,
+                ),
+              ),
+            )
+          else
+            Container(),
           _buildFooter(theme, bloc, communityPost),
         ],
       ),
@@ -1614,7 +1631,7 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
       case CPType.All:
       case CPType.YourPosts:
         int numReactions = communityPost.reactionCount?.values
-                .reduce((sum, element) => sum + element) ??
+                .reduce((int sum, int element) => sum + element) ??
             0;
         return Container(
           decoration: BoxDecoration(
@@ -1622,14 +1639,14 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
             color: theme.colorScheme.surface,
           ),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
             decoration: BoxDecoration(
               // border:
               //     Border(top: BorderSide(color: theme.colorScheme.surfaceVariant)),
               color: theme.colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  offset: Offset(0, 3),
+                  offset: const Offset(0, 3),
                   blurRadius: 30,
                   spreadRadius: -18,
                   color: theme.colorScheme.onSurface,
@@ -1643,7 +1660,7 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                 Row(
                   children: [
                     PopupMenuButton<int>(
-                      onSelected: (val) async {
+                      onSelected: (int val) async {
                         await bloc.communityPostBloc
                             .updateUserCommunityPostReaction(
                                 communityPost, val);
@@ -1671,18 +1688,19 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                       },
                       itemBuilder: (BuildContext context) {
                         return [
-                          new PopupMenuWidget(
+                          PopupMenuWidget(
                             height: 20,
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 5),
-                              child: new Row(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 5),
+                              child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: emojis
                                     .asMap()
                                     .entries
                                     .map(
-                                      (e) => Container(
+                                      (MapEntry<int, String> e) => Container(
                                         color:
                                             e.key == communityPost.userReaction
                                                 ? Colors.blue
@@ -1702,52 +1720,56 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                         ];
                       },
                       child: Row(children: [
-                        communityPost.userReaction == -1
-                            ? Icon(
-                                Icons.add_reaction_outlined,
-                                size: 20,
-                              )
-                            : Image.asset(emojis[communityPost.userReaction!],
-                                width: 20),
-                        numReactions > 0
-                            ? Container(
-                                margin: EdgeInsets.symmetric(horizontal: 5),
-                                padding: EdgeInsets.all(5),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(100),
-                                  color: theme.colorScheme.surfaceVariant,
-                                ),
-                                child: Row(
-                                  children: emojis
-                                      .asMap()
-                                      .entries
-                                      .map(
-                                        (e) => (communityPost.reactionCount?[
+                        if (communityPost.userReaction == -1)
+                          const Icon(
+                            Icons.add_reaction_outlined,
+                            size: 20,
+                          )
+                        else
+                          Image.asset(emojis[communityPost.userReaction!],
+                              width: 20),
+                        if (numReactions > 0)
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 5),
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100),
+                              color: theme.colorScheme.surfaceVariant,
+                            ),
+                            child: Row(
+                              children: emojis
+                                  .asMap()
+                                  .entries
+                                  .map(
+                                    (MapEntry<int, String> e) =>
+                                        (communityPost.reactionCount?[
                                                         e.key.toString()] ??
                                                     0) >
                                                 0
                                             ? Image.asset(e.value, width: 20)
                                             : Container(),
-                                      )
-                                      .toList(),
-                                ),
-                              )
-                            : Container(),
-                        numReactions > 0
-                            ? Text(
-                                numReactions.toString(),
-                                style: theme.textTheme.bodySmall,
-                              )
-                            : Container(),
+                                  )
+                                  .toList(),
+                            ),
+                          )
+                        else
+                          Container(),
+                        if (numReactions > 0)
+                          Text(
+                            numReactions.toString(),
+                            style: theme.textTheme.bodySmall,
+                          )
+                        else
+                          Container(),
                       ]),
                     ),
                     Container(
-                      margin: EdgeInsets.only(left: 15),
+                      margin: const EdgeInsets.only(left: 15),
                       child: Row(
                         children: [
                           IconButton(
                             padding: EdgeInsets.zero,
-                            constraints: BoxConstraints(),
+                            constraints: const BoxConstraints(),
                             icon: Icon(
                               Icons.mode_comment_outlined,
                               color: theme.colorScheme.onSurfaceVariant,
@@ -1761,7 +1783,7 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                                         communityPost)
                                     : null),
                           ),
-                          SizedBox(width: 3),
+                          const SizedBox(width: 3),
                           Text((communityPost.commentsCount ?? 0).toString(),
                               style: theme.textTheme.bodySmall),
                         ],
@@ -1772,10 +1794,10 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                 IconButton(
                     onPressed: () async {
                       await Share.share(
-                          "Check this post: ${ShareURLMaker.getCommunityPostURL(communityPost)}");
+                          'Check this post: ${ShareURLMaker.getCommunityPostURL(communityPost)}');
                     },
                     padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(),
+                    constraints: const BoxConstraints(),
                     icon: Icon(
                       Icons.share_outlined,
                       color: theme.colorScheme.onSurfaceVariant,
@@ -1798,14 +1820,14 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                     backgroundColor: theme.colorScheme.surfaceVariant,
                     foregroundColor: theme.colorScheme.onSurfaceVariant,
                   ),
-                  child: Text("Disapprove"),
+                  child: const Text('Disapprove'),
                   onPressed: () {
                     bloc.communityPostBloc
                         .updateCommunityPostStatus(communityPost.id!, 2);
                   },
                 ),
               ),
-              SizedBox(width: 5),
+              const SizedBox(width: 5),
               Expanded(
                 flex: 1,
                 child: TextButton(
@@ -1813,7 +1835,7 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                     backgroundColor: theme.colorScheme.primaryContainer,
                     foregroundColor: theme.colorScheme.primary,
                   ),
-                  child: Text("Approve"),
+                  child: const Text('Approve'),
                   onPressed: () {
                     bloc.communityPostBloc
                         .updateCommunityPostStatus(communityPost.id!, 1);
@@ -1836,14 +1858,14 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                     backgroundColor: theme.colorScheme.surfaceVariant,
                     foregroundColor: theme.colorScheme.onSurfaceVariant,
                   ),
-                  child: Text("Ignore"),
+                  child: const Text('Ignore'),
                   onPressed: () {
                     bloc.communityPostBloc
                         .updateCommunityPostStatus(communityPost.id!, 1);
                   },
                 ),
               ),
-              SizedBox(width: 5),
+              const SizedBox(width: 5),
               Expanded(
                 flex: 1,
                 child: TextButton(
@@ -1851,7 +1873,7 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
                     foregroundColor: theme.colorScheme.primary,
                     backgroundColor: theme.colorScheme.primaryContainer,
                   ),
-                  child: Text("Delete"),
+                  child: const Text('Delete'),
                   onPressed: () {
                     bloc.communityPostBloc
                         .updateCommunityPostStatus(communityPost.id!, 2);
@@ -1869,12 +1891,12 @@ class _CommunityPostWidgetState extends State<CommunityPostWidget> {
 }
 
 List<String> emojis = [
-  "assets/communities/emojis/like.png",
-  "assets/communities/emojis/love.png",
-  "assets/communities/emojis/laugh.png",
-  "assets/communities/emojis/surprise.png",
-  "assets/communities/emojis/cry.png",
-  "assets/communities/emojis/angry.png",
+  'assets/communities/emojis/like.png',
+  'assets/communities/emojis/love.png',
+  'assets/communities/emojis/laugh.png',
+  'assets/communities/emojis/surprise.png',
+  'assets/communities/emojis/cry.png',
+  'assets/communities/emojis/angry.png',
 ];
 
 /// An arbitrary widget that lives in a popup menu
@@ -1924,14 +1946,14 @@ class DropdownMultiSelect<T> extends StatefulWidget {
 class _DropdownMultiSelectState<T> extends State<DropdownMultiSelect<T>> {
   List<T>? objects;
 
-  void onObjectChange(T? body) async {
+  Future<void> onObjectChange(T? body) async {
     if (body != null) {
       if (objects!.any((e) => e.toString() == body.toString())) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:
-                Text("You already selected this ${widget.singularObjectName}"),
-            duration: Duration(seconds: 2),
+                Text('You already selected this ${widget.singularObjectName}'),
+            duration: const Duration(seconds: 2),
           ),
         );
         return;
@@ -1949,17 +1971,17 @@ class _DropdownMultiSelectState<T> extends State<DropdownMultiSelect<T>> {
     for (int i = 0; i < length; i++) {
       w.add(
         Chip(
-          labelPadding: EdgeInsets.all(2.0),
+          labelPadding: const EdgeInsets.all(2.0),
           label: Text(
-            objects?[i].toString() ?? "",
-            style: TextStyle(
+            objects?[i].toString() ?? '',
+            style: const TextStyle(
               color: Colors.white,
             ),
           ),
           backgroundColor: Colors.primaries[i],
           elevation: 6.0,
           shadowColor: Colors.grey[60],
-          padding: EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8.0),
           onDeleted: () async {
             objects?.removeAt(i);
             widget.update(objects);
@@ -1978,7 +2000,7 @@ class _DropdownMultiSelectState<T> extends State<DropdownMultiSelect<T>> {
   Widget buildDropdownMenuItems(BuildContext context, T? body) {
     return Container(
       child: Text(
-        "Search for an ${widget.singularObjectName}",
+        'Search for an ${widget.singularObjectName}',
         style: Theme.of(context).textTheme.bodyLarge,
       ),
     );
@@ -1987,7 +2009,7 @@ class _DropdownMultiSelectState<T> extends State<DropdownMultiSelect<T>> {
   Widget _customPopupItemBuilder(
       BuildContext context, T body, bool isSelected) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: !isSelected
           ? null
           : BoxDecoration(
@@ -2005,7 +2027,7 @@ class _DropdownMultiSelectState<T> extends State<DropdownMultiSelect<T>> {
   @override
   void initState() {
     if (widget.load != null) {
-      widget.load!.then((value) {
+      widget.load!.then((List<T> value) {
         setState(() {
           objects = value;
         });
@@ -2022,12 +2044,12 @@ class _DropdownMultiSelectState<T> extends State<DropdownMultiSelect<T>> {
 
     return Container(
       // width: double.infinity,
-      margin: EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 10.0),
+      margin: const EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          SizedBox(
+          const SizedBox(
             height: 20.0,
           ),
           DropdownSearch<T>(
@@ -2035,15 +2057,15 @@ class _DropdownMultiSelectState<T> extends State<DropdownMultiSelect<T>> {
               isFilterOnline: true,
               showSearchBox: true,
               itemBuilder: _customPopupItemBuilder,
-              scrollbarProps: ScrollbarProps(
+              scrollbarProps: const ScrollbarProps(
                 thickness: 7,
               ),
               emptyBuilder: (BuildContext context, String? _) {
                 return Container(
                   alignment: Alignment.center,
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: Text(
-                    "No ${widget.pluralObjectName} found. Refine your search!",
+                    'No ${widget.pluralObjectName} found. Refine your search!',
                     style: theme.textTheme.titleMedium,
                     textAlign: TextAlign.center,
                   ),

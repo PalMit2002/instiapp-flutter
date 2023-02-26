@@ -33,9 +33,9 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
       this.transparentBackground = false,
       this.leadingStyle,
       TextEditingController? searchController})
-      : preferredSize = Size.fromHeight(kToolbarHeight),
-        this.appBarSearchStyle = appBarSearchStyle ?? AppBarSearchStyle(),
-        this.searchController = searchController ?? TextEditingController(),
+      : preferredSize = const Size.fromHeight(kToolbarHeight),
+        appBarSearchStyle = appBarSearchStyle ?? AppBarSearchStyle(),
+        searchController = searchController ?? TextEditingController(),
         super(key: key);
 
   @override
@@ -96,7 +96,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding:
-                    EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                 border: OutlineInputBorder(
                     borderSide: BorderSide(
                         color: theme!.colorScheme.onSurfaceVariant, width: 1.0),
@@ -110,7 +110,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                         color: theme!.colorScheme.onSurfaceVariant, width: 1.0),
                     borderRadius: BorderRadius.circular(1000)),
                 filled: widget.transparentBackground,
-                fillColor: Color.fromRGBO(0, 0, 0, 0.6),
+                fillColor: const Color.fromRGBO(0, 0, 0, 0.6),
                 hintText: widget.appBarSearchStyle.hintText,
                 hintStyle: theme!.textTheme.bodyLarge?.copyWith(
                     color: widget.transparentBackground ? Colors.white : null),
@@ -132,7 +132,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
             elevation: 0,
           )
         : AppBar(
-            title: Text(widget.title ?? ""),
+            title: Text(widget.title ?? ''),
             automaticallyImplyLeading: false,
             backgroundColor: widget.transparentBackground
                 ? Colors.transparent
@@ -151,21 +151,21 @@ class _CustomAppBarState extends State<CustomAppBar> {
     Widget iconB = IconButton(
       icon: Icon(icon),
       onPressed: onPressed,
-      padding: EdgeInsets.all(0),
+      padding: const EdgeInsets.all(0),
       color: widget.transparentBackground ? Colors.white : null,
     );
 
     if (widget.transparentBackground) {
       return Row(
         children: [
-          SizedBox(width: 5),
+          const SizedBox(width: 5),
           Container(
-            margin: EdgeInsets.symmetric(horizontal: 5),
+            margin: const EdgeInsets.symmetric(horizontal: 5),
             width: 30,
             height: 30,
             decoration: BoxDecoration(
               color: const Color.fromRGBO(0, 0, 0, 0.6),
-              borderRadius: BorderRadius.all(Radius.circular(50.0)),
+              borderRadius: const BorderRadius.all(Radius.circular(50.0)),
               border: Border.all(
                 color: Colors.white,
                 width: 1.0,
@@ -173,7 +173,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
             ),
             child: Center(child: iconB),
           ),
-          SizedBox(width: 5)
+          const SizedBox(width: 5)
         ],
       );
     }

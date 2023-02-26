@@ -1,27 +1,30 @@
 import 'dart:async';
 import 'dart:math';
+
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/api/model/event.dart';
-import 'package:InstiApp/src/api/model/role.dart';
-import 'package:InstiApp/src/api/model/user.dart';
-import 'package:InstiApp/src/bloc_provider.dart';
-import 'package:InstiApp/src/blocs/ia_bloc.dart';
-import 'package:InstiApp/src/drawer.dart';
-import 'package:InstiApp/src/routes/bodypage.dart';
-import 'package:InstiApp/src/routes/eventpage.dart';
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import 'package:InstiApp/src/utils/share_url_maker.dart';
-import 'package:InstiApp/src/utils/title_with_backbutton.dart';
 import 'package:flutter/material.dart';
 import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../api/model/body.dart';
+import '../api/model/event.dart';
+import '../api/model/role.dart';
+import '../api/model/user.dart';
+import '../api/response/secret_response.dart';
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
+import '../utils/share_url_maker.dart';
+import '../utils/title_with_backbutton.dart';
+import 'bodypage.dart';
+import 'eventpage.dart';
 
 class UserPage extends StatefulWidget {
   final User? initialUser;
   final Future<User>? userFuture;
 
-  UserPage({this.userFuture, this.initialUser});
+  const UserPage({Key? key, this.userFuture, this.initialUser}) : super(key: key);
 
   static void navigateWith(
       BuildContext context, InstiAppBloc bloc, User? user) {
@@ -31,9 +34,9 @@ class UserPage extends StatefulWidget {
         settings: RouteSettings(
           name: "/user/${user?.userID ?? ""}",
         ),
-        builder: (context) => UserPage(
+        builder: (BuildContext context) => UserPage(
           initialUser: user,
-          userFuture: bloc.getUser(user?.userID ?? ""),
+          userFuture: bloc.getUser(user?.userID ?? ''),
         ),
       ),
     );
@@ -44,17 +47,17 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPageState extends State<UserPage> {
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   User? user;
-  Set<Event> sEvents = Set();
+  Set<Event> sEvents = {};
   List<Event>? events = [];
   Interest? _selectedInterest;
   late bool editable;
   List<Interest>? interests = [];
 
-  void onBodyChange(Interest? body) async {
-    var bloc = BlocProvider.of(context)?.bloc;
-    var res = await bloc?.achievementBloc.postInterest(body?.id ?? "", body!);
+  Future<void> onBodyChange(Interest? body) async {
+    InstiAppBloc? bloc = BlocProvider.of(context)?.bloc;
+    SecretResponse? res = await bloc?.achievementBloc.postInterest(body?.id ?? '', body!);
     if (res != null) {
       setState(() {
         List<Interest>? k = interests;
@@ -62,9 +65,9 @@ class _UserPageState extends State<UserPage> {
         interests = k;
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: new Text('Error: Interest already exists'),
-        duration: new Duration(seconds: 10),
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Error: Interest already exists'),
+        duration: Duration(seconds: 10),
       ));
     }
   }
@@ -73,15 +76,15 @@ class _UserPageState extends State<UserPage> {
 
   Widget _buildChips(BuildContext context) {
     List<Widget> w = [];
-    var bloc = BlocProvider.of(context)?.bloc;
+    InstiAppBloc? bloc = BlocProvider.of(context)?.bloc;
     int length = interests?.length ?? 0;
     for (int i = 0; i < length; i++) {
       w.add(cansee
           ? Chip(
-              labelPadding: EdgeInsets.all(2.0),
+              labelPadding: const EdgeInsets.all(2.0),
               label: Text(
-                interests?[i].title ?? "",
-                style: TextStyle(
+                interests?[i].title ?? '',
+                style: const TextStyle(
                   color: Colors.white,
                 ),
               ),
@@ -89,7 +92,7 @@ class _UserPageState extends State<UserPage> {
                   Colors.primaries[Random().nextInt(Colors.primaries.length)],
               elevation: 6.0,
               shadowColor: Colors.grey[60],
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               onDeleted: () async {
                 await bloc?.achievementBloc
                     .postDelInterest(interests![i].title!);
@@ -102,10 +105,10 @@ class _UserPageState extends State<UserPage> {
               },
             )
           : Chip(
-              labelPadding: EdgeInsets.all(2.0),
+              labelPadding: const EdgeInsets.all(2.0),
               label: Text(
-                interests?[i].title ?? "",
-                style: TextStyle(
+                interests?[i].title ?? '',
+                style: const TextStyle(
                   color: Colors.white,
                 ),
               ),
@@ -113,7 +116,7 @@ class _UserPageState extends State<UserPage> {
                   Colors.primaries[Random().nextInt(Colors.primaries.length)],
               elevation: 6.0,
               shadowColor: Colors.grey[60],
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
             ));
       //w.add(_buildChip(interest.title, Colors.primaries[Random().nextInt(Colors.primaries.length)]));
     }
@@ -129,7 +132,7 @@ class _UserPageState extends State<UserPage> {
     if (body == null) {
       return Container(
         child: Text(
-          "Search for an interest",
+          'Search for an interest',
           style: Theme.of(context).textTheme.bodyLarge,
         ),
       );
@@ -145,7 +148,7 @@ class _UserPageState extends State<UserPage> {
   Widget _customPopupItemBuilderInterest(
       BuildContext context, Interest body, bool isSelected) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: !isSelected
           ? null
           : BoxDecoration(
@@ -167,8 +170,8 @@ class _UserPageState extends State<UserPage> {
     user = widget.initialUser;
 
     //interests=[Interest(id:"123",title: "lll")];
-    widget.userFuture?.then((u) {
-      if (this.mounted) {
+    widget.userFuture?.then((User u) {
+      if (mounted) {
         setState(() {
           user = u;
           interests = user?.interests!;
@@ -177,9 +180,9 @@ class _UserPageState extends State<UserPage> {
         user = u;
       }
     });
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      var bloc = BlocProvider.of(context)?.bloc;
-      bloc?.getUser("me").then((result) {
+    WidgetsBinding.instance.addPostFrameCallback((Duration timeStamp) {
+      final InstiAppBloc? bloc = BlocProvider.of(context)?.bloc;
+      bloc?.getUser('me').then((User result) {
         if (result.userLDAPId == widget.initialUser?.userLDAPId) {
           setState(() {
             cansee = true;
@@ -191,9 +194,9 @@ class _UserPageState extends State<UserPage> {
 
   @override
   Widget build(BuildContext context) {
-    var bloc = BlocProvider.of(context)!.bloc;
-    var theme = Theme.of(context);
-    var footerButtons = <Widget>[];
+    final InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    final ThemeData theme = Theme.of(context);
+    final List<Widget> footerButtons = <Widget>[];
 
     if (user != null) {
       sEvents.clear();
@@ -202,10 +205,10 @@ class _UserPageState extends State<UserPage> {
 
       events = user!.userGoingEvents != null ? sEvents.toList() : null;
 
-      if ((user!.userWebsiteURL ?? "") != "") {
+      if ((user!.userWebsiteURL ?? '') != '') {
         footerButtons.add(IconButton(
-          tooltip: "Open website",
-          icon: Icon(Icons.language_outlined),
+          tooltip: 'Open website',
+          icon: const Icon(Icons.language_outlined),
           onPressed: () async {
             if (user!.userWebsiteURL != null) {
               if (await canLaunchUrl(Uri.parse(user!.userWebsiteURL!))) {
@@ -224,17 +227,17 @@ class _UserPageState extends State<UserPage> {
       length: 3,
       child: Scaffold(
         key: _scaffoldKey,
-        drawer: NavDrawer(),
+        drawer: const NavDrawer(),
         bottomNavigationBar: MyBottomAppBar(
-          shape: RoundedNotchedRectangle(),
-          child: new Row(
+          shape: const RoundedNotchedRectangle(),
+          child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.menu_outlined,
-                  semanticLabel: "Show navigation drawer",
+                  semanticLabel: 'Show navigation drawer',
                 ),
                 onPressed: () {
                   _scaffoldKey.currentState?.openDrawer();
@@ -245,9 +248,9 @@ class _UserPageState extends State<UserPage> {
         ),
         body: SafeArea(
           child: user == null
-              ? Center(
+              ? const Center(
                   child: CircularProgressIndicatorExtended(
-                  label: Text("Loading the user page"),
+                  label: Text('Loading the user page'),
                 ))
               : NestedScrollView(
                   headerSliverBuilder:
@@ -262,14 +265,14 @@ class _UserPageState extends State<UserPage> {
                             children: <Widget>[
                               ListTile(
                                 leading: NullableCircleAvatar(
-                                  user!.userProfilePictureUrl ?? "",
+                                  user!.userProfilePictureUrl ?? '',
                                   Icons.person_outline_outlined,
                                   radius: 48,
-                                  heroTag: user!.userID ?? "",
+                                  heroTag: user!.userID ?? '',
                                   photoViewable: true,
                                 ),
                                 title: Text(
-                                  user!.userName ?? "",
+                                  user!.userName ?? '',
                                   style: theme.textTheme.headlineSmall
                                       ?.copyWith(
                                           fontFamily: theme.textTheme
@@ -278,25 +281,20 @@ class _UserPageState extends State<UserPage> {
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    user!.userRollNumber != null
-                                        ? Text(user!.userRollNumber ?? "",
-                                            style: theme.textTheme.titleLarge)
-                                        : CircularProgressIndicatorExtended(
+                                    if (user!.userRollNumber != null) Text(user!.userRollNumber ?? '',
+                                            style: theme.textTheme.titleLarge) else const CircularProgressIndicatorExtended(
                                             size: 12,
-                                            label: Text("Loading Roll Number"),
-                                          ),
-                                  ]
-                                    ..addAll(user!.userEmail != null &&
+                                            label: Text('Loading Roll Number'),
+                                          ), if (user!.userEmail != null &&
                                             !user!.userEmail!
                                                 .toLowerCase()
-                                                .contains("n/a")
-                                        ? [
+                                                .contains('n/a')) ...[
                                             InkWell(
                                               onTap: user!.userEmail != null
                                                   ? () => _launchEmail(context)
                                                   : null,
                                               child: Tooltip(
-                                                message: "E-mail this person",
+                                                message: 'E-mail this person',
                                                 child: user!.userEmail != null
                                                     ? Text(user!.userEmail!,
                                                         style: theme.textTheme
@@ -304,25 +302,22 @@ class _UserPageState extends State<UserPage> {
                                                             ?.copyWith(
                                                                 color: Colors
                                                                     .lightBlue))
-                                                    : CircularProgressIndicatorExtended(
+                                                    : const CircularProgressIndicatorExtended(
                                                         size: 12,
                                                         label: Text(
-                                                            "Loading email"),
+                                                            'Loading email'),
                                                       ),
                                               ),
                                             ),
-                                          ]
-                                        : [])
-                                    ..addAll(user!.userContactNumber != null &&
+                                          ], if (user!.userContactNumber != null &&
                                             !user!.userContactNumber!
                                                 .toLowerCase()
-                                                .contains("n/a")
-                                        ? [
+                                                .contains('n/a')) ...[
                                             InkWell(
                                               onTap: () =>
                                                   _launchDialer(context),
                                               child: Tooltip(
-                                                message: "Call this person",
+                                                message: 'Call this person',
                                                 child: Text(
                                                     user!.userContactNumber!,
                                                     style: theme
@@ -332,8 +327,10 @@ class _UserPageState extends State<UserPage> {
                                                                 .lightBlue)),
                                               ),
                                             )
-                                          ]
-                                        : []),
+                                          ],
+                                  ]
+                                    
+                                    ,
                                 ),
                               ),
                               Column(
@@ -342,7 +339,7 @@ class _UserPageState extends State<UserPage> {
                                   children: [
                                     Container(
                                         // width: double.infinity,
-                                        margin: EdgeInsets.fromLTRB(
+                                        margin: const EdgeInsets.fromLTRB(
                                             15.0, 0.0, 15.0, 10.0),
                                         child: Column(
                                             crossAxisAlignment:
@@ -350,11 +347,10 @@ class _UserPageState extends State<UserPage> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: <Widget>[
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 20.0,
                                               ),
-                                              cansee
-                                                  ? DropdownSearch<Interest>(
+                                              if (cansee) DropdownSearch<Interest>(
                                                       popupProps:
                                                           PopupProps.dialog(
                                                         isFilterOnline: true,
@@ -362,7 +358,7 @@ class _UserPageState extends State<UserPage> {
                                                         itemBuilder:
                                                             _customPopupItemBuilderInterest,
                                                         scrollbarProps:
-                                                            ScrollbarProps(
+                                                            const ScrollbarProps(
                                                           thickness: 7,
                                                         ),
                                                         emptyBuilder:
@@ -373,10 +369,10 @@ class _UserPageState extends State<UserPage> {
                                                             alignment: Alignment
                                                                 .center,
                                                             padding:
-                                                                EdgeInsets.all(
+                                                                const EdgeInsets.all(
                                                                     20),
                                                             child: Text(
-                                                              "No interests found. Refine your search!",
+                                                              'No interests found. Refine your search!',
                                                               style: theme
                                                                   .textTheme
                                                                   .titleMedium,
@@ -388,15 +384,15 @@ class _UserPageState extends State<UserPage> {
                                                         },
                                                       ),
                                                       dropdownDecoratorProps:
-                                                          DropDownDecoratorProps(
+                                                          const DropDownDecoratorProps(
                                                         dropdownSearchDecoration:
                                                             InputDecoration(
                                                           labelText:
-                                                              "Interests",
-                                                          hintText: "Interests",
+                                                              'Interests',
+                                                          hintText: 'Interests',
                                                         ),
                                                       ),
-                                                      validator: (value) {
+                                                      validator: (Interest? value) {
                                                         if (value == null) {
                                                           return 'Please select a organization';
                                                         }
@@ -410,8 +406,7 @@ class _UserPageState extends State<UserPage> {
                                                           buildDropdownMenuItemsInterest,
                                                       selectedItem:
                                                           _selectedInterest,
-                                                    )
-                                                  : SizedBox(),
+                                                    ) else const SizedBox(),
                                               _buildChips(context),
                                               //_buildChip('Gamer', Color(0xFFff6666))
                                               // SizedBox(
@@ -436,22 +431,22 @@ class _UserPageState extends State<UserPage> {
                         pinned: true,
                         delegate: _SliverTabBarDelegate(
                           child: PreferredSize(
-                            preferredSize: Size.fromHeight(72),
+                            preferredSize: const Size.fromHeight(72),
                             child: Material(
                               elevation: 4.0,
                               child: TabBar(
                                 labelColor: theme.colorScheme.secondary,
                                 unselectedLabelColor: theme.disabledColor,
-                                tabs: [
+                                tabs: const [
                                   Tab(
-                                      text: "Associations",
+                                      text: 'Associations',
                                       icon: Icon(Icons.work_outline_outlined)),
                                   Tab(
-                                      text: "Following",
+                                      text: 'Following',
                                       icon:
                                           Icon(Icons.people_outline_outlined)),
                                   Tab(
-                                      text: "Events",
+                                      text: 'Events',
                                       icon: Icon(Icons.event_outlined)),
                                 ],
                               ),
@@ -464,7 +459,7 @@ class _UserPageState extends State<UserPage> {
                   body: TabBarView(
                     // These are the contents of the tab views, below the tabs.
                     children:
-                        ["Associations", "Following", "Events"].map((name) {
+                        ['Associations', 'Following', 'Events'].map((String name) {
                       return SafeArea(
                         top: false,
                         bottom: false,
@@ -473,8 +468,8 @@ class _UserPageState extends State<UserPage> {
                           // the NestedScrollView, so that sliverOverlapAbsorberHandleFor() can
                           // find the NestedScrollView.
                           builder: (BuildContext context) {
-                            var delegates = {
-                              "Associations": SliverChildBuilderDelegate(
+                            final Map<String, SliverChildBuilderDelegate> delegates = {
+                              'Associations': SliverChildBuilderDelegate(
                                 (BuildContext context, int index) {
                                   return user!.userRoles != null
                                       ? (index >= (user!.userRoles?.length ?? 0)
@@ -488,43 +483,43 @@ class _UserPageState extends State<UserPage> {
                                               bloc,
                                               theme.textTheme,
                                               user!.userRoles![index]))
-                                      : Padding(
+                                      : const Padding(
                                           padding: EdgeInsets.all(8.0),
                                           child:
                                               CircularProgressIndicatorExtended(
-                                            label: Text("Loading associations"),
+                                            label: Text('Loading associations'),
                                           ));
                                 },
                                 childCount: (user!.userRoles?.length ?? 1) +
                                     (user!.userFormerRoles?.length ?? 0),
                               ),
-                              "Following": SliverChildBuilderDelegate(
+                              'Following': SliverChildBuilderDelegate(
                                 (BuildContext context, int index) {
                                   return user!.userFollowedBodies != null
                                       ? _buildBodyTile(bloc, theme.textTheme,
                                           user!.userFollowedBodies![index])
-                                      : Padding(
+                                      : const Padding(
                                           padding: EdgeInsets.all(8.0),
                                           child:
                                               CircularProgressIndicatorExtended(
                                             label: Text(
-                                                "Loading following bodies"),
+                                                'Loading following bodies'),
                                           ));
                                 },
                                 childCount:
                                     user!.userFollowedBodies?.length ?? 1,
                               ),
-                              "Events": SliverChildBuilderDelegate(
+                              'Events': SliverChildBuilderDelegate(
                                 (BuildContext context, int index) {
                                   return events != null
                                       ? _buildEventTile(
                                           bloc, events![index], theme)
-                                      : Padding(
+                                      : const Padding(
                                           padding: EdgeInsets.all(8.0),
                                           child:
                                               CircularProgressIndicatorExtended(
                                             label: Text(
-                                                "Loading following events"),
+                                                'Loading following events'),
                                           ));
                                 },
                                 childCount: events?.length ?? 1,
@@ -559,7 +554,7 @@ class _UserPageState extends State<UserPage> {
                                               padding:
                                                   const EdgeInsets.all(8.0),
                                               child: Text(
-                                                "No $name",
+                                                'No $name',
                                               ),
                                             ),
                                           ),
@@ -580,12 +575,12 @@ class _UserPageState extends State<UserPage> {
         floatingActionButton: user == null
             ? null
             : FloatingActionButton(
-                child: Icon(Icons.share_outlined),
                 tooltip: "Share this person's profile",
                 onPressed: () async {
                   await Share.share(
-                      "Check this cool person: ${ShareURLMaker.getUserURL(user!)}");
+                      'Check this cool person: ${ShareURLMaker.getUserURL(user!)}');
                 },
+                child: const Icon(Icons.share_outlined),
               ),
         floatingActionButtonLocation: footerButtons.isEmpty
             ? FloatingActionButtonLocation.endDocked
@@ -599,14 +594,14 @@ class _UserPageState extends State<UserPage> {
   Widget _buildEventTile(InstiAppBloc bloc, Event event, ThemeData theme) {
     return ListTile(
       title: Text(
-        event.eventName ?? "",
+        event.eventName ?? '',
         style: theme.textTheme.titleLarge,
       ),
       enabled: true,
       leading: NullableCircleAvatar(
-        event.eventImageURL ?? event.eventBodies?[0].bodyImageURL ?? "",
+        event.eventImageURL ?? event.eventBodies?[0].bodyImageURL ?? '',
         Icons.event_outlined,
-        heroTag: event.eventID ?? "",
+        heroTag: event.eventID ?? '',
       ),
       subtitle: Text(event.getSubTitle()),
       onTap: () {
@@ -617,12 +612,12 @@ class _UserPageState extends State<UserPage> {
 
   Widget _buildBodyTile(InstiAppBloc bloc, TextTheme theme, Body body) {
     return ListTile(
-      title: Text(body.bodyName ?? "", style: theme.titleLarge),
-      subtitle: Text(body.bodyShortDescription ?? "", style: theme.titleSmall),
+      title: Text(body.bodyName ?? '', style: theme.titleLarge),
+      subtitle: Text(body.bodyShortDescription ?? '', style: theme.titleSmall),
       leading: NullableCircleAvatar(
-        body.bodyImageURL ?? "",
+        body.bodyImageURL ?? '',
         Icons.people_outline_outlined,
-        heroTag: body.bodyID ?? "",
+        heroTag: body.bodyID ?? '',
       ),
       onTap: () {
         BodyPage.navigateWith(context, bloc, body: body);
@@ -633,12 +628,12 @@ class _UserPageState extends State<UserPage> {
   Widget _buildRoleTile(InstiAppBloc bloc, TextTheme theme, Role role) {
     return ListTile(
       title:
-          Text(role.roleBodyDetails?.bodyName ?? "", style: theme.titleLarge),
-      subtitle: Text(role.roleName ?? "", style: theme.titleSmall),
+          Text(role.roleBodyDetails?.bodyName ?? '', style: theme.titleLarge),
+      subtitle: Text(role.roleName ?? '', style: theme.titleSmall),
       leading: NullableCircleAvatar(
-        role.roleBodyDetails?.bodyImageURL ?? "",
+        role.roleBodyDetails?.bodyImageURL ?? '',
         Icons.people_outline_outlined,
-        heroTag: role.roleID ?? role.roleBodyDetails?.bodyID ?? "",
+        heroTag: role.roleID ?? role.roleBodyDetails?.bodyID ?? '',
       ),
       onTap: () {
         BodyPage.navigateWith(context, bloc, role: role);
@@ -649,13 +644,13 @@ class _UserPageState extends State<UserPage> {
   Widget _buildFormerRoleTile(InstiAppBloc bloc, TextTheme theme, Role role) {
     return ListTile(
       title:
-          Text(role.roleBodyDetails?.bodyName ?? "", style: theme.titleLarge),
+          Text(role.roleBodyDetails?.bodyName ?? '', style: theme.titleLarge),
       subtitle: Text("Former ${role.roleName} ${role.year ?? ""}",
           style: theme.titleSmall),
       leading: NullableCircleAvatar(
-        role.roleBodyDetails?.bodyImageURL ?? "",
+        role.roleBodyDetails?.bodyImageURL ?? '',
         Icons.people_outline_outlined,
-        heroTag: role.roleID ?? role.roleBodyDetails?.bodyID ?? "",
+        heroTag: role.roleID ?? role.roleBodyDetails?.bodyID ?? '',
       ),
       onTap: () {
         BodyPage.navigateWith(context, bloc, role: role);
@@ -664,7 +659,7 @@ class _UserPageState extends State<UserPage> {
   }
 
   _launchEmail(BuildContext context) async {
-    var url = "mailto:${user?.userEmail}?subject=Let's Have Coffee";
+    String url = "mailto:${user?.userEmail}?subject=Let's Have Coffee";
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(
         Uri.parse(url),
@@ -674,15 +669,15 @@ class _UserPageState extends State<UserPage> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          SnackBar(
-            content: Text("Mail app failed to open"),
+          const SnackBar(
+            content: Text('Mail app failed to open'),
           ),
         );
     }
   }
 
   _launchDialer(BuildContext context) async {
-    var url = "tel:${user?.userContactNumber}";
+    String url = 'tel:${user?.userContactNumber}';
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(
         Uri.parse(url),
@@ -692,8 +687,8 @@ class _UserPageState extends State<UserPage> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          SnackBar(
-            content: Text("Phone app failed to open"),
+          const SnackBar(
+            content: Text('Phone app failed to open'),
           ),
         );
     }

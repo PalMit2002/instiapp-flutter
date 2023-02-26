@@ -1,16 +1,17 @@
 import 'dart:io';
 
-import 'package:InstiApp/src/api/model/body.dart';
-import 'package:InstiApp/src/api/model/community.dart';
-import 'package:InstiApp/src/api/model/communityPost.dart';
-import 'package:InstiApp/src/api/model/user.dart';
-import 'package:InstiApp/src/api/response/image_upload_response.dart';
 import 'package:flutter/material.dart';
-
-import 'package:InstiApp/src/utils/common_widgets.dart';
-import '../bloc_provider.dart';
-import '../drawer.dart';
 import 'package:image_picker/image_picker.dart';
+
+import '../api/model/body.dart';
+import '../api/model/community.dart';
+import '../api/model/communityPost.dart';
+import '../api/model/user.dart';
+import '../api/response/image_upload_response.dart';
+import '../bloc_provider.dart';
+import '../blocs/ia_bloc.dart';
+import '../drawer.dart';
+import '../utils/common_widgets.dart';
 
 class NavigateArguments {
   final Community? community;
@@ -20,7 +21,10 @@ class NavigateArguments {
 }
 
 class CreatePostPage extends StatefulWidget {
+  const CreatePostPage({Key? key}) : super(key: key);
+
   // initiate widgetstate Form
+  @override
   _CreatePostPage createState() => _CreatePostPage();
 }
 
@@ -34,8 +38,8 @@ class _CreatePostPage extends State<CreatePostPage> {
   List<File> imageFiles = [];
 
   // List<CreatePost>? posts;
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-  final _formKey1 = GlobalKey<FormState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  final GlobalKey<FormState> _formKey1 = GlobalKey<FormState>();
 
   CommunityPost currRequest1 = CommunityPost();
 
@@ -50,12 +54,12 @@ class _CreatePostPage extends State<CreatePostPage> {
   @override
   Widget build(BuildContext context) {
     // print(_selectedBody);
-    var bloc = BlocProvider.of(context)!.bloc;
-    var theme = Theme.of(context);
-    var profile = bloc.currSession?.profile;
+    InstiAppBloc bloc = BlocProvider.of(context)!.bloc;
+    ThemeData theme = Theme.of(context);
+    final User? profile = bloc.currSession?.profile;
     if (firstBuild) {
       currRequest1.featured = false;
-      final args =
+      final NavigateArguments? args =
           ModalRoute.of(context)!.settings.arguments as NavigateArguments?;
       if (args != null) {
         if (args.post != null) {
@@ -73,18 +77,18 @@ class _CreatePostPage extends State<CreatePostPage> {
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         key: _scaffoldKey,
-        drawer: NavDrawer(),
+        drawer: const NavDrawer(),
         bottomNavigationBar: MyBottomAppBar(
-          shape: RoundedNotchedRectangle(),
-          child: new Row(
+          shape: const RoundedNotchedRectangle(),
+          child: Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               IconButton(
-                tooltip: "Show bottom sheet",
-                icon: Icon(
+                tooltip: 'Show bottom sheet',
+                icon: const Icon(
                   Icons.menu_outlined,
-                  semanticLabel: "Show bottom sheet",
+                  semanticLabel: 'Show bottom sheet',
                 ),
                 onPressed: () {
                   _scaffoldKey.currentState!.openDrawer();
@@ -97,8 +101,9 @@ class _CreatePostPage extends State<CreatePostPage> {
           child: bloc.currSession == null
               ? Container(
                   alignment: Alignment.center,
-                  padding: EdgeInsets.all(50),
+                  padding: const EdgeInsets.all(50),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Icon(
                         Icons.cloud,
@@ -106,12 +111,11 @@ class _CreatePostPage extends State<CreatePostPage> {
                         color: Colors.grey[600],
                       ),
                       Text(
-                        "Login To Make Post",
+                        'Login To Make Post',
                         style: theme.textTheme.headlineSmall,
                         textAlign: TextAlign.center,
                       )
                     ],
-                    crossAxisAlignment: CrossAxisAlignment.center,
                   ),
                 )
               : RefreshIndicator(
@@ -127,33 +131,32 @@ class _CreatePostPage extends State<CreatePostPage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(
+                                SizedBox(
                                   width: 50,
                                   child: TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
                                     },
-                                    child: Icon(Icons.close),
                                     style: TextButton.styleFrom(
                                         foregroundColor: Colors.black,
                                         backgroundColor: theme.canvasColor,
                                         disabledForegroundColor: Colors.grey,
                                         elevation: 0.0),
+                                    child: const Icon(Icons.close),
                                   ),
                                 ),
                                 Container(
-                                    child: Text('Create Post',
+                                    child: const Text('Create Post',
                                         style: TextStyle(
                                           fontSize: 24.0,
                                           fontWeight: FontWeight.bold,
                                         ))),
-                                Container(
+                                SizedBox(
                                   width: 65,
                                   child: TextButton(
                                     onPressed: () async {
                                       // CommunityPost post = )
-                                      if (currRequest1.imageUrl == null)
-                                        currRequest1.imageUrl = [];
+                                      currRequest1.imageUrl ??= [];
                                       for (int i = 0;
                                           i < imageFiles.length;
                                           i++) {
@@ -168,29 +171,21 @@ class _CreatePostPage extends State<CreatePostPage> {
                                       currRequest1.anonymous ??= false;
                                       currRequest1.hasUserReported = false;
                                       if (isEditing) {
-                                        bloc.communityPostBloc
+                                        await bloc.communityPostBloc
                                             .updateCommunityPost(currRequest1);
                                       } else {
-                                        bloc.communityPostBloc
+                                        await bloc.communityPostBloc
                                             .createCommunityPost(currRequest1);
                                       }
 
                                       Navigator.of(context).pop(currRequest1);
                                     },
-                                    child: Text(
-                                      isEditing ? 'EDIT' : 'POST',
-                                      style: TextStyle(
-                                        fontSize: 14.0,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1.0,
-                                      ),
-                                    ),
                                     style: ButtonStyle(
                                         foregroundColor: MaterialStateProperty
                                             .all(Colors.white),
                                         backgroundColor:
                                             MaterialStateProperty.all(
-                                                Color.fromARGB(
+                                                const Color.fromARGB(
                                                     255, 72, 115, 235)),
                                         shape: MaterialStateProperty.all<
                                                 RoundedRectangleBorder>(
@@ -198,11 +193,19 @@ class _CreatePostPage extends State<CreatePostPage> {
                                           borderRadius:
                                               BorderRadius.circular(50),
                                         ))),
+                                    child: Text(
+                                      isEditing ? 'EDIT' : 'POST',
+                                      style: const TextStyle(
+                                        fontSize: 14.0,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 15,
                             ),
                             Container(
@@ -215,16 +218,16 @@ class _CreatePostPage extends State<CreatePostPage> {
                               child: ListTile(
                                 leading: NullableCircleAvatar(
                                   (click == true)
-                                      ? profile?.userProfilePictureUrl ?? ""
-                                      : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSM9q9XJKxlskry5gXTz1OXUyem5Ap59lcEGg&usqp=CAU",
+                                      ? profile?.userProfilePictureUrl ?? ''
+                                      : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSM9q9XJKxlskry5gXTz1OXUyem5Ap59lcEGg&usqp=CAU',
                                   Icons.person,
                                   radius: 22,
                                 ),
                                 title: Text(
                                   (click == true)
-                                      ? profile?.userName ?? " "
+                                      ? profile?.userName ?? ' '
                                       : 'Anonymous',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 17.0,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.3,
@@ -233,7 +236,7 @@ class _CreatePostPage extends State<CreatePostPage> {
                                 subtitle: ElevatedButton.icon(
                                   label: Text(
                                     (click == true) ? 'Public' : 'anonymous',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 0.3,
                                     ),
@@ -263,13 +266,13 @@ class _CreatePostPage extends State<CreatePostPage> {
                                           RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(50),
-                                              side: BorderSide(
+                                              side: const BorderSide(
                                                   color: Colors.grey)))),
                                 ),
                               ),
                             ),
                             ConstrainedBox(
-                              constraints: new BoxConstraints(
+                              constraints: BoxConstraints(
                                 maxHeight:
                                     MediaQuery.of(context).size.height / 3,
                               ),
@@ -279,17 +282,17 @@ class _CreatePostPage extends State<CreatePostPage> {
                                     initialValue: currRequest1.content,
                                     keyboardType: TextInputType.multiline,
                                     maxLines: null,
-                                    decoration: InputDecoration(
-                                      hintText: "Write your Post..",
+                                    decoration: const InputDecoration(
+                                      hintText: 'Write your Post..',
                                     ),
                                     autocorrect: true,
-                                    onChanged: (value) {
+                                    onChanged: (String value) {
                                       setState(() {
                                         currRequest1.content = value;
                                         currRequest1.postedBy = profile;
                                       });
                                     },
-                                    validator: (value) {
+                                    validator: (String? value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Post content should not be empty';
                                       }
@@ -306,14 +309,14 @@ class _CreatePostPage extends State<CreatePostPage> {
                                     ...(currRequest1.imageUrl ?? [])
                                         .asMap()
                                         .entries
-                                        .map((e) => _buildImageUrl(
+                                        .map((MapEntry<int, String> e) => _buildImageUrl(
                                               e.value,
                                               e.key,
                                             )),
                                     ...imageFiles
                                         .asMap()
                                         .entries
-                                        .map((e) => _buildImageFile(
+                                        .map((MapEntry<int, File> e) => _buildImageFile(
                                               e.value,
                                               e.key,
                                             )),
@@ -326,7 +329,7 @@ class _CreatePostPage extends State<CreatePostPage> {
         ),
         persistentFooterButtons: [
           ConstrainedBox(
-            constraints: new BoxConstraints(
+            constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height / 5,
             ),
             child: SingleChildScrollView(
@@ -334,12 +337,12 @@ class _CreatePostPage extends State<CreatePostPage> {
                 children: [
                   ListTile(
                     dense: true,
-                    title: Text('Attach Photos/Videos'),
-                    leading: Icon(Icons.attach_file),
+                    title: const Text('Attach Photos/Videos'),
+                    leading: const Icon(Icons.attach_file),
                     onTap: () async {
-                      final ImagePicker _picker = ImagePicker();
+                      final ImagePicker picker = ImagePicker();
                       final XFile? pi =
-                          await _picker.pickImage(source: ImageSource.gallery);
+                          await picker.pickImage(source: ImageSource.gallery);
 
                       if (pi != null) {
                         // ImageUploadResponse resp = await bloc.client
@@ -351,9 +354,9 @@ class _CreatePostPage extends State<CreatePostPage> {
                             imageFiles.add(File(pi.path));
                           });
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                             content:
-                                Text("Image size should be less than 10MB"),
+                                Text('Image size should be less than 10MB'),
                           ));
                         }
                       }
@@ -361,10 +364,10 @@ class _CreatePostPage extends State<CreatePostPage> {
                   ),
                   DropdownMultiSelect<dynamic>(
                     load: Future.value([
-                      ...(currRequest1.bodies ?? []),
-                      ...(currRequest1.users ?? [])
+                      ...currRequest1.bodies ?? [],
+                      ...currRequest1.users ?? []
                     ]),
-                    update: (tags) {
+                    update: (List? tags) {
                       currRequest1.bodies = tags
                           ?.where((element) => element.runtimeType == Body)
                           .map((e) => e as Body)
@@ -382,17 +385,17 @@ class _CreatePostPage extends State<CreatePostPage> {
                       List<dynamic> list = [...list1, ...list2];
                       return list;
                     },
-                    singularObjectName: "Tag",
-                    pluralObjectName: "Tags",
+                    singularObjectName: 'Tag',
+                    pluralObjectName: 'Tags',
                   ),
                   DropdownMultiSelect<Interest>(
-                    update: (interests) {
+                    update: (List<Interest>? interests) {
                       currRequest1.interests = interests;
                     },
                     load: Future.value(currRequest1.interests ?? []),
                     onFind: bloc.achievementBloc.searchForInterest,
-                    singularObjectName: "interest",
-                    pluralObjectName: "interests",
+                    singularObjectName: 'interest',
+                    pluralObjectName: 'interests',
                   ),
                 ],
               ),
@@ -417,7 +420,7 @@ class _CreatePostPage extends State<CreatePostPage> {
           top: 0,
           child: Container(
             child: IconButton(
-              icon: Icon(Icons.close),
+              icon: const Icon(Icons.close),
               onPressed: () {
                 setState(() {
                   currRequest1.imageUrl!.removeAt(index);
@@ -444,7 +447,7 @@ class _CreatePostPage extends State<CreatePostPage> {
           top: 0,
           child: Container(
             child: IconButton(
-              icon: Icon(Icons.close),
+              icon: const Icon(Icons.close),
               onPressed: () {
                 setState(() {
                   imageFiles.removeAt(index);
