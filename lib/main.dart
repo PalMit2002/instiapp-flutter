@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
+// ignore: depend_on_referenced_packages
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 // import 'package:flutter/cupertino.dart';
@@ -51,10 +52,10 @@ import 'src/utils/app_brightness.dart';
 import 'src/utils/notif_settings.dart';
 
 void main() async {
-  GlobalKey<MyAppState> key = GlobalKey();
+  final GlobalKey<MyAppState> key = GlobalKey();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  InstiAppBloc bloc = InstiAppBloc(wholeAppKey: key);
+  final InstiAppBloc bloc = InstiAppBloc(wholeAppKey: key);
   FirebaseMessaging.onBackgroundMessage(sendMessage);
 
   await AwesomeNotifications().initialize(
@@ -72,13 +73,11 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  @override
-  final Key key;
   final InstiAppBloc bloc;
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
-  const MyApp({required this.key, required this.bloc}) : super(key: key);
+  const MyApp({required super.key, required this.bloc});
 
   // This widget is the root of your application.
   @override
@@ -87,6 +86,7 @@ class MyApp extends StatefulWidget {
   }
 }
 
+// ignore: prefer_mixin
 class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   // Notifications plugin to show rich notifications
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -94,7 +94,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
-  late StreamSubscription _appLinksSub;
+  late StreamSubscription<Uri?> _appLinksSub;
   final ThemeData theme = ThemeData();
 
   void setTheme(VoidCallback a) {
@@ -210,18 +210,19 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   UserPage(
                       userFuture:
                           widget.bloc.getUser(temp.split('/user/')[1])));
+            }
+            // else if (temp.startsWith("/complaint/")) {
+            //   Uri uri = Uri.parse(temp);
 
-              // } else if (temp.startsWith("/complaint/")) {
-              //   Uri uri = Uri.parse(temp);
-
-              //   return _buildRoute(
-              //       settings,
-              //       ComplaintPage(
-              //           complaintFuture: widget.bloc.getComplaint(
-              //               uri.pathSegments[1],
-              //               reload: uri.queryParameters.containsKey("reload") &&
-              //                   uri.queryParameters["reload"] == "true")));
-            } else if (temp.startsWith('/group/')) {
+            //   return _buildRoute(
+            //       settings,
+            //       ComplaintPage(
+            //           complaintFuture: widget.bloc.getComplaint(
+            //               uri.pathSegments[1],
+            //              reload: uri.queryParameters.containsKey("reload") &&
+            //                   uri.queryParameters["reload"] == "true")));
+            // }
+            else if (temp.startsWith('/group/')) {
               widget.bloc.drawerState.setPageIndex(15);
               return _buildRoute(
                   settings,
@@ -241,7 +242,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 EventForm(
                   entityID: temp.split('/putentity/event/')[1],
                   cookie: widget.bloc.getSessionIdHeader(),
-                  creator: widget.bloc.currSession!.profile!,
+                  creator: widget.bloc.currSession!.profile,
                 ),
               );
             } else if (temp.startsWith('/putentity/body/')) {
@@ -366,7 +367,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     MyApp.navigatorKey.currentState?.pushReplacementNamed(routeName);
   }
 
-  Future initAppLinksState() async {
+  Future<void> initAppLinksState() async {
     _appLinksSub = uriLinkStream.listen((Uri? uri) {
       if (!mounted) return;
       // print(uri);

@@ -86,6 +86,12 @@ analyzer:
 # Explicitly disable only the rules we do not want.
 linter:
   rules:
+    # TODO: remove this later, when we have fixed all the issues.
+    public_member_api_docs: false
+
+    # Creates problems in initstate
+    discarded_futures: false
+
     # ALWAYS separate the control structure expression from its statement.
     #
     # https://dart-lang.github.io/linter/lints/always_put_control_body_on_new_line.html

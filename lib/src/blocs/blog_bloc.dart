@@ -134,7 +134,7 @@ class PostBloc {
     }
     const markdown.TableSyntax tableParse = markdown.TableSyntax();
 
-    posts.forEach((Post p) {
+    for (final Post p in posts) {
       if (postType == PostType.ChatBot) {
         p.content = markdown.markdownToHtml(
             p.content
@@ -151,13 +151,13 @@ class PostBloc {
                     .map((String s) => s.trimRight())
                     .toList()
                     .join('\n') ??
-                "",
+                '',
             blockSyntaxes: [tableParse]);
       }
       if (postType != PostType.Query && postType != PostType.ChatBot) {
         p.published = dateTimeFormatter(p.published ?? '');
       }
-    });
+    }
     return posts;
   }
 
